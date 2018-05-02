@@ -59,21 +59,13 @@ def action_handler(message_data, window):
             )
             result = True if reply == QMessageBox.Yes else False
         elif type_ == 'float':
-            inputDialog = QInputDialog(None)
-            inputDialog.setInputMode(QInputDialog.DoubleInput)
-            inputDialog.setWindowTitle(message)
-            inputDialog.setLabelText(message)
-            inputDialog.setDoubleValue(1)
-            inputDialog.exec_()
-            result = inputDialog.doubleValue()
+            result, ok = QInputDialog.getDouble(None, "", message, 1.0, 1e-12, 1000, 12)
+            if not ok:
+                return
         else:
-            inputDialog = QInputDialog(None)
-            inputDialog.setInputMode(QInputDialog.TextInput)
-            inputDialog.setWindowTitle(message)
-            inputDialog.setLabelText(message)
-            inputDialog.setFixedSize(400, 100)
-            inputDialog.exec_()
-            result = inputDialog.textValue()
+            result, ok = QInputDialog.getText(None, "", message)
+            if not ok:
+                return
         asyncio.ensure_future(window.ws_send({'status': 'success', 'result': result}))
 
 

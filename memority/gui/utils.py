@@ -103,7 +103,9 @@ async def request_mmr(key, session):
         else:
             data = await result.json()
             msg = data.get('message')
-            error_handler(f'Requesting MMR failed.\n{msg}')
+            error_handler(f'Requesting MMR failed.\n'
+                          f'{msg}\n'
+                          f'Please ensure if the key was entered correctly.')
             return None
 
 

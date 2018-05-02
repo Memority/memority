@@ -1,14 +1,15 @@
 #! /usr/bin/env python
 
+import sys
+
+import aiohttp
 import asyncio
 import contextlib
 import json
-import sys
-from asyncio import CancelledError
-
-import aiohttp
 import requests
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
+from asyncio import CancelledError
 from quamash import QEventLoop
 
 from bugtracking import raven_client
@@ -33,12 +34,19 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
         self.msg_for_testers = QLabel(
-            'This is an Alpha version of Memority app. It might be unstable, have bugs and errors.\n'
-            'Please keep in mind that in some cases your stored data may be lost, '
-            'although we`ll do everything in our power to prevent this. \n'
-            'If the app is not working, it means we`ve released an incompatible update. '
-            'Please download it on our website https://memority.io/\n'
-            'If you`ve encountered a bug, please send us a report to support@memority.io')
+            """
+            <p>This is an Alpha version of Memority app. It might be unstable, have bugs and errors.</p>
+            <p>Please keep in mind that in some cases your stored data may be lost, 
+            although we`ll do everything in our power to prevent this.</p>
+            <p>If you`ve encountered a bug, please see if there is a new version on 
+            <a href="https://memority.io/">https://memority.io</a>. Perhaps we have already fixed it. 
+            If not, send us a report to 
+            <a href="mailto:support@memority.io">support@memority.io</a>.</p>
+            <p>You can see the instructions on how to use the application on 
+            <a href="https://alpha.memority.io/">https://alpha.memority.io</a>.</p>
+            """
+        )
+        self.msg_for_testers.setOpenExternalLinks(True)
         self.log_widget = QPlainTextEdit()
         self.table_widget = TabsWidget(self)
         self.log_widget.setReadOnly(True)
@@ -171,6 +179,9 @@ def check_if_daemon_running():
             break
         else:
             _app = QApplication(sys.argv)
+            _app.setAttribute(Qt.AA_EnableHighDpiScaling)
+            if hasattr(QStyleFactory, 'AA_UseHighDpiPixmaps'):
+                _app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
             _ok = QMessageBox().question(
                 None,
@@ -188,6 +199,9 @@ def check_if_daemon_running():
 if __name__ == '__main__':
     check_if_daemon_running()
     _app = QApplication(sys.argv)
+    _app.setAttribute(Qt.AA_EnableHighDpiScaling)
+    if hasattr(QStyleFactory, 'AA_UseHighDpiPixmaps'):
+        _app.setAttribute(Qt.AA_UseHighDpiPixmaps)
     if not check_first_run():
         while True:
             password, ok = ask_for_password('Password:')
@@ -199,6 +213,9 @@ if __name__ == '__main__':
         del _app
 
     app = QApplication(sys.argv)
+    app.setAttribute(Qt.AA_EnableHighDpiScaling)
+    if hasattr(QStyleFactory, 'AA_UseHighDpiPixmaps'):
+        app.setAttribute(Qt.AA_UseHighDpiPixmaps)
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
     try:

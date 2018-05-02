@@ -56,14 +56,12 @@ class TabSettingsWidget(QWidget):
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
 
-        self.generate_address_btn = QPushButton('Generate address')
         self.create_account_btn = QPushButton('Create account')
         self.import_account_btn = QPushButton('Import account')
         self.export_account_btn = QPushButton('Export account')
         self.disk_space_for_hosting = DiskSpaceForHostingWidget(self)
         self.become_a_hoster_btn = QPushButton('Become a hoster')
         self.control_buttons = ControlButtonsWidget(self)
-        self.generate_address_btn.clicked.connect(lambda: asyncio.ensure_future(self.generate_address()))
         self.create_account_btn.clicked.connect(lambda: asyncio.ensure_future(self.create_account()))
         self.import_account_btn.clicked.connect(lambda: asyncio.ensure_future(self.import_account()))
         self.export_account_btn.clicked.connect(lambda: asyncio.ensure_future(self.export_account()))
@@ -72,7 +70,6 @@ class TabSettingsWidget(QWidget):
         self.control_buttons.apply_btn.clicked.connect(lambda: asyncio.ensure_future(self.apply()))
         self.control_buttons.cancel_btn.clicked.connect(lambda: asyncio.ensure_future(self.reset()))
 
-        main_layout.addWidget(self.generate_address_btn)
         main_layout.addWidget(self.create_account_btn)
         main_layout.addWidget(self.import_account_btn)
         main_layout.addWidget(self.export_account_btn)
@@ -81,15 +78,11 @@ class TabSettingsWidget(QWidget):
         main_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding))
         main_layout.addWidget(self.control_buttons)
 
-        self.generate_address_btn.hide()
-        self.create_account_btn.hide()
-        self.disk_space_for_hosting.hide()
-        self.become_a_hoster_btn.hide()
-
-        for btn in [self.generate_address_btn, self.create_account_btn, self.import_account_btn,
-                    self.export_account_btn, self.become_a_hoster_btn, self.control_buttons.apply_btn,
-                    self.control_buttons.cancel_btn]:
-            btn.setDisabled(True)
+        for el in [self.create_account_btn, self.import_account_btn,
+                   self.export_account_btn, self.become_a_hoster_btn, self.disk_space_for_hosting]:
+            el.hide()
+        self.control_buttons.apply_btn.setDisabled(True)
+        self.control_buttons.cancel_btn.setDisabled(True)
 
     def log(self, msg):
         return log(msg, self.log_widget)
@@ -99,37 +92,25 @@ class TabSettingsWidget(QWidget):
         disk_space_for_hosting = await get_disk_space_for_hosting(self.session)
         self.disk_space_for_hosting.disk_space_input.setValue(disk_space_for_hosting)
         address = await get_address(session=self.session)
-        self.generate_address_btn.hide()
-        self.create_account_btn.hide()
-        self.disk_space_for_hosting.hide()
-        self.become_a_hoster_btn.hide()
 
-        for btn in [self.generate_address_btn, self.create_account_btn, self.import_account_btn,
-                    self.export_account_btn, self.become_a_hoster_btn, self.control_buttons.apply_btn,
-                    self.control_buttons.cancel_btn]:
-            btn.setDisabled(True)
+        for btn in [self.create_account_btn, self.import_account_btn,
+                    self.export_account_btn, self.become_a_hoster_btn]:
+            btn.hide()
 
-        self.import_account_btn.setEnabled(True)
+        self.import_account_btn.show()
         if role:
-            self.export_account_btn.setEnabled(True)
+            self.export_account_btn.show()
             if role in ['hoster', 'both']:
                 self.disk_space_for_hosting.show()
-                self.disk_space_for_hosting.setEnabled(True)
+                self.disk_space_for_hosting.show()
             elif role == 'client':
                 self.become_a_hoster_btn.show()
-                balance = await get_balance(self.session) or 0
-                if balance:
-                    self.become_a_hoster_btn.setEnabled(True)
         else:
             self.create_account_btn.show()
             if address:
-                self.create_account_btn.setEnabled(True)
-                self.generate_address_btn.setDisabled(True)
-            else:
-                self.generate_address_btn.show()
-                self.generate_address_btn.setEnabled(True)
+                self.create_account_btn.show()
 
-    async def generate_address(self):
+    async def create_account(self):
         password1, ok = ask_for_password('Set password for your wallet')
         if not ok:
             return
@@ -146,15 +127,14 @@ class TabSettingsWidget(QWidget):
         key, ok = QInputDialog.getText(
             None,
             "Key input",
-            "Paste your Alpha Tester Key here:"
+            "<a>Paste your Alpha Tester Key here.</a><br>"
+            "<a>You can get it after registering on https://alpha.memority.io</a>"
         )
-        self.log('Please wait while we’ll send you MMR tokens for testing, it may take a few minutes.')
+        self.log('Please wait while we’ll send you MMR tokens for testing, it may take a few minutes. '
+                 'Do not turn off the application.')
         balance = await request_mmr(key=key, session=self.session)
         self.log(f'Done! Your balance: {balance} MMR')
         await self.main_window.refresh()
-
-    async def create_account(self):
-        self.create_account_btn.setDisabled(True)
         items = {
             'Store my files': 'client',
             'Be a hoster': 'host',
@@ -173,8 +153,7 @@ class TabSettingsWidget(QWidget):
                  f'This can take up to 60 seconds, as transaction is being written in blockchain.')
         ok = await create_account(role=role, session=self.session)
         if ok:
-            self.log('Account successfully created!\n'
-                     'Please back up your account in safe place (you can do it with "Export account" button.)')
+            self.log('Account successfully created!')
         await self.main_window.refresh()
 
     async def import_account(self):
