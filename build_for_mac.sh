@@ -44,7 +44,7 @@ VERSION=$1
 sed 's/version=\"\"/version=\"'"${VERSION}"'\"/g' dist-utils/Distribution.xml > ./dist/Distribution.xml
 pkgbuild --install-location /Applications/Memority --root dist/core --version "${VERSION}" --component-plist ./dist-utils/MemorityCoreComponents.plist --identifier io.memority.memoritycore ./dist/Memority\ Core.pkg
 pkgbuild --install-location /Applications/Memority --root dist/ui --version "${VERSION}" --component-plist ./dist-utils/MemorityUIComponents.plist --identifier io.memority.memorityui ./dist/Memority\ UI.pkg
-productbuild --distribution ./dist/Distribution.xml --package-path ./dist --resources . "./Memority-${VERSION}-macos-setup.pkg"
+productbuild --distribution ./dist/Distribution.xml --package-path ./dist --scripts ./dist-utils/macos_postinstall.sh --resources . "./Memority-${VERSION}-macos-setup.pkg"
 
 echo "--------------------------------------------------"
 echo "Cleanup"

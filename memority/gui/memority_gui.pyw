@@ -189,11 +189,11 @@ def check_if_daemon_running():
                 f'Can`t connect to Memority Core. Is it running?\n'
                 f'Please launch Memority Core before Memority UI.\n'
                 f'If you have already started Memority Core, wait a few seconds and try again.',
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No
+                QMessageBox.Ok | QMessageBox.Cancel,
+                QMessageBox.Ok
             )
             del _app
-            if _ok != QMessageBox.Yes:
+            if _ok != QMessageBox.Ok:
                 sys.exit()
 
 
