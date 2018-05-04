@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
             If not, send us a report to 
             <a href="mailto:support@memority.io">support@memority.io</a>.</p>
             <p>You can see the instructions on how to use the application on 
-            <a href="https://alpha.memority.io/">https://alpha.memority.io</a>.</p>
+            <a href="https://memority.io/how-to-use-app/">https://memority.io/how-to-use-app/</a>.</p>
             """
         )
         self.msg_for_testers.setOpenExternalLinks(True)
@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
         # ToDo: use QtWebSockets.QWebSocket, without asyncio
         try:
             session = aiohttp.ClientSession()
-            self._ws = await session.ws_connect(settings.daemon_address)
+            self._ws = await session.ws_connect(settings.daemon_address, timeout=0, receive_timeout=0)
             async for msg in self._ws:
                 if isinstance(msg, aiohttp.WebSocketError):
                     error_handler(str(msg))
@@ -187,7 +187,8 @@ def check_if_daemon_running():
                 None,
                 "Is the Memority Core running?",
                 f'Can`t connect to Memority Core. Is it running?\n'
-                f'Please launch Memority Core before Memority UI.',
+                f'Please launch Memority Core before Memority UI.\n'
+                f'If you have already started Memority Core, wait a few seconds and try again.',
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No
             )

@@ -65,6 +65,7 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    # ToDo: check if ports in use
     app = QApplication(sys.argv)
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
