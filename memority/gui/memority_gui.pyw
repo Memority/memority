@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
         # ToDo: use QtWebSockets.QWebSocket, without asyncio
         try:
             session = aiohttp.ClientSession()
-            self._ws = await session.ws_connect(settings.daemon_address, timeout=0, receive_timeout=0)
+            self._ws = await session.ws_connect(settings.daemon_address, timeout=0)
             async for msg in self._ws:
                 if isinstance(msg, aiohttp.WebSocketError):
                     error_handler(str(msg))
