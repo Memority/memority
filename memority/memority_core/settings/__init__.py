@@ -64,6 +64,11 @@ class Settings:
             if not self.password:
                 raise self.Locked
             data = self.read_encrypted()
+        elif item in [
+            'token_contract_address',
+            'memodb_contract_address'
+        ]:
+            data = self.load_defaults()
         else:
             data = self.load()
         try:

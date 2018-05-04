@@ -8,8 +8,8 @@ hoster_app_port: 9378
 renter_app_host: 127.0.0.1
 renter_app_port: 9379
 
-token_contract_address: '0x7061DCd696874C8951C8c20EA2Fb79Ecc9302f2f'
-memodb_contract_address: '0xd308e595f24786136CB4F2176C8c25BC3D923351'
+token_contract_address: '0x8C6beb352014dA46Ba85B5164f0b95DAEF5375d5'
+memodb_contract_address: '0x46FDE65ce40E753B08106560E2Bc82eb28715198'
 w3_provider: 'ipc'
 w3_url: ''
 
