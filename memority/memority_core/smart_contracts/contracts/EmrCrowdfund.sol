@@ -1,4 +1,4 @@
-pragma solidity ^0.4.16;
+pragma solidity ^0.4.21;
 
 contract owned {
     address public owner;
@@ -7,12 +7,10 @@ contract owned {
     function transferOwnership(address newOwner) onlyOwner public {owner = newOwner;}
 }
 
-//interface tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData) public; }
-
 contract EmrCrowdfund is owned {
     string public name;
     string public symbol;
-    uint8 public decimals = 12;
+    uint8 public decimals = 8;
     uint256 public totalSupply;
     uint256 public tokenPrice;
 
@@ -23,10 +21,6 @@ contract EmrCrowdfund is owned {
     event Burn(address indexed from, uint256 value);
     event FrozenFunds(address target, bool frozen);
 
-    /**
-     * Constrctor function
-     * Initializes contract with initial supply tokens to the creator of the contract
-     */
     function EmrCrowdfund(
         uint256 initialSupply,
         uint256 _tokenPrice,
@@ -39,15 +33,14 @@ contract EmrCrowdfund is owned {
         symbol = tokenSymbol;
     }
 
-    /* Internal transfer, only can be called by this contract */
     function _transfer(address _from, address _to, uint _value) internal {
-        require (_to != 0x0);                               // Prevent transfer to 0x0 address. Use burn() instead
-        require (balanceOf[_from] >= _value);               // Check if the sender has enough
-        require (balanceOf[_to] + _value >= balanceOf[_to]); // Check for overflows
-        require(!frozenAccount[_from]);                     // Check if sender is frozen
-        require(!frozenAccount[_to]);                       // Check if recipient is frozen
-        balanceOf[_from] -= _value;                         // Subtract from the sender
-        balanceOf[_to] += _value;                           // Add the same to the recipient
+        require (_to != 0x0);
+        require (balanceOf[_from] >= _value);
+        require (balanceOf[_to] + _value >= balanceOf[_to]);
+        require(!frozenAccount[_from]);
+        require(!frozenAccount[_to]);
+        balanceOf[_from] -= _value;
+        balanceOf[_to] += _value;
         emit Transfer(_from, _to, _value);
     }
 
@@ -60,8 +53,7 @@ contract EmrCrowdfund is owned {
     }
 
     /**
-     * Transfer tokens
-     * Send `_value` tokens to `_to` from your account
+     * @notice Transfer tokens
      * @param _to The address of the recipient
      * @param _value the amount to send
      */
@@ -70,11 +62,8 @@ contract EmrCrowdfund is owned {
     }
 
     /**
-     * Destroy tokens from other account
-     *
-     * Remove `_value` tokens from the system irreversibly on behalf of `_from`.
-     *
-     * @param _from the address of the sender
+     * @notice Destroy tokens from other account
+     * @param _from the address of the owner
      * @param _value the amount of money to burn
      */
     function burnFrom(address _from, uint256 _value) public onlyOwner returns (bool success) {
@@ -85,8 +74,8 @@ contract EmrCrowdfund is owned {
         return true;
     }
 
-    /** @notice Allow users to buy tokens and sell tokens for eth
-    *   @param _tokenPrice Price the users can sell or buy
+    /** @notice Allow users to buy tokens for eth
+    *   @param _tokenPrice Price the users can buy
     */
     function setPrices(uint256 _tokenPrice) onlyOwner public {
         tokenPrice = _tokenPrice;
@@ -106,6 +95,21 @@ contract EmrCrowdfund is owned {
         emit Transfer(address(0), msg.sender, amount);
     }
 
+    /**
+    * @notice Manual transfer for investors who paid from payment cards
+    * @param _to the address of the receiver
+    * @param _value the amount of tokens
+    */
+    function manualTransfer(address _to, uint256 _value) public onlyOwner returns (bool success) {
+        require (totalSupply >= _value);
+        require(!frozenAccount[_to]);
+        totalSupply -= _value;
+        balanceOf[_to] += _value;
+        emit Transfer(address(0), _to, _value);
+        return true;
+    }
+
+    /// @notice Withdraw ether to owner account
     function withdrawAll() onlyOwner public {
         owner.transfer(address(this).balance);
     }

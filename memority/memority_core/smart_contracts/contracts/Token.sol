@@ -26,7 +26,7 @@ contract owned {
 contract TokenERC20 {
     string public name;
     string public symbol;
-    uint8 public decimals = 12; // 18
+    uint8 public decimals = 18;
     uint256 public totalSupply;
     uint256 public tokenForSale;
     uint256 public tokenPrice;
@@ -411,11 +411,7 @@ contract Token is owned, TokenERC20 {
         balanceOf[_address] = _amount;
         addToHolderList(_address);
     }
-//
-//    function copyClients(address _owner, address _address) onlyOwner external {
-//        clientContract[_owner] = _address;
-//    }
-//
+
     function copyTotal(uint256 _totalSupply, uint256 _tokenForSale, uint256 _holdersToken) onlyOwner external {
         totalSupply = _totalSupply;
         tokenForSale = _tokenForSale;
