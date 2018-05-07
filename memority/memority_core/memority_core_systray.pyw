@@ -1,14 +1,17 @@
+import errno
+import sys
+
 import asyncio
 import os
-import sys
-from contextlib import redirect_stdout, redirect_stderr
-
+import socket
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from contextlib import redirect_stdout, redirect_stderr
+from memority_core import MemorityCore
 from quamash import QEventLoop
 
-from memority_core import MemorityCore
+from bugtracking import raven_client
 from settings import settings
 
 
@@ -65,8 +68,27 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    # ToDo: check if ports in use
     app = QApplication(sys.argv)
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('127.0.0.1', settings.renter_app_port))
+        s.close()
+        del s
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('127.0.0.1', settings.hoster_app_port))
+        s.close()
+        del s
+    except OSError as err:
+        if err.errno == errno.EADDRINUSE:
+            QMessageBox().critical(
+                None,
+                'Error!',
+                'Ports are already in use!\n'
+                'Seems like Memority Core is already running or another application uses them.'
+            )
+            sys.exit(0)
+        else:
+            raven_client.captureException()
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
     memority_core = MemorityCore(

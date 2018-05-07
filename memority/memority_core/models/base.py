@@ -6,7 +6,7 @@ from io import BytesIO
 import aiofiles
 import tzlocal
 from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, func, Boolean
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -50,8 +50,9 @@ class ManagedMixin:
             raise
 
     def delete(self):
-        session.delete(self)
-        session.commit()
+        with contextlib.suppress(InvalidRequestError):
+            session.delete(self)
+            session.commit()
 
 
 class Host(Base, ManagedMixin):
