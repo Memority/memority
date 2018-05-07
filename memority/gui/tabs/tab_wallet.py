@@ -36,7 +36,7 @@ class InfoWidget(QWidget):
         asyncio.ensure_future(self.refresh())
 
     async def refresh(self):
-        address = await get_address(self.session) or 'Please go to "Settings" - "Generate address"'
+        address = await get_address(self.session) or 'Please go to "Settings" - "Create account"'
         balance = await get_balance(self.session) or 0
         token_price = await get_token_price(self.session)
         bal_price = str(Decimal(Decimal(balance) * Decimal(token_price)).quantize(Decimal('.01')))
@@ -51,11 +51,6 @@ class ControlsWidget(QWidget):
     def __init__(self, parent, main_window):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
-        self.layout.addWidget(QLabel('---under construction---'))
-        self.layout.addWidget(QLabel('Buy MMR tokens'))
-        self.layout.addWidget(QLabel('Transfer MMR tokens'))
-        self.layout.addWidget(QLabel('Transaction history'))
-        self.layout.addWidget(QLabel('---under construction---'))
         self.setLayout(self.layout)
 
 

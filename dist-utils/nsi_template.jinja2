@@ -17,6 +17,9 @@ OutFile "Memority-{{ version }}-windows-setup.exe"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "img\installer_side_icon.bmp"
 !define MUI_HEADERIMAGE_RIGHT
 !define MUI_ABORTWARNING
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_TEXT "Launch Memority"
+!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchMemority"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "License.txt"
@@ -124,5 +127,10 @@ Section Uninstall
 SectionEnd
 
 BrandingText "memority.io"
+
+Function LaunchMemority
+  Exec "$INSTDIR\core\memority_core_systray.exe"
+  Exec "$INSTDIR\ui\memority_gui.exe"
+FunctionEnd
 
 ; eof

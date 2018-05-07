@@ -10,7 +10,7 @@ def get_app_data_dir():
     __app_data_dir = {
         'Linux': lambda: os.path.join(os.getenv('HOME'), '.memority', 'ui'),
         'Windows': lambda: os.path.join(os.getenv('APPDATA'), 'Memority', 'ui'),
-        'Darwin': lambda: os.path.join(os.getenv('HOME'), '.memority', 'ui')
+        'Darwin': lambda: os.path.join(os.getenv('HOME'), 'Library', 'Application Support', 'Memority UI')
     }.get(_platform_name, None)
     if not __app_data_dir:
         raise Exception(f'Unknown platform name: {_platform_name}')

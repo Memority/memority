@@ -185,7 +185,7 @@ class MemorityCore:
         # endregion
 
     def cleanup(self):
-        with contextlib.suppress(RuntimeError):
+        with contextlib.suppress(RuntimeError, AttributeError):
             self.hoster_server.close()
             self.event_loop.run_until_complete(self.hoster_app.shutdown())
             self.event_loop.run_until_complete(self.hoster_app_handler.shutdown(60.0))

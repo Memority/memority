@@ -34,5 +34,11 @@ class TabsWidget(QWidget):
 
     async def refresh(self):
         role = await get_user_role(self.session)
-        self.tabs.setTabEnabled(1, True if role in ['client', 'both'] else False)
-        self.tabs.setTabEnabled(2, True if role in ['hoster', 'both'] else False)
+        self.tabs.removeTab(self.tabs.indexOf(self.tab_files))
+        self.tabs.removeTab(self.tabs.indexOf(self.tab_hosting))
+        self.tabs.removeTab(self.tabs.indexOf(self.tab_settings))
+        if role in ['client', 'both']:
+            self.tabs.addTab(self.tab_files, "My files")
+        if role in ['hoster', 'both']:
+            self.tabs.addTab(self.tab_hosting, "Hosting statistics")
+        self.tabs.addTab(self.tab_settings, "Settings")

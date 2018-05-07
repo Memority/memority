@@ -157,13 +157,10 @@ class FileControlsWidget(QWidget):
         self.layout = QVBoxLayout(self)
         self.uploadButton = QPushButton("Upload file")
         self.prolongDepositButton = QPushButton("Prolong the deposit for all files")
-        self.prolongDepositButton.setDisabled(True)
-        # self.progressBar = QProgressBar(self)
-        # self.progressBar.setRange(0, 99)
+        self.prolongDepositButton.hide()
         self.layout.addItem(QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.layout.addWidget(self.uploadButton)
         self.layout.addWidget(self.prolongDepositButton)
-        # self.layout.addWidget(self.progressBar)
         self.setLayout(self.layout)
 
 

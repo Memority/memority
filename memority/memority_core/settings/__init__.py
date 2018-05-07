@@ -18,7 +18,7 @@ def get_app_data_dir():
     __app_data_dir = {
         'Linux': lambda: os.path.join(os.getenv('HOME'), '.memority', 'core'),
         'Windows': lambda: os.path.join(os.getenv('APPDATA'), 'Memority', 'core'),
-        'Darwin': lambda: os.path.join(os.getenv('HOME'), '.memority', 'core')
+        'Darwin': lambda: os.path.join(os.getenv('HOME'), 'Library', 'Application Support', 'Memority Core')
     }.get(_platform_name, None)
     if not __app_data_dir:
         raise Exception(f'Unknown platform name: {_platform_name}')
@@ -64,6 +64,11 @@ class Settings:
             if not self.password:
                 raise self.Locked
             data = self.read_encrypted()
+        elif item in [
+            'token_contract_address',
+            'memodb_contract_address'
+        ]:
+            data = self.load_defaults()
         else:
             data = self.load()
         try:
