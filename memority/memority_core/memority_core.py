@@ -147,6 +147,8 @@ class MemorityCore:
                 print('Geth IPC file path:', geth_ipc_path)
                 if platform_name.lower() == 'windows':
                     geth_ipc_path = geth_ipc_path.replace('\\\\', '\\')
+                geth_ipc_path = geth_ipc_path.replace('"', '')
+                geth_ipc_path = geth_ipc_path.replace("'", '')
                 settings.w3_url = geth_ipc_path
                 smart_contracts.smart_contract_api.w3 = smart_contracts.smart_contract_api.create_w3()
                 token_contract.reload()
