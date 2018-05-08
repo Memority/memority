@@ -514,7 +514,7 @@ async def request_mmr(request):
         ) as resp:
             data = await resp.json()
             if data.get('status') == 'success':
-                tx = data.get('result')
+                tx = data.get('result').strip()
                 await wait_for_transaction_completion(tx)
                 return web.json_response(
                     {
