@@ -63,6 +63,7 @@ async def upload_to_hoster(hoster, data, file, _logger=None):
                     await session.delete(f'http://{ip}/files/{file.hash}/')
                     return hoster, False
         _logger.info(f'File is uploaded to hoster | file: {file.hash} | hoster ip: {ip}')
+        notify_user(f'Uploaded to {hoster.address}')
         return hoster, True
     except (ClientConnectorError, asyncio.TimeoutError) as err:
         _logger.warning(f'Uploading to hoster failed | file: {file.hash} | hoster: {hoster.address} '
