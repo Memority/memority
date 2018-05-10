@@ -19,6 +19,12 @@ from settings import settings
 from tabs import TabsWidget
 from utils import unlock_account
 
+if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+
+if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+
 
 class MainWindow(QMainWindow):
 

@@ -133,6 +133,8 @@ class TabSettingsWidget(QWidget):
         self.log('Please wait while we’ll send you MMR tokens for testing, it may take a few minutes. '
                  'Do not turn off the application.')
         balance = await request_mmr(key=key, session=self.session)
+        if not balance:
+            return
         self.log(f'Done! Your balance: {balance} MMR')
         await self.main_window.refresh()
         items = {
