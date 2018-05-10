@@ -502,7 +502,7 @@ async def unlock(request: web.Request):
 async def request_mmr(request):
     data = await request.json()
     key = data.get('key')
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         async with session.post(
                 'https://api.memority.io/api/app/new',
                 json={
