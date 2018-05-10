@@ -1,139 +1,94 @@
-#! /usr/bin/env python
-
 import sys
 
-import aiohttp
-import asyncio
 import contextlib
-import json
 import requests
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import *
-from asyncio import CancelledError
-from quamash import QEventLoop
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtWidgets import QMainWindow, QWidget, QDesktopWidget, QMessageBox, QInputDialog, QLineEdit, QStyleFactory
+from quamash import QApplication
 
-from bugtracking import raven_client
-from dialogs import ask_for_password
-from handlers import process_ws_message, error_handler
 from settings import settings
-from tabs import TabsWidget
-from utils import unlock_account
+
+if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+
+if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
 class MainWindow(QMainWindow):
 
-    def __init__(self, event_loop: QEventLoop, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._ws = None
-        self.session = aiohttp.ClientSession()
-        self.event_loop = event_loop
-        self.resize(1024, 600)
-        self.setWindowTitle('Memority GUI')
-
-        container = QWidget(self)
-        self.setCentralWidget(container)
-
-        self.msg_for_testers = QLabel(
-            """
-            <p>This is an Alpha version of Memority app. It might be unstable, have bugs and errors.</p>
-            <p>Please keep in mind that in some cases your stored data may be lost, 
-            although we`ll do everything in our power to prevent this.</p>
-            <p>If you`ve encountered a bug, please see if there is a new version on 
-            <a href="https://memority.io/">https://memority.io</a>. Perhaps we have already fixed it. 
-            If not, send us a report to 
-            <a href="mailto:support@memority.io">support@memority.io</a>.</p>
-            <p>You can see the instructions on how to use the application on 
-            <a href="https://memority.io/how-to-use-app/">https://memority.io/how-to-use-app/</a>.</p>
-            """
-        )
-        self.msg_for_testers.setOpenExternalLinks(True)
-        self.log_widget = QPlainTextEdit()
-        self.table_widget = TabsWidget(self)
-        self.log_widget.setReadOnly(True)
-        self.add_file_list_item = self.table_widget.tab_files.files_list_widget.add_item
-        self.cleanup_file_list = self.table_widget.tab_files.files_list_widget.cleanup_file_list
-        self.table_widget.tab_files.controls_widget.uploadButton.clicked.connect(
-            self.open_file_dialog
-        )
-
-        main_layout = QVBoxLayout(container)
-        main_layout.addWidget(self.msg_for_testers)
-        main_layout.addWidget(self.table_widget)
-        main_layout.addWidget(self.log_widget)
-        container.setLayout(main_layout)
-
+        # self.ws_client = QWebSocket()
+        # self.ws_client.error.connect(self.error)
+        # self.ws_client.open(QUrl(f'ws://{settings.daemon_address}'))
+        # self.ws_client.textMessageReceived.connect(self.on_msg_received)
+        self.ui: QWidget = uic.loadUi(settings.ui_main_window)
+        self.setup_ui()
+        self.ensure_daemon_running()
+        self.unlock_account()
         sg = QDesktopWidget().screenGeometry()
         widget = self.geometry()
-        x = int((sg.width() - widget.width()) / 4)
-        y = int((sg.height() - widget.height()) / 3)
-        self.move(x, y)
-        asyncio.ensure_future(self.refresh())
-        self.show()
+        self.move(
+            int((sg.width() - widget.width()) / 4),
+            int((sg.height() - widget.height()) / 3)
+        )
+        self.ui.show()
 
-    async def refresh(self):
-        # while True:
-        await self.table_widget.refresh()
-        await self.table_widget.tab_settings.refresh()
-        await self.table_widget.tab_wallet.info_widget.refresh()
-        await self.table_widget.tab_hosting.refresh()
-        await self.show_files()
-        # await asyncio.sleep(5)
+    def setup_ui(self):
+        self.ui.closeEvent = self.closeEvent
+        self.ui.buy_mmr_btn.hide()
+        self.ui.transfer_mmr_btn.hide()
+        self.ui.refresh_btn.clicked.connect(self.refresh)
+        self.ui.copy_address_btn.clicked.connect(self.copy_address_to_clipboard)
+        self.refresh()
 
-    def resizeEvent(self, event):
-        self.log_widget.setFixedHeight(self.height() * .2)
-        return super().resizeEvent(event)
+    def refresh_wallet_tab(self):
+        # region Address
+        resp = requests.get(f'{settings.daemon_address}/info/address/').json()
+        if resp.get('status') == 'success':
+            address = resp.get('data').get('address')
+            self.ui.copy_address_btn.setEnabled(True)
+        else:
+            address = 'Please go to "Settings" - "Generate address"'
+        # endregion
+        # region Balance
+        resp = requests.get(f'{settings.daemon_address}/user/balance/').json()
+        if resp.get('status') == 'success':
+            balance = resp.get('data').get('balance') or 0
+        else:
+            balance = 0
+        # endregion
+        token_price = 0.1  # ToDo: get exchange rate
+        self.ui.address_display.setText(address)
+        self.ui.balance_display.setText(f'{balance} MMR')
+        self.ui.mmr_price_display.setText(f'1 MMR = {token_price} USD')
 
-    def open_file_dialog(self):
-        dialog = QFileDialog()
-        options = dialog.Options()
-        filename, _ = dialog.getOpenFileName(self, options=options)
-        # asyncio.ensure_future(self.show_progressbar())
-        if filename:
-            asyncio.ensure_future(self.ws_send(
-                {
-                    "command": "upload",
-                    "kwargs": {
-                        "path": filename
-                    }
-                }
-            ))
+    def refresh_files_tab(self):
+        ...
 
-    def download_file(self, path, hash_):
-        asyncio.ensure_future(self.ws_send(
-            {
-                "command": "download",
-                "kwargs": {
-                    "destination": path,
-                    "hash": hash_
-                }
-            }
-        ))
+    def refresh_hosting_tab(self):
+        ...
 
-    async def ws_handler(self):
-        # ToDo: use QtWebSockets.QWebSocket, without asyncio
-        try:
-            session = aiohttp.ClientSession()
-            self._ws = await session.ws_connect(settings.daemon_address, timeout=0)
-            async for msg in self._ws:
-                if isinstance(msg, aiohttp.WebSocketError):
-                    error_handler(str(msg))
-                    continue
-                data = json.loads(msg.data)
-                process_ws_message(data, self)
-        except CancelledError:
-            pass
-        except Exception as err:
-            raven_client.captureException()
-            error_handler(str(err))
+    def refresh_settings_tab(self):
+        ...
 
-    async def ws_send(self, data: dict):
-        await self._ws.send_json(data)
+    @pyqtSlot()
+    def refresh(self):
+        """
+        get role
+        enable-disable tabs
+        """
+        self.refresh_wallet_tab()
+        self.refresh_files_tab()
+        self.refresh_hosting_tab()
+        self.refresh_settings_tab()
 
-    async def show_files(self):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f'{settings.daemon_address}/files/') as resp:
-                data = await resp.json()
-                process_ws_message(data, self)
+    @pyqtSlot()
+    def copy_address_to_clipboard(self):
+        self.ui.address_display: QLineEdit
+        QApplication.clipboard().setText(self.ui.address_display.text())
 
     def closeEvent(self, event):
         reply = QMessageBox().question(
@@ -144,85 +99,53 @@ class MainWindow(QMainWindow):
             QMessageBox.No
         )
         if reply == QMessageBox.Yes:
-            asyncio.ensure_future(self._ws.close())
-            asyncio.ensure_future(self.session.close())
-            for task in asyncio.Task.all_tasks():
-                task.cancel()
-            self.event_loop.stop()
-
+            self.shutdown()
             event.accept()
-
         else:
             event.ignore()
 
-
-def check_first_run():
-    r = requests.get(f'{settings.daemon_address}/check_first_run/')
-    return r.json().get('result')
-
-
-def ping_daemon():
-    try:
-        r = requests.get(f'{settings.daemon_address}/ping/')
-        if r.status_code == 200:
-            return True
-        else:
-            return False
-    except requests.exceptions.ConnectionError:
-        return False
-
-
-def check_if_daemon_running():
-    while True:
-        daemon_running = ping_daemon()
-        if daemon_running:
-            break
-        else:
-            _app = QApplication(sys.argv)
-            _app.setAttribute(Qt.AA_EnableHighDpiScaling)
-            if hasattr(QStyleFactory, 'AA_UseHighDpiPixmaps'):
-                _app.setAttribute(Qt.AA_UseHighDpiPixmaps)
-
+    def ensure_daemon_running(self):
+        while True:
+            with contextlib.suppress(requests.exceptions.ConnectionError):
+                resp = requests.get(f'{settings.daemon_address}/ping/')
+                if resp.status_code == 200:
+                    return
             _ok = QMessageBox().question(
                 None,
                 "Is the Memority Core running?",
                 f'Can`t connect to Memority Core. Is it running?\n'
-                f'Please launch Memority Core before Memority UI.\n'
-                f'If you have already started Memority Core, wait a few seconds and try again.',
+                f'Please launch Memority Core before Memority UI.',
                 QMessageBox.Ok | QMessageBox.Cancel,
                 QMessageBox.Ok
             )
-            del _app
             if _ok != QMessageBox.Ok:
+                self.shutdown()
                 sys.exit()
+
+    def unlock_account(self):
+        if not requests.get(f'{settings.daemon_address}/check_first_run/').json().get('result'):
+            while True:
+                password, ok = QInputDialog.getText(None, "Password", "Password:", QLineEdit.Password)
+                if not ok:
+                    self.shutdown()
+                    sys.exit()
+                if requests.post(
+                        f'{settings.daemon_address}/unlock/',
+                        json={"password": password}
+                ).status_code == 200:
+                    break
+                else:
+                    QMessageBox().critical(None, 'Error!', 'Invalid password!')
+                    continue
+
+    def shutdown(self):
+        ...
 
 
 if __name__ == '__main__':
-    check_if_daemon_running()
-    _app = QApplication(sys.argv)
-    _app.setAttribute(Qt.AA_EnableHighDpiScaling)
-    if hasattr(QStyleFactory, 'AA_UseHighDpiPixmaps'):
-        _app.setAttribute(Qt.AA_UseHighDpiPixmaps)
-    if not check_first_run():
-        while True:
-            password, ok = ask_for_password('Password:')
-            if not ok:
-                sys.exit()
-            if not unlock_account(password):
-                continue
-            break
-        del _app
-
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_EnableHighDpiScaling)
     if hasattr(QStyleFactory, 'AA_UseHighDpiPixmaps'):
         app.setAttribute(Qt.AA_UseHighDpiPixmaps)
-    loop = QEventLoop(app)
-    asyncio.set_event_loop(loop)
-    try:
-        main_window = MainWindow(loop)
-        with contextlib.suppress(asyncio.CancelledError):
-            loop.run_until_complete(main_window.ws_handler())
-    except Exception as err:
-        raven_client.captureException()
-        error_handler(str(err))
+    w = MainWindow()
+    sys.exit(app.exec_())

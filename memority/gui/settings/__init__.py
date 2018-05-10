@@ -75,6 +75,18 @@ class Settings:
             **local_s,  # overwrite defaults if different
         })
 
+    @property
+    def ui_dir(self):
+        return os.path.join(_base_dir, 'ui')
+
+    @property
+    def ui_main_window(self):
+        return os.path.join(self.ui_dir, 'main.ui')
+
+    @property
+    def ui_file_list_item(self):
+        return os.path.join(self.ui_dir, 'file_list_item.ui')
+
 
 _base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 _platform_name = platform.system()

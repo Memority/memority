@@ -1,0 +1,1041 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>932</width>
+    <height>675</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>900</width>
+    <height>675</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Memority</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>icon.PNG</normaloff>icon.PNG</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QTabWidget{
+background: rgba(255,255,255, 30)
+}
+QScrollArea{
+background: rgba(255,255,255, 0)
+}
+QTabWidget::pane { /* The tab widget frame */
+   /* border-top: 2px solid #C2C7CB;*/
+	border: none;
+}
+
+QTabWidget::tab-bar {
+    left: 5px; /* move to the right by 5px */
+}
+
+/* Style the tab using the tab sub-control. Note that
+    it reads QTabBar _not_ QTabWidget */
+QTabBar::tab {
+   background: rgba(255,255,255, 30);
+    border: 1px solid rgba(255,255,255, 130);
+    border-bottom: 0px solid rgba(255,255,255, 0);
+    border-bottom-color: #C2C7CB; /* same as the pane color */
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    min-width: 8ex;
+    padding: 5px 15px;
+}
+
+QTabBar::tab:selected, QTabBar::tab:hover {
+    background: rgba(255,255,255, 80)
+}
+
+QTabBar::tab:selected {
+    border-color: #9B9B9B;
+    border-bottom-color: #C2C7CB; /* same as pane color */
+}
+
+QTabBar::tab:!selected {
+    margin-top: 2px; /* make non-selected tabs look smaller */
+}
+QWidget{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgba(57, 20, 167, 255), stop:0.995025 rgba(232, 15, 175, 255));
+}
+*{
+color: #fff;
+font-size: 14px;
+}
+QLabel{
+background: none;
+max-height: 18px;
+}
+QTextBrowser{
+background: rgba(255, 255, 255, 30);
+}
+QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(23, 201, 231, 255), stop:1 rgba(0, 147, 234, 255));
+border: none;
+padding: 10px 20px;
+}
+QTableView QTableCornerButton::section {
+    background: rgba(255,255,255, 30);
+    border: 1px inset rgba(255,255,255, 60);
+}
+QHeaderView{
+	margin-left: -1px;
+	margin-bottom: -1px;
+}
+QHeaderView::section{
+	background: rgba(255,255,255, 60);
+	 border: 1px solid rgba(255,255,255, 30);
+	padding: 5px;
+}
+QTableView {
+gridline-color: rgba(170, 170, 170,  6);
+}
+QTableView {
+    selection-background-color: qlineargradient(x1: 0, y1: 0, x2: 0.5, y2: 0.5,
+     stop: 0 #FF92BB, stop: 1 white);
+}
+QTableView::item{
+	padding: 5px;
+	border: 1px solid rgba(255, 255, 255, 60);
+	background: rgba(255,255,255, 30);
+	width: 20%;
+
+}
+QHBoxLayout{
+	border: none;
+}
+QScrollBar:horizontal { border: 2px solid grey; background: #32CC99; height: 15px; margin: 0px 20px 0 20px;}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="styleSheet">
+      <string notr="true">background: rgba(255,255,255, 30)</string>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="Wallet">
+      <property name="styleSheet">
+       <string notr="true">background: rgba(255,255,255, 0);
+border: 1px solid rgba(255,255,255,130);</string>
+      </property>
+      <attribute name="title">
+       <string>Wallet</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="styleSheet">
+          <string notr="true">background: rgba(255,255,255, 0);
+border: 1px solid rgba(255,255,255,0);</string>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_4">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>906</width>
+            <height>458</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <property name="spacing">
+              <number>15</number>
+             </property>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout">
+                 <item>
+                  <widget class="QPushButton" name="buy_mmr_btn">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+                   </property>
+                   <property name="text">
+                    <string>Buy mmr</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="transfer_mmr_btn">
+                   <property name="styleSheet">
+                    <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+                   </property>
+                   <property name="text">
+                    <string>Transfer mmr</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QPushButton" name="refresh_btn">
+                 <property name="styleSheet">
+                  <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>Refresh</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Address</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="QLineEdit" name="address_display">
+                 <property name="styleSheet">
+                  <string notr="true">background: rgba(255, 255, 255, 30);
+max-height: 30px;
+padding-top: 5px;</string>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="copy_address_btn">
+                 <property name="styleSheet">
+                  <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>Copy address to clipboard</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QGridLayout" name="gridLayout">
+               <item row="1" column="1">
+                <widget class="QLabel" name="mmr_price_display">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>Balance:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="balance_display">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>MMR Price:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <spacer name="horizontalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_7">
+               <property name="text">
+                <string>Transaction history:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_8"/>
+             </item>
+             <item>
+              <widget class="QTableWidget" name="transaction_history_table">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>150</height>
+                </size>
+               </property>
+               <property name="acceptDrops">
+                <bool>false</bool>
+               </property>
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background: rgba(255,255,255, 0);
+</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <property name="lineWidth">
+                <number>1</number>
+               </property>
+               <property name="sizeAdjustPolicy">
+                <enum>QAbstractScrollArea::AdjustToContents</enum>
+               </property>
+               <property name="autoScrollMargin">
+                <number>16</number>
+               </property>
+               <property name="showGrid">
+                <bool>false</bool>
+               </property>
+               <property name="sortingEnabled">
+                <bool>false</bool>
+               </property>
+               <property name="cornerButtonEnabled">
+                <bool>true</bool>
+               </property>
+               <property name="rowCount">
+                <number>1</number>
+               </property>
+               <property name="columnCount">
+                <number>5</number>
+               </property>
+               <attribute name="horizontalHeaderVisible">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="horizontalHeaderCascadingSectionResizes">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="horizontalHeaderDefaultSectionSize">
+                <number>150</number>
+               </attribute>
+               <attribute name="horizontalHeaderHighlightSections">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="horizontalHeaderMinimumSectionSize">
+                <number>45</number>
+               </attribute>
+               <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="horizontalHeaderStretchLastSection">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="verticalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderCascadingSectionResizes">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="verticalHeaderHighlightSections">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderShowSortIndicator" stdset="0">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderStretchLastSection">
+                <bool>false</bool>
+               </attribute>
+               <row/>
+               <column>
+                <property name="text">
+                 <string>id</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Transaction</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Date</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Info</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Details</string>
+                </property>
+               </column>
+               <item row="0" column="0">
+                <property name="text">
+                 <string/>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="My_files">
+      <property name="styleSheet">
+       <string notr="true">background: rgba(255,255,255, 0);
+border: 1px solid rgba(255,255,255, 130);</string>
+      </property>
+      <attribute name="title">
+       <string>My files</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_20">
+       <item>
+        <widget class="QScrollArea" name="scrollArea_7">
+         <property name="styleSheet">
+          <string notr="true">border: none;</string>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_7">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>908</width>
+            <height>460</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_21">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_15">
+             <item>
+              <widget class="QPushButton" name="upload_file_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Upload File</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="prolong_deposit_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Prolong the deposit for all files</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_9">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QScrollArea" name="scrollArea_8">
+             <property name="styleSheet">
+              <string notr="true">background: rgba(255,255,255, 30);
+border: 	1px solid  rgba(255,255,255, 30);</string>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="file_list_scrollarea">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>894</width>
+                <height>398</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background: rgba(255,255,255,0);</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_23">
+               <property name="spacing">
+                <number>11</number>
+               </property>
+               <property name="topMargin">
+                <number>11</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_15">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">border: none;</string>
+                 </property>
+                 <property name="text">
+                  <string>No files uploaded</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="Hosting_statistics">
+      <property name="styleSheet">
+       <string notr="true">background: rgba(255,255,255, 0);
+border: 1px solid rgba(255,255,255, 130);</string>
+      </property>
+      <attribute name="title">
+       <string>Hosting statistics</string>
+      </attribute>
+      <widget class="QScrollArea" name="scrollArea_9">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>661</width>
+         <height>351</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">border: 1px solid rgba(255, 255, 255, 0);</string>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_9">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>659</width>
+          <height>349</height>
+         </rect>
+        </property>
+        <widget class="QScrollArea" name="scrollArea_6">
+         <property name="geometry">
+          <rect>
+           <x>11</x>
+           <y>11</y>
+           <width>158</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border: none;</string>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_3">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>158</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_19">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <widget class="QLabel" name="label_14">
+               <property name="styleSheet">
+                <string notr="true">border: none;</string>
+               </property>
+               <property name="text">
+                <string>Space used:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_27">
+               <property name="styleSheet">
+                <string notr="true">border: none;</string>
+               </property>
+               <property name="text">
+                <string>13.5</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_28">
+               <property name="styleSheet">
+                <string notr="true">border: none;</string>
+               </property>
+               <property name="text">
+                <string>GB</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="Settings">
+      <property name="styleSheet">
+       <string notr="true">background: rgba(255,255,255, 0);
+border: 1px solid rgba(255,255,255, 130);</string>
+      </property>
+      <attribute name="title">
+       <string>Settings</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_22">
+       <item>
+        <widget class="QScrollArea" name="scrollArea_3">
+         <property name="styleSheet">
+          <string notr="true">border: none;</string>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>908</width>
+            <height>460</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_10">
+           <property name="spacing">
+            <number>10</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <property name="spacing">
+              <number>7</number>
+             </property>
+             <property name="bottomMargin">
+              <number>7</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="generate_address_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Generate address</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="create_account_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Create account</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="import_account_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Import account</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="export_account_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Export account</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="become_hoster_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Become hoster</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_10">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <property name="spacing">
+              <number>10</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Disk space for hosting</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="disk_space_for_hosting_input">
+               <property name="maximumSize">
+                <size>
+                 <width>136</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background: rgba(255,255,255, 30);
+border: 1px solid rgba(255,255,255, 30);
+padding: 2px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>GB</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>Change password:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_19">
+             <item>
+              <layout class="QFormLayout" name="formLayout">
+               <property name="topMargin">
+                <number>3</number>
+               </property>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Enter new password</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string>Repeat password</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QPushButton" name="change_password_btn">
+                 <property name="styleSheet">
+                  <string notr="true">QPushButton{
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+                 </property>
+                 <property name="text">
+                  <string>Change password</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="new_password_input">
+                 <property name="styleSheet">
+                  <string notr="true">background: rgba(255, 255, 255, 30);
+max-height: 25px;
+</string>
+                 </property>
+                 <property name="echoMode">
+                  <enum>QLineEdit::Password</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="new_password_input2">
+                 <property name="styleSheet">
+                  <string notr="true">background: rgba(255, 255, 255, 30);
+max-height: 25px;</string>
+                 </property>
+                 <property name="echoMode">
+                  <enum>QLineEdit::Password</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_11">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+          <zorder>label_10</zorder>
+          <zorder>verticalSpacer</zorder>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="plainTextEdit">
+     <property name="styleSheet">
+      <string notr="true">max-height: 120px;
+padding: 15px;
+border: none;
+background: rgba(255,255,255, 30);
+border: 1px solid rgba(255,255,255, 130);</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
