@@ -3,6 +3,7 @@ import logging
 import os
 import pickle
 import platform
+import traceback
 from decimal import Decimal
 
 from solc import compile_source
@@ -52,7 +53,8 @@ async def wait_for_transaction_completion(tx_hash, max_tries=75):
                     raise Exception(f'Failed transaction | tx_hash: {tx_hash}')
                 break
         except ValueError:
-            print(f'pending transaction {tx_hash}')
+            traceback.print_exc()
+        print(f'pending transaction {tx_hash}')
         await asyncio.sleep(5)
         max_tries -= 1
 
