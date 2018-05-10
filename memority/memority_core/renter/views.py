@@ -3,7 +3,6 @@ import asyncio
 import contextlib
 import logging
 import os
-import requests
 from aiohttp import web, ClientConnectorError
 from functools import partial
 from sqlalchemy.exc import IntegrityError
@@ -503,39 +502,29 @@ async def unlock(request: web.Request):
 async def request_mmr(request):
     data = await request.json()
     key = data.get('key')
-    resp = requests.post(
-        'https://api.memority.io/api/app/new',
-        json={
-            "code": key,
-            "address": settings.address
-        },
-        headers={
-            "Accept": "application/json"
-        }
-    )
-    # async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-    #     async with session.post(
-    #             'https://api.memority.io/api/app/new',
-    #             json={
-    #                 "code": key,
-    #                 "address": settings.address
-    #             },
-    #             headers={
-    #                 "Accept": "application/json"
-    #             }
-    #     ) as resp:
-    data = resp.json()
-    if data.get('status') == 'success':
-        tx = data.get('result').strip()
-        await wait_for_transaction_completion(tx)
-        return web.json_response(
-            {
-                "status": "success",
-                "balance": token_contract.get_mmr_balance()
-            }
-        )
-    else:
-        return web.json_response(_error_response(data.get('error')))
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+        async with session.post(
+                'https://api.memority.io/api/app/new',
+                json={
+                    "code": key,
+                    "address": settings.address
+                },
+                headers={
+                    "Accept": "application/json"
+                }
+        ) as resp:
+            data = await resp.json()
+            if data.get('status') == 'success':
+                tx = data.get('result').strip()
+                await wait_for_transaction_completion(tx)
+                return web.json_response(
+                    {
+                        "status": "success",
+                        "balance": token_contract.get_mmr_balance()
+                    }
+                )
+            else:
+                return web.json_response(_error_response(data.get('error')))
 
 
 async def set_disk_space_for_hosting(request: web.Request):
