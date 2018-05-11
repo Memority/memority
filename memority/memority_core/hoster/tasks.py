@@ -12,7 +12,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from models import HosterFile, HosterFileM2M, Host
 from renter.views import upload_to_hoster
 from settings import settings
-from smart_contracts import token_contract
+from smart_contracts import token_contract, memo_db_contract
+from utils import get_ip
 
 logger = logging.getLogger('monitoring')
 logger.write = lambda msg: logger.info(msg) if msg != '\n' else None  # for redirect_stdout
@@ -212,6 +213,17 @@ async def make_task(file):
     return wrapper
 
 
+async def check_ip():
+    ip_from_contract = memo_db_contract.get_host_ip(settings.address)
+    my_ip = await get_ip()
+    my_ip = f'{my_ip}:{settings.hoster_app_port}'
+    if ip_from_contract != my_ip:
+        logger.warning(f'IP addresses are not equal. Replacing in contract... | '
+                       f'IP from contract: {ip_from_contract} | '
+                       f'My IP: {my_ip}')
+        await memo_db_contract.add_or_update_host(ip=my_ip, address=settings.address)
+
+
 def get_hour_and_minute_by_number(my_monitoring_number) -> dict:
     minutes_in_8_hrs = 60 * 8
     n = random.randint(0, minutes_in_8_hrs / 10)
@@ -238,6 +250,14 @@ async def update_schedule(_scheduler):
         week='*',
         day_of_week='0',
         hour='0',
+        minute='0'
+    )
+    _scheduler.add_job(
+        asyncio.coroutine(check_ip),
+        'cron',
+        week='*',
+        day_of_week='*',
+        hour='*',
         minute='0'
     )
     _scheduler.add_job(

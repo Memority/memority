@@ -1,17 +1,17 @@
 #! /usr/bin/env python
+import sys
+
 import asyncio
+import contextlib
+import locale
 import os
 import platform
-import signal
 import subprocess
-import sys
 import traceback
 from functools import partial
 from queue import Queue
 from shutil import copyfile
 from threading import Thread
-
-import contextlib
 
 import renter
 import smart_contracts
@@ -23,6 +23,8 @@ from settings import settings
 from smart_contracts.smart_contract_api import w3, import_private_key_to_eth, token_contract, client_contract, \
     memo_db_contract
 from utils import ask_for_password
+
+locale.setlocale(locale.LC_ALL, '')
 
 
 def process_line(line):
@@ -99,7 +101,6 @@ class MemorityCore:
              'init', settings.geth_init_json],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            #universal_newlines=True,
             bufsize=1,
             close_fds=ON_POSIX
         )
@@ -131,7 +132,6 @@ class MemorityCore:
              '--nodiscover'],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            #universal_newlines=True,
             bufsize=1,
             startupinfo=startupinfo,
             creationflags=creationflags

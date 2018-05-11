@@ -41,7 +41,7 @@ class FileListItemButtons(QWidget):
         main_layout = QVBoxLayout(self)
         self.setLayout(main_layout)
         download_button = QPushButton('Download')
-        prolong_deposit_button = QPushButton('Prolong deposit')
+        prolong_deposit_button = QPushButton('Details')  # ToDo: prolong deposit
         prolong_deposit_button.clicked.connect(self.deposit_dialog)
         download_button.clicked.connect(self.download_file_dialog)
         prolong_deposit_button.setFixedWidth(150)

@@ -98,6 +98,11 @@ class Settings:
             data = self.load()
             self.encrypt_secrets(data)
         else:
+            if 'boxes_dir' not in data:
+                path = os.path.join(_app_data_dir, 'boxes')
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                data['boxes_dir'] = path
             with open(self.local_settings_path, 'w') as outfile:
                 yaml.dump(data, outfile, default_flow_style=False)
 
@@ -182,13 +187,6 @@ class Settings:
             **cls.load_defaults(),
             **cls.load_locals()  # overwrite defaults if different
         }
-
-    @property
-    def boxes_dir(self):
-        path = os.path.join(_app_data_dir, 'boxes')
-        if not os.path.exists(path):
-            os.makedirs(path)
-        return path
 
     @property
     def log_dir(self):

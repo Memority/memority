@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 from collections import namedtuple
 from concurrent.futures import FIRST_COMPLETED
 
@@ -34,7 +35,10 @@ async def get_ip():
     return done.pop().result()
 
 
-if __name__ == '__main__':
-    ioloop = asyncio.get_event_loop()
-    ioloop.run_until_complete(get_ip())
-    ioloop.close()
+async def check_if_white_ip(ip):
+    with contextlib.suppress(asyncio.TimeoutError):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f'http://{ip}/', timeout=1) as resp:
+                if resp:
+                    return True
+    return False

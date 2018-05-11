@@ -1,9 +1,7 @@
 import sys
 
-import os
-
 import asyncio
-
+import os
 from PyQt5.QtWidgets import *
 
 from dialogs import ask_for_password
@@ -11,18 +9,37 @@ from handlers import error_handler, log
 from utils import *
 
 
-class DiskSpaceForHostingWidget(QWidget):
+class HostingSettingsWidget(QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
-        main_layout = QHBoxLayout()
+        main_layout = QGridLayout()
         self.setLayout(main_layout)
 
         self.disk_space_input = QSpinBox()
-        self.disk_space_input.setMaximum(1024 ** 2)
+        self.disk_space_input.setMaximum(1024 ** 3)
+        main_layout.addWidget(QLabel('Disk space for hosting, GB:'), 0, 0)
+        main_layout.addWidget(self.disk_space_input, 0, 2)
+        self.box_dir_input = QLineEdit()
+        self.box_dir_input.setReadOnly(True)
+        self.select_dir_btn = QPushButton('Change...')
+        self.select_dir_btn.clicked.connect(self.change_directory)
+        dir_layout = QHBoxLayout()
+        dir_layout.addWidget(self.box_dir_input)
+        dir_layout.addWidget(self.select_dir_btn)
+        main_layout.addWidget(QLabel('Directory to store files:'), 1, 0)
+        main_layout.addLayout(dir_layout, 1, 2)
+        main_layout.addItem(QSpacerItem(50, 0, QSizePolicy.Fixed, QSizePolicy.Fixed), 2, 1)
 
-        main_layout.addWidget(QLabel('Disk space for hosting, GB:'))
-        main_layout.addWidget(self.disk_space_input)
+    def change_directory(self):
+        directory = QFileDialog.getExistingDirectory(
+            None,
+            "Select Directory",
+            directory=os.getenv('HOME', None) or os.getenv('HOMEPATH', None),
+
+        )
+        if directory:
+            self.box_dir_input.setText(directory)
 
 
 class ControlButtonsWidget(QWidget):
@@ -59,13 +76,14 @@ class TabSettingsWidget(QWidget):
         self.create_account_btn = QPushButton('Create account')
         self.import_account_btn = QPushButton('Import account')
         self.export_account_btn = QPushButton('Export account')
-        self.disk_space_for_hosting = DiskSpaceForHostingWidget(self)
+        self.hosting_settings = HostingSettingsWidget(self)
         self.become_a_hoster_btn = QPushButton('Become a hoster')
         self.control_buttons = ControlButtonsWidget(self)
         self.create_account_btn.clicked.connect(lambda: asyncio.ensure_future(self.create_account()))
         self.import_account_btn.clicked.connect(lambda: asyncio.ensure_future(self.import_account()))
         self.export_account_btn.clicked.connect(lambda: asyncio.ensure_future(self.export_account()))
-        self.disk_space_for_hosting.disk_space_input.valueChanged.connect(self.control_buttons.enable)
+        self.hosting_settings.disk_space_input.valueChanged.connect(self.control_buttons.enable)
+        self.hosting_settings.box_dir_input.textChanged.connect(self.control_buttons.enable)
         self.become_a_hoster_btn.clicked.connect(lambda: asyncio.ensure_future(self.become_a_hoster()))
         self.control_buttons.apply_btn.clicked.connect(lambda: asyncio.ensure_future(self.apply()))
         self.control_buttons.cancel_btn.clicked.connect(lambda: asyncio.ensure_future(self.reset()))
@@ -73,13 +91,13 @@ class TabSettingsWidget(QWidget):
         main_layout.addWidget(self.create_account_btn)
         main_layout.addWidget(self.import_account_btn)
         main_layout.addWidget(self.export_account_btn)
-        main_layout.addWidget(self.disk_space_for_hosting)
+        main_layout.addWidget(self.hosting_settings)
         main_layout.addWidget(self.become_a_hoster_btn)
         main_layout.addItem(QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Expanding))
         main_layout.addWidget(self.control_buttons)
 
         for el in [self.create_account_btn, self.import_account_btn,
-                   self.export_account_btn, self.become_a_hoster_btn, self.disk_space_for_hosting]:
+                   self.export_account_btn, self.become_a_hoster_btn, self.hosting_settings]:
             el.hide()
         self.control_buttons.apply_btn.setDisabled(True)
         self.control_buttons.cancel_btn.setDisabled(True)
@@ -90,7 +108,9 @@ class TabSettingsWidget(QWidget):
     async def refresh(self):
         role = await get_user_role(self.session)
         disk_space_for_hosting = await get_disk_space_for_hosting(self.session)
-        self.disk_space_for_hosting.disk_space_input.setValue(disk_space_for_hosting)
+        box_dir = await get_box_gir(self.session)
+        self.hosting_settings.disk_space_input.setValue(disk_space_for_hosting)
+        self.hosting_settings.box_dir_input.setText(box_dir)
         address = await get_address(session=self.session)
 
         for btn in [self.create_account_btn, self.import_account_btn,
@@ -101,8 +121,8 @@ class TabSettingsWidget(QWidget):
         if role:
             self.export_account_btn.show()
             if role in ['hoster', 'both']:
-                self.disk_space_for_hosting.show()
-                self.disk_space_for_hosting.show()
+                self.hosting_settings.show()
+                self.hosting_settings.show()
             elif role == 'client':
                 self.become_a_hoster_btn.show()
         else:
@@ -128,10 +148,10 @@ class TabSettingsWidget(QWidget):
             None,
             "Key input",
             "<a>Paste your Alpha Tester Key here.</a><br>"
-            "<a>You can get it after registering on https://alpha.memority.io</a>"
+            "<a>You can get it after registering on https://memority.io</a>"
         )
         self.log('Please wait while we’ll send you MMR tokens for testing, it may take a few minutes. '
-                 'Do not turn off the application.')
+                 'Do not close the application.')
         balance = await request_mmr(key=key, session=self.session)
         if not balance:
             return
@@ -153,9 +173,21 @@ class TabSettingsWidget(QWidget):
         role = items.get(item)
         self.log(f'Creating account for role "{role}"...\n'
                  f'This can take up to 60 seconds, as transaction is being written in blockchain.')
-        ok = await create_account(role=role, session=self.session)
-        if ok:
-            self.log('Account successfully created!')
+        if role in ['client', 'both']:
+            self.log('Creating client account. When finished, the "My Files" tab appears.')
+            ok = await create_account(role='client', session=self.session)
+            if not ok:
+                return
+            self.log('Client account successfully created!')
+            await self.main_window.refresh()
+        if role in ['hoster', 'both']:
+            self.log('Creating hoster account. When finished, the "Hosting statistics" tab appears.')
+            ok = await create_account(role='host', session=self.session)
+            if not ok:
+                return
+            self.log('Hoster account successfully created!')
+            await self.main_window.refresh()
+        # QMessageBox.information(None, 'Info', 'Account successfully created!')
         await self.main_window.refresh()
 
     async def import_account(self):
@@ -194,15 +226,18 @@ class TabSettingsWidget(QWidget):
 
     async def become_a_hoster(self):
         self.log('Adding your address and IP to contract...\n'
-                 'This can take up to 60 seconds, as transaction is being written in blockchain.')
+                 'This can take up to 60 seconds, as transaction is being written in blockchain.\n'
+                 'When finished, the "Hosting statistics" tab appears.')
         ok = await create_account(role='host', session=self.session)
         if ok:
             self.log('Successfully added to hoster list!')
         await self.main_window.refresh()
 
     async def apply(self):
-        disk_space = self.disk_space_for_hosting.disk_space_input.value()
+        disk_space = self.hosting_settings.disk_space_input.value()
         await set_disk_space_for_hosting(disk_space=disk_space, session=self.session)
+        box_dir = self.hosting_settings.box_dir_input.text()
+        await change_box_dir(box_dir=box_dir, session=self.session)
 
     async def reset(self):
         ...

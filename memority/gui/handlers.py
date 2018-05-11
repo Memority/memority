@@ -1,4 +1,5 @@
 import asyncio
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
@@ -14,11 +15,13 @@ def uploaded_file_handler(data, window):
     file_data = data.get('data').get('file')
     window.add_file_list_item(**file_data)
     log(f'Your file successfully uploaded! Hash: {file_data.get("hash")}', window.log_widget)
+    QMessageBox.information(None, 'Success!', f'Your file successfully uploaded! Hash: {file_data.get("hash")}')
 
 
 def downloaded_file_handler(data, window):
     file_data = data.get('data').get('file')
     log(f'Your file successfully downloaded! Path: {file_data.get("name")}', window.log_widget)
+    QMessageBox.information(None, 'Success!', f'Your file successfully downloaded! Path: {file_data.get("name")}')
 
 
 def file_list_handler(data, window):
@@ -59,9 +62,31 @@ def action_handler(message_data, window):
             )
             result = True if reply == QMessageBox.Yes else False
         elif type_ == 'float':
-            result, ok = QInputDialog.getDouble(None, "", message, 1.0, 1e-12, 1000, 12)
-            if not ok:
-                return
+            d = QDialog()
+            vl = QVBoxLayout()
+            d.setLayout(vl)
+            lb = QLabel(message)
+            lb.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            vl.addWidget(lb)
+            sb = QDoubleSpinBox()
+            sb.setValue(1)
+            sb.setMinimum(1e-18)
+            sb.setMaximum(1000)
+            sb.setDecimals(18)
+            vl.addWidget(sb)
+            hl = QHBoxLayout()
+            btn_ok = QPushButton('Ok')
+            btn_ok.clicked.connect(d.reject)
+            btn_c = QPushButton('Cancel')
+            btn_c.clicked.connect(d.accept)
+            hl.addWidget(btn_ok)
+            hl.addWidget(btn_c)
+            vl.addLayout(hl)
+            ok = d.exec_()
+            if ok:
+                result = sb.value()
+            else:
+                result = -1
         else:
             result, ok = QInputDialog.getText(None, "", message)
             if not ok:

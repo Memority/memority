@@ -144,4 +144,5 @@ def create_renter_app():
     app.router.add_route('POST', '/unlock/', unlock)
     app.router.add_route('POST', '/request_mmr/', request_mmr)
     app.router.add_route('POST', '/disk_space/', set_disk_space_for_hosting)
+    app.router.add_route('POST', '/change_box_dir/', change_box_dir)
     return app

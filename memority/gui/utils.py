@@ -6,7 +6,7 @@ from bugtracking import raven_client
 
 __all__ = ['unlock_account', 'get_user_role', 'get_address', 'get_balance', 'get_token_price', 'get_host_ip',
            'create_account', 'generate_address', 'set_disk_space_for_hosting', 'get_disk_space_for_hosting',
-           'import_account', 'export_account', 'request_mmr']
+           'import_account', 'export_account', 'request_mmr', 'get_space_used', 'get_box_gir', 'change_box_dir']
 
 
 def unlock_account(_password):
@@ -50,6 +50,18 @@ async def get_balance(session):
     result = await fetch('/user/balance/', session)
     if result.get('status') == 'success':
         return result.get('data').get('balance')
+
+
+async def get_space_used(session):
+    result = await fetch('/info/space_used/', session)
+    if result.get('status') == 'success':
+        return result.get('data').get('space_used')
+
+
+async def get_box_gir(session):
+    result = await fetch('/info/boxes_dir/', session)
+    if result.get('status') == 'success':
+        return result.get('data').get('boxes_dir')
 
 
 async def get_token_price(session):
@@ -141,3 +153,7 @@ async def export_account(filename, session):
 
 async def set_disk_space_for_hosting(disk_space, session):
     await session.post(f'{settings.daemon_address}/disk_space/', json={"disk_space": disk_space})
+
+
+async def change_box_dir(box_dir, session):
+    await session.post(f'{settings.daemon_address}/change_box_dir/', json={"box_dir": box_dir})
