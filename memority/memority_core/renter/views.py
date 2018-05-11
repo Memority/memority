@@ -481,7 +481,8 @@ async def create_account(request: web.Request):
                         "status": "error",
                         "message": "Your computer is not accessible by IP.\n"
                                    "If you are connected via a router, configure port 9378 forwarding "
-                                   "(you can find out how to do this in the manual for your router) and try again."
+                                   "(you can find out how to do this in the manual for your router) and try again.\n"
+                                   "If you can not do it yourself, contact your Internet Service Provider."
                     },
                     status=400
                 )
