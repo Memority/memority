@@ -1,26 +1,28 @@
 import aiohttp
 import asyncio
 import contextlib
+import locale
 import logging
 import os
+import shutil
 from aiohttp import web, ClientConnectorError
 from functools import partial
 from sqlalchemy.exc import IntegrityError
 
 import smart_contracts
 from bugtracking import raven_client
-from models import Host, RenterFile
+from models import Host, RenterFile, HosterFile
 from settings import settings
 from smart_contracts import client_contract, token_contract, memo_db_contract, import_private_key_to_eth
 from smart_contracts.smart_contract_api import wait_for_transaction_completion
-from utils import ask_for_password, check_first_run, DecryptionError, get_ip
+from utils import ask_for_password, check_first_run, DecryptionError, get_ip, check_if_white_ip
 
 # ToDo: review if all these views are required
 
 
 __all__ = ['upload_file', 'download_file', 'list_files', 'view_config', 'set_disk_space_for_hosting',
            'upload_to_hoster', 'view_user_info', 'create_account', 'unlock', 'import_account', 'export_account',
-           'request_mmr']
+           'request_mmr', 'change_box_dir']
 
 logger = logging.getLogger('memority')
 
@@ -119,12 +121,17 @@ async def upload_file(**kwargs):
 
     if not await token_contract.get_deposit(file_hash=file.hash):
         token_balance = token_contract.get_mmr_balance()
+        price = f'{token_contract.wmmr_to_mmr(token_contract.tokens_per_byte_hour * file.size * 10 * 24 * 14):.18f}'\
+            .replace('.', locale.localeconv().get('decimal_point', '.'))
         tokens_to_deposit = await ask_user_for__(
             'tokens_to_deposit',
             'Choose token amount for file deposit\n'
-            f'({token_contract.wmmr_to_mmr(token_contract.tokens_per_byte_hour*file.size*10*24*14)} MMR for 2 weeks)',
+            f'({price} MMR for 2 weeks)',
             type_='float'
         )
+        if tokens_to_deposit == -1:
+            notify_user('Cancelled.')
+            return _error_response('Cancelled.')
         if not tokens_to_deposit:
             return _error_response('Invalid value')
         tokens_to_deposit = float(tokens_to_deposit)
@@ -379,6 +386,16 @@ async def view_config(request: web.Request, *args, **kwargs):
             return web.json_response({"status": "error", "details": "forbidden"})
         if name == 'host_ip':
             res = memo_db_contract.get_host_ip(settings.address)
+        elif name == 'space_used':
+            res = HosterFile.get_total_size()
+            if res < 1024:
+                res = f'{res} B'
+            elif res < 1024 ** 2:
+                res = f'{res / 1024:.2f} KB'
+            elif res < 1024 ** 3:
+                res = f'{res / 1024 ** 2:.2f} MB'
+            else:
+                res = f'{res / 1024 ** 3:.2f} GB'
         else:
             res = settings.__getattr__(name)
         if res:
@@ -457,11 +474,18 @@ async def create_account(request: web.Request):
         elif role == 'host':
             ip = await get_ip()
             ip = f'{ip}:{settings.hoster_app_port}'
-            await memo_db_contract.add_or_update_host(ip=ip)
-        elif role == 'both':
-            await client_contract.deploy()
-            ip = await get_ip()
-            ip = f'{ip}:{settings.hoster_app_port}'
+            ok = await check_if_white_ip(ip)
+            if not ok:
+                return web.json_response(
+                    {
+                        "status": "error",
+                        "message": "Your computer is not accessible by IP.\n"
+                                   "If you are connected via a router, configure port 9378 forwarding "
+                                   "(you can find out how to do this in the manual for your router) and try again.\n"
+                                   "If you can not do it yourself, contact your Internet Service Provider."
+                    },
+                    status=400
+                )
             await memo_db_contract.add_or_update_host(ip=ip)
         return web.json_response({"status": "success"}, status=201)
     except:
@@ -502,7 +526,7 @@ async def unlock(request: web.Request):
 async def request_mmr(request):
     data = await request.json()
     key = data.get('key')
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         async with session.post(
                 'https://api.memority.io/api/app/new',
                 json={
@@ -531,4 +555,17 @@ async def set_disk_space_for_hosting(request: web.Request):
     data = await request.json()
     disk_space = data.get('disk_space')
     settings.disk_space_for_hosting = disk_space
+    return web.json_response({"status": "success"})
+
+
+async def change_box_dir(request: web.Request):
+    data = await request.json()
+    box_dir = os.path.normpath(data.get('box_dir'))
+    if box_dir == os.path.normpath(settings.boxes_dir):
+        return web.json_response({"status": "success"})
+    from_dir = settings.boxes_dir
+    for filename in os.listdir(from_dir):
+        shutil.move(os.path.join(from_dir, filename), os.path.join(box_dir, filename))
+    os.rmdir(from_dir)
+    settings.boxes_dir = box_dir
     return web.json_response({"status": "success"})
