@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
+    <width>610</width>
     <height>150</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
@@ -44,8 +50,8 @@ border: none;</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>578</width>
-        <height>128</height>
+        <width>598</width>
+        <height>138</height>
        </rect>
       </property>
       <property name="styleSheet">
@@ -89,28 +95,28 @@ border: none;</string>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLabel" name="label_5">
+          <widget class="QLabel" name="uploaded_on_display">
            <property name="text">
             <string>2018-04-13 6:57 UTC</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLabel" name="label_6">
+          <widget class="QLabel" name="name_display">
            <property name="text">
             <string>kitty.jpg</string>
            </property>
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLabel" name="label_7">
+          <widget class="QLabel" name="hash_display">
            <property name="text">
             <string>jkjfhbdshjfhdsfbjldsjfhbsdhjlfjdhsbfjhdsljfhbdsjhfl</string>
            </property>
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QLabel" name="label_8">
+          <widget class="QLabel" name="deposit_end_display">
            <property name="text">
             <string>2018-04-13 6:57 UTC</string>
            </property>
@@ -138,7 +144,7 @@ border: none;</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QPushButton" name="pushButton_30">
+           <widget class="QPushButton" name="download_btn">
             <property name="styleSheet">
              <string notr="true">background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
 border: none;
@@ -151,7 +157,7 @@ color: #fff;</string>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_31">
+           <widget class="QPushButton" name="prolong_deposit_btn">
             <property name="styleSheet">
              <string notr="true">background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
 border: none;

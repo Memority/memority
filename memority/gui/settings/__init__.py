@@ -57,7 +57,7 @@ class Settings:
 
     @property
     def daemon_address(self):
-        return f'http://127.0.0.1:{self.renter_app_port}'
+        return f'127.0.0.1:{self.renter_app_port}'
 
     @classmethod
     def load(cls):
@@ -98,6 +98,10 @@ class Settings:
     @property
     def ui_create_account(self):
         return os.path.join(self.ui_dir, 'create_account.ui')
+
+    @property
+    def ui_create_deposit_for_file(self):
+        return os.path.join(self.ui_dir, 'create_deposit_for_file.ui')
 
 
 _base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))

@@ -27,7 +27,7 @@ __all__ = ['upload_file', 'download_file', 'list_files', 'view_config', 'set_dis
 logger = logging.getLogger('memority')
 
 
-async def ask_user_for__(details, message, type_):
+async def ask_user_for_deposit_size(details, data):
     return NotImplemented
 
 
@@ -121,13 +121,12 @@ async def upload_file(**kwargs):
 
     if not await token_contract.get_deposit(file_hash=file.hash):
         token_balance = token_contract.get_mmr_balance()
-        price = f'{token_contract.wmmr_to_mmr(token_contract.tokens_per_byte_hour * file.size * 10 * 24 * 14):.18f}'\
-            .replace('.', locale.localeconv().get('decimal_point', '.'))
-        tokens_to_deposit = await ask_user_for__(
+        tokens_to_deposit = await ask_user_for_deposit_size(
             'tokens_to_deposit',
-            'Choose token amount for file deposit\n'
-            f'({price} MMR for 2 weeks)',
-            type_='float'
+            data={
+                "size": file.size,
+                "price_per_hour": token_contract.wmmr_to_mmr(token_contract.tokens_per_byte_hour * file.size * 10)
+            }
         )
         if tokens_to_deposit == -1:
             notify_user('Cancelled.')

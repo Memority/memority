@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>932</width>
-    <height>675</height>
+    <width>1163</width>
+    <height>785</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -117,12 +117,41 @@ QScrollBar:horizontal { border: 2px solid grey; background: #32CC99; height: 15p
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QTextBrowser" name="textBrowser">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>15</height>
+      </size>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Noto Sans'; font-size:14px; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:14px;&quot;&gt;This is an Alpha version of Memority app. It might be unstable, have bugs and errors. &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:14px;&quot;&gt;Please keep in mind that in some cases your stored data may be lost, although we`ll do everything in our power to prevent this. &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:14px;&quot;&gt;If you`ve encountered a bug, please see if there is a new version on &lt;/span&gt;&lt;a href=&quot;https://memority.io/&quot;&gt;&lt;span style=&quot; font-size:14px; text-decoration: underline; color:#2980b9;&quot;&gt;https://memority.io&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:14px;&quot;&gt;. Perhaps we have already fixed it. If not, send us a report to &lt;/span&gt;&lt;a href=&quot;mailto:support@memority.io&quot;&gt;&lt;span style=&quot; font-size:14px; text-decoration: underline; color:#2980b9;&quot;&gt;support@memority.io&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:14px;&quot;&gt;. &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:14px;&quot;&gt;You can see the instructions on how to use the application on &lt;/span&gt;&lt;a href=&quot;https://memority.io/how-to-use-app/&quot;&gt;&lt;span style=&quot; font-size:14px; text-decoration: underline; color:#2980b9;&quot;&gt;https://memority.io/how-to-use-app/&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:14px;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="styleSheet">
       <string notr="true">background: rgba(255,255,255, 30)</string>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="Wallet">
       <property name="styleSheet">
@@ -147,8 +176,8 @@ border: 1px solid rgba(255,255,255,0);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>906</width>
-            <height>458</height>
+            <width>1117</width>
+            <height>419</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -249,6 +278,18 @@ padding: 10px 20px;
               <layout class="QHBoxLayout" name="horizontalLayout_3">
                <item>
                 <widget class="QLineEdit" name="address_display">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>350</width>
+                   <height>0</height>
+                  </size>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">background: rgba(255, 255, 255, 30);
 max-height: 30px;
@@ -517,8 +558,8 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>908</width>
-            <height>460</height>
+            <width>1139</width>
+            <height>400</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -591,8 +632,8 @@ border: 	1px solid  rgba(255,255,255, 30);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>894</width>
-                <height>398</height>
+                <width>1125</width>
+                <height>338</height>
                </rect>
               </property>
               <property name="styleSheet">
@@ -606,30 +647,34 @@ border: 	1px solid  rgba(255,255,255, 30);</string>
                 <number>11</number>
                </property>
                <item>
-                <widget class="QLabel" name="label_15">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">border: none;</string>
-                 </property>
-                 <property name="text">
-                  <string>No files uploaded</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="verticalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
+                <layout class="QVBoxLayout" name="file_list_scrollarea_layout">
+                 <item>
+                  <widget class="QLabel" name="msg_no_files">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">border: none;</string>
+                   </property>
+                   <property name="text">
+                    <string>No files uploaded</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="file_list_spacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -760,8 +805,8 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>908</width>
-            <height>460</height>
+            <width>1139</width>
+            <height>400</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -848,7 +893,7 @@ padding: 10px 20px;
 }</string>
                </property>
                <property name="text">
-                <string>Become hoster</string>
+                <string>Become a hoster</string>
                </property>
               </widget>
              </item>

@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>361</width>
+    <width>398</width>
     <height>180</height>
    </rect>
   </property>
@@ -79,7 +79,7 @@ border: none;
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>349</width>
+        <width>386</width>
         <height>168</height>
        </rect>
       </property>
@@ -90,7 +90,7 @@ border: none;
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paste your Alpha Tester Key here.&lt;br/&gt;You can get it after registering on &lt;a href=&quot;https://memority.io&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;https://memority.io&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paste your Alpha Tester Key here.&lt;br/&gt;You can get it after registering on &lt;a href=&quot;https://memority.io&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;https://memority.io/alpha&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="openExternalLinks">
           <bool>true</bool>

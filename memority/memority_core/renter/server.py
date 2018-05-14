@@ -20,12 +20,11 @@ VIEWS = {
 }
 
 
-async def ask_for_smth(ws: web.WebSocketResponse, details, message, type_):
+async def ask_user_for_deposit_size(ws: web.WebSocketResponse, details, data):
     await ws.send_json({
         "status": "action_needed",
         "details": details,
-        "message": message,
-        "type": type_
+        "data": data
     })
     try:
         resp = await ws.receive_json()
@@ -36,8 +35,7 @@ async def ask_for_smth(ws: web.WebSocketResponse, details, message, type_):
 
 async def notify_user(ws: web.WebSocketResponse, message):
     await ws.send_json({
-        "status": "success",
-        "details": "info",
+        "status": "info",
         "message": message
     })
 
@@ -46,7 +44,7 @@ async def websocket_handler(request):
     ws = web.WebSocketResponse()
     await ws.prepare(request)
 
-    renter.views.ask_user_for__ = partial(ask_for_smth, ws)
+    renter.views.ask_user_for_deposit_size = partial(ask_user_for_deposit_size, ws)
     renter.views.notify_user = partial(notify_user, ws)
 
     with contextlib.suppress(CancelledError):

@@ -1,11 +1,16 @@
 import sys
 
 import contextlib
+import json
+import os
 import requests
 from PyQt5 import uic
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtNetwork import QAbstractSocket
+from PyQt5.QtWebSockets import QWebSocket
 from PyQt5.QtWidgets import *
+from datetime import datetime, timedelta
 from quamash import QApplication
 
 from settings import settings
@@ -104,20 +109,24 @@ class DaemonInterface:
             msg = data.get('message')
             return False, f'Account creation failed.\n{msg}'
 
+    def get_files(self):
+        resp = requests.get(f'{self.daemon_address}/files/').json()
+        return resp.get('data').get('files')
+
 
 class MainWindow(QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.daemon_interface = DaemonInterface(settings.daemon_address)
-        # self.ws_client = QWebSocket()
-        # self.ws_client.error.connect(self.error)
-        # self.ws_client.open(QUrl(f'ws://{settings.daemon_address}'))
-        # self.ws_client.textMessageReceived.connect(self.on_msg_received)
+        self.daemon_interface = DaemonInterface(f'http://{settings.daemon_address}')
         self.ui: QWidget = uic.loadUi(settings.ui_main_window)
         self.setup_ui()
         self.ensure_daemon_running()
         self.unlock_account()
+        self.ws_client = QWebSocket()
+        self.ws_client.error.connect(self.ws_error)
+        self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
+        self.ws_client.open(QUrl(f'ws://{settings.daemon_address}'))
         sg = QDesktopWidget().screenGeometry()
         widget = self.geometry()
         self.move(
@@ -136,10 +145,59 @@ class MainWindow(QMainWindow):
         self.ui.refresh_btn.clicked.connect(self.refresh)
         self.ui.copy_address_btn.clicked.connect(self.copy_address_to_clipboard)
         self.ui.create_account_btn.clicked.connect(self.create_account)
+        self.ui.upload_file_btn.clicked.connect(self.upload_file)
+
+    def clear_layout(self, layout):
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+                else:
+                    self.clear_layout(item.layout())
 
     def log(self, msg):
         self.ui.log_widget.appendPlainText(msg)
         self.ui.log_widget.moveCursor(QTextCursor.End)
+
+    @staticmethod
+    def error(msg):
+        QMessageBox.critical(None, 'Error', msg)
+
+    @staticmethod
+    def notify(msg):
+        QMessageBox.information(None, 'Info', msg)
+
+    def ws_send(self, data: dict):
+        self.ws_client.sendTextMessage(json.dumps(data))
+
+    @pyqtSlot(QAbstractSocket.SocketError)
+    def ws_error(self, error_code):
+        self.log(f'Error {error_code}: {self.ws_client.errorString()}')
+        self.error(self.ws_client.errorString())
+
+    @pyqtSlot(str)
+    def ws_on_msg_received(self, payload: str):
+        try:
+            data = json.loads(payload)
+        except json.JSONDecodeError as err:
+            self.error(str(err))
+            return
+        status = data.get('status')
+        if status == 'info':
+            self.log(data.get('message'))
+        elif status == 'action_needed':
+            if data.get('details') == 'tokens_to_deposit':
+                self.choose_tokens_for_deposit(**data.get('data', {}))
+        elif status == 'success':
+            if data.get('details') == 'uploaded':
+                self.notify('File successfully uploaded!')
+            elif data.get('details') == 'downloaded':
+                self.notify('File successfully downloaded!')
+            self.refresh_files_tab()
+        elif status == 'error':
+            self.error(data.get('message'))
 
     @pyqtSlot()
     def refresh(self):
@@ -176,7 +234,20 @@ class MainWindow(QMainWindow):
         self.ui.balance_display.setText(f'{balance} MMR')
 
     def refresh_files_tab(self):
-        ...
+        self.ui.file_list_scrollarea_layout: QVBoxLayout
+        self.ui.file_list_spacer: QSpacerItem
+        files = self.daemon_interface.get_files()
+        if not files:
+            return
+        self.clear_layout(self.ui.file_list_scrollarea_layout)
+        for file in files:
+            file_list_item = uic.loadUi(settings.ui_file_list_item)
+            file_list_item.uploaded_on_display.setText(file.get('timestamp'))
+            file_list_item.name_display.setText(file.get('name'))
+            file_list_item.hash_display.setText(file.get('hash'))
+            file_list_item.deposit_end_display.setText(file.get('deposit_ends_on'))
+            self.ui.file_list_scrollarea_layout.addWidget(file_list_item)
+        self.ui.file_list_scrollarea_layout.addItem(QSpacerItem(QSizePolicy.Expanding, QSizePolicy.Expanding, 0, 0))
 
     def refresh_hosting_tab(self):
         ...
@@ -221,13 +292,13 @@ class MainWindow(QMainWindow):
         password2 = generate_address_dialog.password2.text()
 
         if password1 != password2:
-            QMessageBox.critical(None, 'Error', 'Passwords don`t match!')
+            self.error('Passwords don`t match!')
             return
 
         self.log(f'Generating address...')
         ok, result = self.daemon_interface.generate_address(password=password1)
         if not ok:
-            QMessageBox.critical(None, 'Error', result)
+            self.error(result)
             return
         self.log(f'Your address: {result}')
         self.refresh()
@@ -241,8 +312,9 @@ class MainWindow(QMainWindow):
                  'Do not close the application.')
         ok, result = self.daemon_interface.request_mmr(key=add_key_dialog.key_input.text())
         if not ok:
-            QMessageBox.critical(None, 'Error', result)
+            self.error(result)
             return
+        self.refresh()
         self.log(f'Tokens received. Your balance: {result} MMR')
         # endregion
 
@@ -262,19 +334,77 @@ class MainWindow(QMainWindow):
             self.log('Creating client account. When finished, the "My Files" tab appears.')
             ok, result = self.daemon_interface.create_account(role='client')
             if not ok:
-                QMessageBox.critical(None, 'Error', result)
+                self.error(result)
                 return
-            self.log('Client account successfully created!')
             self.refresh()
+            self.log('Client account successfully created!')
         if role in ['host', 'both']:
             self.log('Creating hoster account. When finished, the "Hosting statistics" tab appears.')
             ok, result = self.daemon_interface.create_account(role='host')
             if not ok:
-                QMessageBox.critical(None, 'Error', result)
+                self.error(result)
                 return
-            self.log('Hoster account successfully created!')
             self.refresh()
+            self.log('Hoster account successfully created!')
         # endregion
+
+    @pyqtSlot()
+    def upload_file(self):
+        filename, _ = QFileDialog.getOpenFileName(
+            None,
+            "Select file",
+            directory=os.getenv('HOME', None) or os.getenv('HOMEPATH', None),
+        )
+        if filename:
+            self.ws_send(
+                {
+                    "command": "upload",
+                    "kwargs": {
+                        "path": filename
+                    }
+                }
+            )
+
+    def choose_tokens_for_deposit(self, size, price_per_hour):
+        dialog: QDialog = uic.loadUi(settings.ui_create_deposit_for_file)
+        dialog.calendarWidget: QCalendarWidget
+        dialog.deposit_size_input: QDoubleSpinBox
+
+        @pyqtSlot(float)
+        def upd_date(value: float):
+            try:
+                deposit_end = datetime.now() + timedelta(hours=value // price_per_hour)
+            except OverflowError:
+                deposit_end = datetime.max
+            deposit_end = QDate.fromString(deposit_end.strftime('%Y-%m-%d'), 'yyyy-MM-dd')
+            dialog.calendarWidget.setSelectedDate(deposit_end)
+
+        @pyqtSlot(QDate)
+        def upd_value(date: QDate):
+            deposit_end = date.toPyDate()
+            hours = (deposit_end - datetime.now().date()).days * 24
+            value = hours * price_per_hour
+            dialog.deposit_size_input.setValue(value)
+
+        if size < 1024:
+            size = f'{size} B'
+        elif size < 1024 ** 2:
+            size = f'{size / 1024:.2f} KB'
+        elif size < 1024 ** 3:
+            size = f'{size / 1024 ** 2:.2f} MB'
+        else:
+            size = f'{size / 1024 ** 3:.2f} GB'
+        dialog.file_size_display.setText(size)
+        dialog.calendarWidget.clicked[QDate].connect(upd_value)
+        dialog.deposit_size_input.valueChanged.connect(upd_date)
+
+        if dialog.exec_():
+            result = dialog.deposit_size_input.value()
+            if not result:
+                result = -1
+        else:
+            result = -1
+        return self.ws_send({'status': 'success', 'result': result})
 
     def closeEvent(self, event):
         reply = QMessageBox().question(
