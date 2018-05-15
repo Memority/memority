@@ -26,7 +26,7 @@ mkdir dist/Memority\ Core.app/Contents/MacOS/settings
 mkdir dist/Memority\ Core.app/Contents/MacOS/smart_contracts
 mkdir dist/Memority\ Core.app/Contents/MacOS/geth
 cp img/icon.ico dist/Memority\ Core.app/Contents/MacOS
-cp memority/memority_core/settings/defaults.yml dist/Memority\ Core.app/Contents/MacOS/settings
+cp memority/settings/defaults.yml dist/Memority\ Core.app/Contents/MacOS/settings
 cp -r memority/smart_contracts/binaries dist/Memority\ Core.app/Contents/MacOS/smart_contracts
 cp -r memority/smart_contracts/binaries dist/Memority\ Core.app/Contents/MacOS/smart_contracts
 cp -r memority/smart_contracts/install dist/Memority\ Core.app/Contents/MacOS/smart_contracts
