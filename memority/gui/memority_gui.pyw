@@ -139,6 +139,16 @@ class DaemonInterface:
             return False, msg
         return True, ...
 
+    def get_user_ip(self):
+        result = requests.get(f'{self.daemon_address}/info/host_ip/').json()
+        if result.get('status') == 'success':
+            return result.get('data').get('host_ip')
+
+    def get_space_used(self):
+        result = requests.get(f'{self.daemon_address}/info/space_used/').json()
+        if result.get('status') == 'success':
+            return result.get('data').get('space_used')
+
 
 # noinspection PyArgumentList
 class MainWindow(QMainWindow):
@@ -294,7 +304,12 @@ class MainWindow(QMainWindow):
         self.ui.file_list_scrollarea_layout.addItem(QSpacerItem(QSizePolicy.Expanding, QSizePolicy.Expanding, 0, 0))
 
     def refresh_hosting_tab(self):
-        ...
+        address = self.daemon_interface.get_user_address()
+        ip = self.daemon_interface.get_user_ip() or 'Not in host list.'
+        space_used = self.daemon_interface.get_space_used()
+        self.ui.hosting_addr_display.setText(address)
+        self.ui.hosting_ip_display.setText(ip)
+        self.ui.hosting_space_display.setText(space_used)
 
     def refresh_settings_tab(self):
         role = self.daemon_interface.get_user_role()
