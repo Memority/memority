@@ -37,7 +37,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgba(57, 20, 167, 255), stop:0.995025 rgb(175, 26, 146));
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgba(57, 20, 167, 255), stop:0.995025 rgb(142, 48, 177));
 color: #fff;
 }
 QDialogButtonBox{

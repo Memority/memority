@@ -31,7 +31,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgb(85, 48, 176), stop:0.995025 rgb(181, 53, 160));
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgb(85, 48, 176), stop:0.995025 rgb(142, 48, 177));
 color: #fff;
 }</string>
   </property>
