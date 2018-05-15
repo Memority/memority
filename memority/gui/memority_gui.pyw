@@ -175,6 +175,7 @@ class MainWindow(QMainWindow):
         self.ui.create_account_btn.clicked.connect(self.create_account)
         self.ui.import_account_btn.clicked.connect(self.import_account)
         self.ui.export_account_btn.clicked.connect(self.export_account)
+        self.ui.become_hoster_btn.clicked.connect(self.become_a_hoster)
         self.ui.upload_file_btn.clicked.connect(self.upload_file)
 
     def clear_layout(self, layout):
@@ -190,10 +191,17 @@ class MainWindow(QMainWindow):
     def log(self, msg):
         self.ui.log_widget.appendPlainText(msg)
         self.ui.log_widget.moveCursor(QTextCursor.End)
+        self.ui.log_widget.repaint()
 
-    def error(self, msg):
+    def error(self, msg: str):
         self.log(msg)
-        QMessageBox.critical(None, 'Error', msg)
+        msg = msg.replace('\n', '<br/>')
+        dialog: QDialog = uic.loadUi(settings.ui_error_msg)
+        dialog.msg.setText(
+            f'<html><body>{msg}</html></body>'
+        )
+        dialog.adjustSize()
+        dialog.exec_()
 
     @staticmethod
     def notify(msg):
@@ -412,6 +420,18 @@ class MainWindow(QMainWindow):
                 self.log(f'Exported to {filename}')
             else:
                 self.error(result)
+
+    @pyqtSlot()
+    def become_a_hoster(self):
+        self.log('Adding your address and IP to contract...\n'
+                 'This can take up to 60 seconds, as transaction is being written in blockchain.\n'
+                 'When finished, the "Hosting statistics" tab appears.')
+        ok, result = self.daemon_interface.create_account(role='host')
+        if ok:
+            self.log('Successfully added to hoster list!')
+        else:
+            self.error(result)
+        self.refresh()
 
     @pyqtSlot()
     def upload_file(self):

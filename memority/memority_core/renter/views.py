@@ -474,7 +474,9 @@ async def create_account(request: web.Request):
             ip = await get_ip()
             ip = f'{ip}:{settings.hoster_app_port}'
             ok = await check_if_white_ip(ip)
-            if not ok:
+            if ok:
+                await memo_db_contract.add_or_update_host(ip=ip)
+            else:
                 return web.json_response(
                     {
                         "status": "error",
@@ -485,7 +487,6 @@ async def create_account(request: web.Request):
                     },
                     status=400
                 )
-            await memo_db_contract.add_or_update_host(ip=ip)
         return web.json_response({"status": "success"}, status=201)
     except:
         # ToDo: cleanup

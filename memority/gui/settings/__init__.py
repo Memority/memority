@@ -111,6 +111,10 @@ class Settings:
     def ui_submit_exit(self):
         return os.path.join(self.ui_dir, 'submit_exit.ui')
 
+    @property
+    def ui_error_msg(self):
+        return os.path.join(self.ui_dir, 'error_msg.ui')
+
 
 _base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 _platform_name = platform.system()
