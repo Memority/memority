@@ -1,0 +1,16 @@
+key_len: 32
+
+hosters_per_file: 10
+host_list_obsolescence_days: 1
+
+hoster_app_host: 0.0.0.0
+hoster_app_port: 9378
+renter_app_host: 127.0.0.1
+renter_app_port: 9379
+
+token_contract_address: '0x8C6beb352014dA46Ba85B5164f0b95DAEF5375d5'
+memodb_contract_address: '0x46FDE65ce40E753B08106560E2Bc82eb28715198'
+w3_provider: 'ipc'
+w3_url: ''
+
+disk_space_for_hosting: 10
