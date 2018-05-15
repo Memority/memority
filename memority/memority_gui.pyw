@@ -1,9 +1,12 @@
+import errno
 import sys
 
+import asyncio
 import contextlib
 import json
 import os
 import requests
+import socket
 from PyQt5 import uic
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -12,15 +15,47 @@ from PyQt5.QtWebSockets import QWebSocket
 from PyQt5.QtWidgets import *
 from datetime import datetime, timedelta
 from functools import partial
+from quamash import QEventLoop
 
-from ui_settings import ui_settings
+from bugtracking import raven_client
+from memority_core import MemorityCore
 from settings import settings as daemon_settings
+from ui_settings import ui_settings
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 
 if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+
+
+class R:
+
+    def __init__(self, logger_widget) -> None:
+        self.logger_widget = logger_widget
+
+    def write(self, msg):
+        if msg.strip():
+            self.logger_widget.appendPlainText(msg.strip())
+            self.logger_widget.moveCursor(QTextCursor.End)
+
+
+class LogWindow(QMainWindow):
+
+    def __init__(self, _memority_core, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.memority_core = _memority_core
+
+        self.setMinimumSize(QSize(1024, 480))
+        self.setWindowTitle("Memority Core")
+        self.logger = QPlainTextEdit()
+        self.logger.setReadOnly(True)
+        self.logger.document().setMaximumBlockCount(10000)
+        self.setCentralWidget(self.logger)
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
 
 
 class DaemonInterface:
@@ -45,7 +80,7 @@ class DaemonInterface:
             return resp.get('data').get('role')
 
     def ping_daemon(self):
-        with contextlib.suppress(requests.exceptions.ConnectionError):
+        with contextlib.suppress(Exception):
             resp = requests.get(f'{self.daemon_address}/ping/')
             return resp.status_code == 200
 
@@ -159,6 +194,7 @@ class DaemonInterface:
 
 # noinspection PyArgumentList
 class MainWindow(QMainWindow):
+    daemon_started_signal = pyqtSignal(name="daemon_started_signal")
 
     # noinspection PyUnresolvedReferences
     def __init__(self, *args, **kwargs):
@@ -166,12 +202,10 @@ class MainWindow(QMainWindow):
         self.daemon_interface = DaemonInterface(f'http://{daemon_settings.daemon_address}')
         self.ui: QWidget = uic.loadUi(ui_settings.ui_main_window)
         self.setup_ui()
-        self.ensure_daemon_running()
-        self.unlock_account()
+        self.tray_icon = self.setup_tray_icon()
+        self.tray_icon.show()
+        self.ensure_addr_not_in_use()
         self.ws_client = QWebSocket()
-        self.ws_client.error.connect(self.ws_error)
-        self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
-        self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}'))
         sg = QDesktopWidget().screenGeometry()
         widget = self.ui.geometry()
         self.ui.move(
@@ -179,6 +213,20 @@ class MainWindow(QMainWindow):
             int((sg.height() - widget.height()) / 3)
         )
         self.ui.show()
+        self.daemon_started_signal.connect(self.on_daemon_started)
+        self.timer = QTimer(self)
+        self.timer.setInterval(500)
+        self.timer.timeout.connect(self.ping_daemon)
+
+    def ping_daemon(self):
+        if self.daemon_interface.ping_daemon():
+            self.daemon_started_signal.emit()
+
+    def on_daemon_started(self):
+        self.unlock_account()
+        self.ws_client.error.connect(self.ws_error)
+        self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
+        self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}'))
         self.refresh()
 
     def setup_ui(self):
@@ -199,6 +247,30 @@ class MainWindow(QMainWindow):
         self.ui.disk_space_input.valueChanged.connect(self.enable_hosting_settings_controls)
         self.ui.directory_input.textChanged.connect(self.enable_hosting_settings_controls)
         self.ui.upload_file_btn.clicked.connect(self.upload_file)
+
+    def setup_tray_icon(self):
+        tray_icon = QSystemTrayIcon(self)
+        tray_icon.setIcon(QIcon(os.path.join(daemon_settings.base_dir, 'icon.ico')))
+
+        show_action = QAction("Show", self)
+        hide_action = QAction("Hide", self)
+        show_log_action = QAction("Show log", self)
+        hide_log_action = QAction("Hide log", self)
+        quit_action = QAction("Exit", self)
+        show_action.triggered.connect(self.show)
+        hide_action.triggered.connect(self.hide)
+        show_log_action.triggered.connect(log_window.show)
+        hide_log_action.triggered.connect(log_window.hide)
+        quit_action.triggered.connect(self.shutdown)
+
+        tray_menu = QMenu()
+        tray_menu.addAction(show_action)
+        tray_menu.addAction(hide_action)
+        tray_menu.addAction(show_log_action)
+        tray_menu.addAction(hide_log_action)
+        tray_menu.addAction(quit_action)
+        tray_icon.setContextMenu(tray_menu)
+        return tray_icon
 
     def clear_layout(self, layout):
         if layout is not None:
@@ -574,29 +646,30 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         dialog: QDialog = uic.loadUi(ui_settings.ui_submit_exit)
         if dialog.exec_():  # submitted
-            # ToDo: running in tray
             self.shutdown()
             event.accept()
         else:
             event.ignore()
 
-    def ensure_daemon_running(self):
-        while True:
-            daemon_running = self.daemon_interface.ping_daemon()
-            if daemon_running:
-                return
-            _ok = QMessageBox().question(
-                None,
-                "Is the Memority Core running?",
-                f'Can`t connect to Memority Core. Is it running?\n'
-                f'Please launch Memority Core before Memority UI.\n'
-                f'If you have already started Memority Core, wait a few seconds and try again.',
-                QMessageBox.Ok | QMessageBox.Cancel,
-                QMessageBox.Ok
-            )
-            if _ok != QMessageBox.Ok:
-                self.shutdown()
-                sys.exit()
+    def ensure_addr_not_in_use(self):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('127.0.0.1', daemon_settings.renter_app_port))
+            s.close()
+            del s
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('127.0.0.1', daemon_settings.hoster_app_port))
+            s.close()
+            del s
+        except OSError as err:
+            if err.errno == errno.EADDRINUSE:
+                self.error(
+                    'Ports are already in use!\n'
+                    'Seems like Memority Core is already running or another application uses them.'
+                )
+                sys.exit(0)
+            else:
+                raven_client.captureException()
 
     def unlock_account(self):
         if not self.daemon_interface.is_first_run():
@@ -613,12 +686,25 @@ class MainWindow(QMainWindow):
                     QMessageBox().critical(None, 'Error!', 'Invalid password!')
                     continue
 
-    def shutdown(self):
-        ...
+    @staticmethod
+    def shutdown():
+        memority_core.cleanup()
+        qApp.quit()
+        sys.exit(0)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    app.setAttribute(Qt.AA_EnableHighDpiScaling)
+    loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
+    memority_core = MemorityCore(
+        event_loop=loop,
+        _password=None,
+        _run_geth=True
+    )
+    log_window = LogWindow(memority_core)
     w = MainWindow()
+    with contextlib.redirect_stdout(R(log_window.logger)):
+        with contextlib.redirect_stderr(R(log_window.logger)):
+            memority_core.run()
     sys.exit(app.exec_())
