@@ -18,6 +18,8 @@ pyinstaller ./memority/memority_core_systray.pyw --name "Memority Core" --hidden
 
 echo "--------------------------------------------------"
 echo "Add files to build"
+mkdir dist/Memority\ UI.app/Contents/MacOS/settings
+cp memority/settings/defaults.yml dist/Memority\ UI.app/Contents/MacOS/settings
 cp -r memority/ui dist/Memority\ UI.app/Contents/MacOS/
 
 mkdir dist/Memority\ Core.app/Contents/MacOS/settings
