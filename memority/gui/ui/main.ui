@@ -1071,6 +1071,9 @@ padding: 10px 20px;
                 </item>
                 <item>
                  <widget class="QPushButton" name="settings_apply_btn">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton{
 background: rgb(0, 170, 234);
@@ -1081,6 +1084,7 @@ QPushButton:disabled{
 background-color: rgba(67, 10, 149, 200);
 border: none;
 padding: 10px 20px;
+color: #bababa;
 }</string>
                   </property>
                   <property name="text">
@@ -1106,6 +1110,9 @@ padding: 10px 20px;
                 </item>
                 <item>
                  <widget class="QPushButton" name="settings_reset_btn">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="styleSheet">
                    <string notr="true">QPushButton{
 background: rgb(0, 170, 234);
@@ -1116,6 +1123,7 @@ QPushButton:disabled{
 background-color: rgba(67, 10, 149, 200);
 border: none;
 padding: 10px 20px;
+color: #bababa;
 }</string>
                   </property>
                   <property name="text">

@@ -176,6 +176,11 @@ class MainWindow(QMainWindow):
         self.ui.import_account_btn.clicked.connect(self.import_account)
         self.ui.export_account_btn.clicked.connect(self.export_account)
         self.ui.become_hoster_btn.clicked.connect(self.become_a_hoster)
+        self.ui.directory_change_btn.clicked.connect(self.change_directory)
+        self.ui.settings_apply_btn.clicked.connect(self.apply_settings)
+        self.ui.settings_reset_btn.clicked.connect(self.reset_settings)
+        self.ui.disk_space_input.valueChanged.connect(self.enable_hosting_settings_controls)
+        self.ui.directory_input.textChanged.connect(self.enable_hosting_settings_controls)
         self.ui.upload_file_btn.clicked.connect(self.upload_file)
 
     def clear_layout(self, layout):
@@ -315,6 +320,9 @@ class MainWindow(QMainWindow):
                 self.ui.become_hoster_btn.show()
         else:
             self.ui.create_account_btn.show()
+
+        self.ui.settings_apply_btn.setDisabled(True)
+        self.ui.settings_reset_btn.setDisabled(True)
 
     @pyqtSlot()
     def copy_address_to_clipboard(self):
@@ -512,6 +520,33 @@ class MainWindow(QMainWindow):
         else:
             result = -1
         return self.ws_send({'status': 'success', 'result': result})
+
+    @pyqtSlot()
+    def enable_hosting_settings_controls(self):
+        self.ui.settings_apply_btn.setEnabled(True)
+        self.ui.settings_reset_btn.setEnabled(True)
+
+    @pyqtSlot()
+    def change_directory(self):
+        directory = QFileDialog.getExistingDirectory(
+            None,
+            "Select Directory",
+            directory=os.getenv('HOME', None) or os.getenv('HOMEPATH', None),
+        )
+        if not directory:
+            return
+        self.ui.directory_input.setText(directory)
+
+    @pyqtSlot()
+    def apply_settings(self):
+        disk_space = self.ui.disk_space_input.value()
+        self.daemon_interface.set_disk_space_for_hosting(disk_space=disk_space)
+        box_dir = self.ui.directory_input.text()
+        self.daemon_interface.change_box_dir(box_dir=box_dir)
+
+    @pyqtSlot()
+    def reset_settings(self):
+        self.refresh_settings_tab()
 
     @pyqtSlot(QEvent)
     def closeEvent(self, event):
