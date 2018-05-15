@@ -103,6 +103,10 @@ class Settings:
     def ui_create_deposit_for_file(self):
         return os.path.join(self.ui_dir, 'create_deposit_for_file.ui')
 
+    @property
+    def ui_enter_password(self):
+        return os.path.join(self.ui_dir, 'enter_password.ui')
+
 
 _base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 _platform_name = platform.system()

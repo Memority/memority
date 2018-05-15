@@ -11,7 +11,7 @@ from PyQt5.QtNetwork import QAbstractSocket
 from PyQt5.QtWebSockets import QWebSocket
 from PyQt5.QtWidgets import *
 from datetime import datetime, timedelta
-from quamash import QApplication
+from functools import partial
 
 from settings import settings
 
@@ -114,8 +114,10 @@ class DaemonInterface:
         return resp.get('data').get('files')
 
 
+# noinspection PyArgumentList
 class MainWindow(QMainWindow):
 
+    # noinspection PyUnresolvedReferences
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.daemon_interface = DaemonInterface(f'http://{settings.daemon_address}')
@@ -246,6 +248,7 @@ class MainWindow(QMainWindow):
             file_list_item.name_display.setText(file.get('name'))
             file_list_item.hash_display.setText(file.get('hash'))
             file_list_item.deposit_end_display.setText(file.get('deposit_ends_on'))
+            file_list_item.download_btn.clicked.connect(partial(self.download_file, file.get('hash')))
             self.ui.file_list_scrollarea_layout.addWidget(file_list_item)
         self.ui.file_list_scrollarea_layout.addItem(QSpacerItem(QSizePolicy.Expanding, QSizePolicy.Expanding, 0, 0))
 
@@ -365,11 +368,33 @@ class MainWindow(QMainWindow):
                 }
             )
 
+    @pyqtSlot()
+    def download_file(self, hash_):
+        directory = QFileDialog.getExistingDirectory(
+            None,
+            "Select Directory",
+            directory=os.getenv('HOME', None) or os.getenv('HOMEPATH', None),
+        )
+        if not directory:
+            self.log('Downloading cancelled.')
+            return
+        self.ws_send(
+            {
+                "command": "download",
+                "kwargs": {
+                    "destination": directory,
+                    "hash": hash_
+                }
+            }
+        )
+
+    # noinspection PyUnresolvedReferences
     def choose_tokens_for_deposit(self, size, price_per_hour):
         dialog: QDialog = uic.loadUi(settings.ui_create_deposit_for_file)
         dialog.calendarWidget: QCalendarWidget
         dialog.deposit_size_input: QDoubleSpinBox
 
+        # noinspection PyTypeChecker,PyCallByClass
         @pyqtSlot(float)
         def upd_date(value: float):
             try:
@@ -441,10 +466,12 @@ class MainWindow(QMainWindow):
     def unlock_account(self):
         if not self.daemon_interface.is_first_run():
             while True:
-                password, ok = QInputDialog.getText(None, "Password", "Password:", QLineEdit.Password)
-                if not ok:
+                password_dialog: QDialog = uic.loadUi(settings.ui_enter_password)
+                password_dialog.password_input.setFocus()
+                if not password_dialog.exec_():
                     self.shutdown()
                     sys.exit()
+                password = password_dialog.password_input.text()
                 if self.daemon_interface.unlock_account(password):
                     break
                 else:
