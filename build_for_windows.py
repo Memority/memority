@@ -82,6 +82,10 @@ def main():
     # region Add files to build
     print('-' * 100)
     print('Add files to build')
+    makedirs(os.path.join('dist', 'memority_gui', 'settings'))
+    shutil.copyfile(
+        os.path.join('memority', 'settings', 'defaults.yml'),
+        os.path.join('dist', 'memority_gui', 'settings', 'defaults.yml'))
     shutil.copytree(
         os.path.join('memority', 'ui'),
         os.path.join('dist', 'memority_gui', 'ui'))
