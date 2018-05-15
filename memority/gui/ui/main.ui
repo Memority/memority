@@ -65,7 +65,7 @@ QTabBar::tab:!selected {
     margin-top: 2px; /* make non-selected tabs look smaller */
 }
 QWidget{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgba(57, 20, 167, 255), stop:0.995025 rgba(232, 15, 175, 255));
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgba(57, 20, 167, 255), stop:0.995025 rgb(175, 26, 146));
 }
 *{
 color: #fff;
@@ -151,7 +151,7 @@ p, li { white-space: pre-wrap; }
       <string notr="true">background: rgba(255,255,255, 30)</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="Wallet">
       <property name="styleSheet">
@@ -176,8 +176,8 @@ border: 1px solid rgba(255,255,255,0);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1129</width>
-            <height>419</height>
+            <width>1149</width>
+            <height>434</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -197,7 +197,7 @@ border: 1px solid rgba(255,255,255,0);</string>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -216,7 +216,7 @@ padding: 10px 20px;
                   <widget class="QPushButton" name="transfer_mmr_btn">
                    <property name="styleSheet">
                     <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -250,7 +250,7 @@ padding: 10px 20px;
                 <widget class="QPushButton" name="refresh_btn">
                  <property name="styleSheet">
                   <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -304,7 +304,7 @@ padding-top: 5px;</string>
                 <widget class="QPushButton" name="copy_address_btn">
                  <property name="styleSheet">
                   <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -558,8 +558,8 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1139</width>
-            <height>400</height>
+            <width>1151</width>
+            <height>436</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -569,7 +569,7 @@ border: 1px solid rgba(255,255,255, 130);</string>
               <widget class="QPushButton" name="upload_file_btn">
                <property name="styleSheet">
                 <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -586,9 +586,15 @@ padding: 10px 20px;
              </item>
              <item>
               <widget class="QPushButton" name="prolong_deposit_btn">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="toolTip">
+                <string>This feature is under development.</string>
+               </property>
                <property name="styleSheet">
                 <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -596,6 +602,7 @@ QPushButton:disabled{
 background-color: rgba(67, 10, 149, 200);
 border: none;
 padding: 10px 20px;
+color: #dbdbdb;
 }</string>
                </property>
                <property name="text">
@@ -632,8 +639,8 @@ border: 	1px solid  rgba(255,255,255, 30);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1125</width>
-                <height>338</height>
+                <width>1137</width>
+                <height>374</height>
                </rect>
               </property>
               <property name="styleSheet">
@@ -805,8 +812,8 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1139</width>
-            <height>400</height>
+            <width>1151</width>
+            <height>436</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -825,7 +832,7 @@ border: 1px solid rgba(255,255,255, 130);</string>
               <widget class="QPushButton" name="create_account_btn">
                <property name="styleSheet">
                 <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -844,7 +851,7 @@ padding: 10px 20px;
               <widget class="QPushButton" name="import_account_btn">
                <property name="styleSheet">
                 <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -863,7 +870,7 @@ padding: 10px 20px;
               <widget class="QPushButton" name="export_account_btn">
                <property name="styleSheet">
                 <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -882,7 +889,7 @@ padding: 10px 20px;
               <widget class="QPushButton" name="become_hoster_btn">
                <property name="styleSheet">
                 <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -1028,7 +1035,7 @@ max-height: 25px;
                    <widget class="QPushButton" name="directory_change_btn">
                     <property name="styleSheet">
                      <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -1066,7 +1073,7 @@ padding: 10px 20px;
                  <widget class="QPushButton" name="settings_apply_btn">
                   <property name="styleSheet">
                    <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }
@@ -1101,7 +1108,7 @@ padding: 10px 20px;
                  <widget class="QPushButton" name="settings_reset_btn">
                   <property name="styleSheet">
                    <string notr="true">QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 }

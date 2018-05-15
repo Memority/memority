@@ -34,14 +34,14 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgba(57, 20, 167, 255), stop:0.995025 rgba(232, 15, 175, 255));
+background: qlineargradient(spread:pad, x1:0, y1:0, x2:0.9801, y2:1, stop:0 rgba(57, 20, 167, 255), stop:0.995025 rgb(175, 26, 146));
 color: #fff;
 }
 QDialogButtonBox{
 	dialog-ok-color: #fff;
 }
 QPushButton{
-background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 179, 246, 255), stop:1 rgba(0, 130, 211, 255));
+background: rgb(0, 170, 234);
 border: none;
 padding: 10px 20px;
 color: #fff;

@@ -113,6 +113,32 @@ class DaemonInterface:
         resp = requests.get(f'{self.daemon_address}/files/').json()
         return resp.get('data').get('files')
 
+    def export_account(self, filename):
+        resp = requests.post(
+            f'{self.daemon_address}/user/export/',
+            json={
+                "filename": filename
+            }
+        )
+        if resp.status_code != 200:
+            data = resp.json()
+            msg = data.get('message')
+            return False, msg
+        return True, ...
+
+    def import_account(self, filename):
+        resp = requests.post(
+            f'{self.daemon_address}/user/import/',
+            json={
+                "filename": filename
+            }
+        )
+        if resp.status_code != 200:
+            data = resp.json()
+            msg = data.get('message')
+            return False, msg
+        return True, ...
+
 
 # noinspection PyArgumentList
 class MainWindow(QMainWindow):
@@ -130,8 +156,8 @@ class MainWindow(QMainWindow):
         self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
         self.ws_client.open(QUrl(f'ws://{settings.daemon_address}'))
         sg = QDesktopWidget().screenGeometry()
-        widget = self.geometry()
-        self.move(
+        widget = self.ui.geometry()
+        self.ui.move(
             int((sg.width() - widget.width()) / 4),
             int((sg.height() - widget.height()) / 3)
         )
@@ -147,6 +173,8 @@ class MainWindow(QMainWindow):
         self.ui.refresh_btn.clicked.connect(self.refresh)
         self.ui.copy_address_btn.clicked.connect(self.copy_address_to_clipboard)
         self.ui.create_account_btn.clicked.connect(self.create_account)
+        self.ui.import_account_btn.clicked.connect(self.import_account)
+        self.ui.export_account_btn.clicked.connect(self.export_account)
         self.ui.upload_file_btn.clicked.connect(self.upload_file)
 
     def clear_layout(self, layout):
@@ -163,8 +191,8 @@ class MainWindow(QMainWindow):
         self.ui.log_widget.appendPlainText(msg)
         self.ui.log_widget.moveCursor(QTextCursor.End)
 
-    @staticmethod
-    def error(msg):
+    def error(self, msg):
+        self.log(msg)
         QMessageBox.critical(None, 'Error', msg)
 
     @staticmethod
@@ -352,6 +380,40 @@ class MainWindow(QMainWindow):
         # endregion
 
     @pyqtSlot()
+    def import_account(self):
+        filename, _ = QFileDialog.getOpenFileName(
+            None,
+            "Select account file",
+            os.path.join(os.getenv('HOME', None) or os.getenv('HOMEPATH', None), 'memority_account.bin'),
+            "*.bin"
+        )
+        if filename:
+            self.log('Importing account...')
+            ok, result = self.daemon_interface.import_account(filename)
+            if ok:
+                self.log(f'Successfully imported {filename}')
+                self.unlock_account()
+            else:
+                self.error(result)
+        self.refresh()
+
+    @pyqtSlot()
+    def export_account(self):
+        filename, _ = QFileDialog.getSaveFileName(
+            None,
+            "Select a location to save your account file.",
+            os.path.join(os.getenv('HOME', None) or os.getenv('HOMEPATH', None), 'memority_account.bin'),
+            "*.bin"
+        )
+        if filename:
+            self.log('Exporting account...')
+            ok, result = self.daemon_interface.export_account(filename)
+            if ok:
+                self.log(f'Exported to {filename}')
+            else:
+                self.error(result)
+
+    @pyqtSlot()
     def upload_file(self):
         filename, _ = QFileDialog.getOpenFileName(
             None,
@@ -431,15 +493,11 @@ class MainWindow(QMainWindow):
             result = -1
         return self.ws_send({'status': 'success', 'result': result})
 
+    @pyqtSlot(QEvent)
     def closeEvent(self, event):
-        reply = QMessageBox().question(
-            self,
-            "Are you sure to quit?",
-            "Are you sure to quit?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        if reply == QMessageBox.Yes:
+        dialog: QDialog = uic.loadUi(settings.ui_submit_exit)
+        if dialog.exec_():  # submitted
+            # ToDo: running in tray
             self.shutdown()
             event.accept()
         else:
