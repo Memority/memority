@@ -58,7 +58,7 @@ def main():
     print('Compile GUI')
     run_subprocess([
         'pyinstaller',
-        os.path.join('memority', 'gui', 'memority_gui.pyw'),
+        os.path.join('memority', 'memority_gui.pyw'),
         f'--icon={os.path.join("img", "icon.ico")}',
         '--windowed'
     ])
@@ -67,7 +67,7 @@ def main():
     print('Compile Core')
     run_subprocess([
         'pyinstaller',
-        os.path.join('memority', 'memority_core', 'memority_core_systray.pyw'),
+        os.path.join('memority', 'memority_core_systray.pyw'),
         '--hidden-import', 'cytoolz.utils',
         '--hidden-import', 'cytoolz._signatures',
         '--hidden-import', 'raven.handlers',
@@ -82,10 +82,9 @@ def main():
     # region Add files to build
     print('-' * 100)
     print('Add files to build')
-    makedirs(os.path.join('dist', 'memority_gui', 'settings'))
-    shutil.copyfile(
-        os.path.join('memority', 'gui', 'settings', 'defaults.yml'),
-        os.path.join('dist', 'memority_gui', 'settings', 'defaults.yml'))
+    shutil.copytree(
+        os.path.join('memority', 'ui'),
+        os.path.join('dist', 'memority_gui', 'ui'))
 
     makedirs(os.path.join('dist', 'memority_core_systray', 'settings'))
     makedirs(os.path.join('dist', 'memority_core_systray', 'smart_contracts'))
@@ -94,16 +93,16 @@ def main():
         os.path.join('img', 'icon.ico'),
         os.path.join('dist', 'memority_core_systray', 'icon.ico'))
     shutil.copyfile(
-        os.path.join('memority', 'memority_core', 'settings', 'defaults.yml'),
+        os.path.join('memority', 'settings', 'defaults.yml'),
         os.path.join('dist', 'memority_core_systray', 'settings', 'defaults.yml'))
     shutil.copytree(
-        os.path.join('memority', 'memority_core', 'smart_contracts', 'binaries'),
+        os.path.join('memority', 'smart_contracts', 'binaries'),
         os.path.join('dist', 'memority_core_systray', 'smart_contracts', 'binaries'))
     shutil.copytree(
-        os.path.join('memority', 'memority_core', 'smart_contracts', 'install'),
+        os.path.join('memority', 'smart_contracts', 'install'),
         os.path.join('dist', 'memority_core_systray', 'smart_contracts', 'install'))
     shutil.copyfile(
-        os.path.join('memority', 'memority_core', 'geth', 'Windows', 'geth.exe'),
+        os.path.join('memority', 'geth', 'Windows', 'geth.exe'),
         os.path.join('dist', 'memority_core_systray', 'geth', 'geth.exe'))
     # endregion
 

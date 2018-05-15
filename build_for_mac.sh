@@ -10,26 +10,25 @@ rm -rf build dist
 
 echo "--------------------------------------------------"
 echo "Compile GUI"
-pyinstaller ./memority/gui/memority_gui.pyw --name "Memority UI" --windowed --icon=img/memority_icon_256.icns
+pyinstaller ./memority/memority_gui.pyw --name "Memority UI" --windowed --icon=img/memority_icon_256.icns
 
 echo "--------------------------------------------------"
 echo "Compile Core"
-pyinstaller ./memority/memority_core/memority_core_systray.pyw --name "Memority Core" --hidden-import cytoolz.utils --hidden-import cytoolz._signatures --hidden-import raven.handlers --hidden-import raven.handlers.logging --hidden-import sqlalchemy.ext.baked --additional-hooks-dir=pyinstaller-hooks --windowed --icon=img/memority_icon_256.icns
+pyinstaller ./memority/memority_core_systray.pyw --name "Memority Core" --hidden-import cytoolz.utils --hidden-import cytoolz._signatures --hidden-import raven.handlers --hidden-import raven.handlers.logging --hidden-import sqlalchemy.ext.baked --additional-hooks-dir=pyinstaller-hooks --windowed --icon=img/memority_icon_256.icns
 
 echo "--------------------------------------------------"
 echo "Add files to build"
-mkdir dist/Memority\ UI.app/Contents/MacOS/settings
-cp memority/gui/settings/defaults.yml dist/Memority\ UI.app/Contents/MacOS/settings
+cp -r memority/ui dist/Memority\ UI.app/Contents/MacOS/
 
 mkdir dist/Memority\ Core.app/Contents/MacOS/settings
 mkdir dist/Memority\ Core.app/Contents/MacOS/smart_contracts
 mkdir dist/Memority\ Core.app/Contents/MacOS/geth
 cp img/icon.ico dist/Memority\ Core.app/Contents/MacOS
 cp memority/memority_core/settings/defaults.yml dist/Memority\ Core.app/Contents/MacOS/settings
-cp -r memority/memority_core/smart_contracts/binaries dist/Memority\ Core.app/Contents/MacOS/smart_contracts
-cp -r memority/memority_core/smart_contracts/binaries dist/Memority\ Core.app/Contents/MacOS/smart_contracts
-cp -r memority/memority_core/smart_contracts/install dist/Memority\ Core.app/Contents/MacOS/smart_contracts
-cp memority/memority_core/geth/darwin/geth dist/Memority\ Core.app/Contents/MacOS/geth
+cp -r memority/smart_contracts/binaries dist/Memority\ Core.app/Contents/MacOS/smart_contracts
+cp -r memority/smart_contracts/binaries dist/Memority\ Core.app/Contents/MacOS/smart_contracts
+cp -r memority/smart_contracts/install dist/Memority\ Core.app/Contents/MacOS/smart_contracts
+cp memority/geth/darwin/geth dist/Memority\ Core.app/Contents/MacOS/geth
 
 rm -rf dist/Memority\ Core dist/Memority\ UI
 mkdir dist/core dist/ui
