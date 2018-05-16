@@ -39,7 +39,8 @@ color: #fff;
    <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="styleSheet">
-      <string notr="true">border: none;</string>
+      <string notr="true">background: rgba(255,255,255, 30);
+border: none;</string>
      </property>
      <property name="widgetResizable">
       <bool>true</bool>

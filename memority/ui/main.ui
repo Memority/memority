@@ -558,7 +558,7 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1151</width>
+            <width>1155</width>
             <height>436</height>
            </rect>
           </property>
@@ -639,7 +639,7 @@ border: 	1px solid  rgba(255,255,255, 30);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1137</width>
+                <width>1141</width>
                 <height>374</height>
                </rect>
               </property>
@@ -820,8 +820,8 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1151</width>
-            <height>436</height>
+            <width>585</width>
+            <height>238</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
