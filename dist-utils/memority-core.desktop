@@ -1,8 +1,0 @@
-[Desktop Entry]
-Encoding=UTF-8
-Version=v0.1.0-alpha
-Type=Application
-Terminal=false
-Exec=/usr/lib/memority/Memority\ Core
-Name=Memority Core
-Icon=/usr/share/pixmaps/memority_icon.png

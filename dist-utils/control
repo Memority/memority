@@ -1,8 +1,0 @@
-Package: memority
-Version: 0.1.0-alpha-1
-Section: misc
-Architecture: amd64
-Depends: bash, sed (>= 3.02-8)
-Maintainer: A. Vityk <andrii.vityk@gmail.com>
-Description: Blockchain Based Data Storage
- Memority is a blockchain-based platform for encrypted decentralized cloud storage of valuable data.
