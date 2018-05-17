@@ -9,11 +9,11 @@ rm -rf build dist
 
 echo "--------------------------------------------------"
 echo "Compile GUI"
-pyinstaller ./memority/memority_gui.pyw --name "Memority UI" --windowed --icon=img/icon.ico
+pyinstaller ./memority/memority_gui.pyw --name "Memority UI" --windowed --icon=img/icon.png
 
 echo "--------------------------------------------------"
 echo "Compile Core"
-pyinstaller ./memority/memority_core_systray.pyw --name "Memority Core" --hidden-import cytoolz.utils --hidden-import cytoolz._signatures --hidden-import raven.handlers --hidden-import raven.handlers.logging --hidden-import sqlalchemy.ext.baked --additional-hooks-dir=pyinstaller-hooks --windowed --icon=img/icon.ico
+pyinstaller ./memority/memority_core_systray.pyw --name "Memority Core" --hidden-import cytoolz.utils --hidden-import cytoolz._signatures --hidden-import raven.handlers --hidden-import raven.handlers.logging --hidden-import sqlalchemy.ext.baked --additional-hooks-dir=pyinstaller-hooks --windowed --icon=img/icon.png
 
 
 echo "--------------------------------------------------"
@@ -38,7 +38,7 @@ cp dist-utils/control dist/memority/DEBIAN
 cp dist-utils/postinst dist/memority/DEBIAN
 cp dist-utils/memority-core.desktop dist/memority/usr/share/applications/
 cp dist-utils/memority-ui.desktop dist/memority/usr/share/applications/
-cp img/icon.ico dist/memority/usr/share/pixmaps/memority_icon.ico
+cp img/icon.png dist/memority/usr/share/pixmaps/memority_icon.png
 
 echo "--------------------------------------------------"
 echo "Building package"

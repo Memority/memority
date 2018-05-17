@@ -5,4 +5,4 @@ Type=Application
 Terminal=false
 Exec=/usr/lib/memority/Memority\ Core
 Name=Memority Core
-Icon=/usr/share/pixmaps/memority_icon.ico
+Icon=/usr/share/pixmaps/memority_icon.png
