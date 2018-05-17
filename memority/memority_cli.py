@@ -26,26 +26,35 @@ async def send(data_to_send: dict):
                 async for msg in ws:
                     data = json.loads(msg.data)
                     status = data.get('status')
-                    if status == 'success':
-                        if data.get('details') == 'info':
-                            print(data.get('message'))
-                            continue
-                        print(json.dumps(data.get('data'), indent=2))
-                        return
+                    if status == 'info':
+                        print(data.get('message'))
+                        continue
+                    elif status == 'success':
+                        if data.get('details') == 'uploaded':
+                            print('File successfully uploaded!')
+                            return
+                        elif data.get('details') == 'downloaded':
+                            print('File successfully downloaded!')
+                            return
+                        continue
                     elif status == 'error':
                         print('Error:')
                         print(data.get('message'))
                         return
                     elif status == 'action_needed':
                         if data.get('details') == 'ask_for_password':
-                            password = getpass.getpass()
-                            await ws.send_json({'status': 'success', 'password': password})
-                            continue
-                        else:
-                            print(data.get('message'))
+                            print('Unlock account first.')
+                            return
+                        elif data.get('details') == 'tokens_to_deposit':
+                            print(f'Enter the token amount for deposit.\n'
+                                  f'Price for 2 weeks for this file: '
+                                  f'{data.get("data").get("price_per_hour")*24*14:.18f}')
                             result = input('>> ')
+
                             await ws.send_json({'status': 'success', 'result': result})
                             continue
+                        else:
+                            print(data)
 
         except ClientConnectorError:
             print('No response from the daemon')
@@ -63,9 +72,10 @@ async def unlock_account(args):
         print('Invalid password!')
 
 
-async def generate_address(args):
-    password1 = getpass.getpass('Set password for your wallet')
-    password2 = getpass.getpass('Confirm')
+async def create_account(args):
+    # region Generate address
+    password1 = getpass.getpass('Set password for your wallet: ')
+    password2 = getpass.getpass('Confirm: ')
     if password1 != password2:
         print('Passwords don`t match!')
         return
@@ -77,15 +87,36 @@ async def generate_address(args):
     else:
         print(f'Generating address failed.\n'
               f'{data.get("message")}')
+        return
+    # endregion
 
+    # region Request MMR
+    key = input("Paste your Alpha Tester Key here.\n"
+                "You can get it after registering on https://memority.io/alpha\n"
+                ">> ")
+    print('Please wait while we’ll send you MMR tokens for testing, it may take a few minutes.')
 
-async def create_account(args):
-    role_n = input("""
-    I want to...
-    1. Store my files
-    2. Be a hoster
-    3. Both
-    >> """)
+    resp = requests.post(
+        url('/request_mmr/'),
+        json={
+            "key": key
+        }
+    )
+    data = resp.json()
+    if data.get('status') == 'success':
+        print(f'Tokens received. Your balance: {data.get("balance")}')
+    else:
+        msg = data.get('message')
+        print(f'Requesting MMR failed.\n{msg}\nPlease ensure if the key was entered correctly.')
+        return
+    # endregion
+
+    # region Create account
+    role_n = input("I want to...\n"
+                   "1. Store my files\n"
+                   "2. Be a hoster\n"
+                   "3. Both\n"
+                   ">> ")
     if not role_n.isdigit():
         print(f'Invalid choice: {role_n}. Input must be digit.')
         return
@@ -100,14 +131,40 @@ async def create_account(args):
         print(f'Invalid choice: {role_n}')
         return
 
-    print(f'Creating account for role "{role}"')
-    r = requests.post(url('/user/create/'), json={"role": role})
-    if r.status_code == 201:
-        print('Account successfully created!')
-    else:
-        data = r.json()
-        print(f'Account creation failed.\n'
-              f'{data.get("message")}')
+    print(f'Creating account for role "{role}"...\n'
+          f'This can take up to 60 seconds, as transaction is being written in blockchain.')
+
+    if role in ['client', 'both']:
+        print('Creating client account...')
+        resp = requests.post(
+            url('/user/create/'),
+            json={
+                "role": 'client'
+            }
+        )
+        if resp.status_code == 201:
+            print('Client account successfully created!')
+        else:
+            data = resp.json()
+            msg = data.get('message')
+            print(f'Account creation failed.\n{msg}')
+            return
+    if role in ['host', 'both']:
+        print('Creating hoster account...')
+        resp = requests.post(
+            url('/user/create/'),
+            json={
+                "role": 'host'
+            }
+        )
+        if resp.status_code == 201:
+            print('Hoster account successfully created!')
+        else:
+            data = resp.json()
+            msg = data.get('message')
+            print(f'Account creation failed.\n{msg}')
+            return
+    # endregion
 
 
 async def become_a_hoster(args):
@@ -177,9 +234,6 @@ def parse_args():
 
     parser_list = subparsers.add_parser('unlock', help='Unlock')
     parser_list.set_defaults(func=unlock_account)
-
-    parser_list = subparsers.add_parser('generate_address', help='Generate address')
-    parser_list.set_defaults(func=generate_address)
 
     parser_list = subparsers.add_parser('create_account', help='Create account')
     parser_list.set_defaults(func=create_account)

@@ -449,7 +449,8 @@ class RenterFile(Base, ManagedMixin):
 
     def update_status(self, status):
         self.status = status
-        self.save()
+        with contextlib.suppress(IntegrityError):
+            self.save()
 
     @property
     def size(self):
