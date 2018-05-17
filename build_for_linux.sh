@@ -37,7 +37,7 @@ cp memority/geth/linux/geth dist/memority/usr/lib/memority/geth/
 cp dist-utils/control dist/memority/DEBIAN
 cp dist-utils/postinst dist/memority/DEBIAN
 cp dist-utils/memority-core.desktop dist/memority/usr/share/applications/
-cp dist-utils/memority-gui.desktop dist/memority/usr/share/applications/
+cp dist-utils/memority-ui.desktop dist/memority/usr/share/applications/
 cp img/icon.ico dist/memority/usr/share/pixmaps/memority_icon.ico
 
 echo "--------------------------------------------------"
