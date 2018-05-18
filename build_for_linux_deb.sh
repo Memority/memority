@@ -12,14 +12,14 @@ rm -rf build dist
 echo "--------------------------------------------------"
 echo "Compile GUI"
 pyinstaller ./memority/memority_gui.pyw \
---name "Memority UI" \
+--name "memority-ui" \
 --windowed \
 --icon=img/icon.png
 
 echo "--------------------------------------------------"
 echo "Compile Core"
 pyinstaller ./memority/memority_core_systray.pyw \
---name "Memority Core" \
+--name "memority-core" \
 --hidden-import cytoolz.utils \
 --hidden-import cytoolz._signatures \
 --hidden-import raven.handlers \
@@ -42,8 +42,8 @@ mkdir dist/memority/usr/lib/memority/geth
 cp memority/settings/defaults.yml dist/memority/usr/lib/memority/settings/
 cp img/icon.ico dist/memority/usr/lib/memority/
 cp memority/geth/linux/geth dist/memority/usr/lib/memority/geth/
-cp -r dist/Memority\ Core/* dist/memority/usr/lib/memority/
-cp -r dist/Memority\ UI/* dist/memority/usr/lib/memority/
+cp -r dist/memority-core/* dist/memority/usr/lib/memority/
+cp -r dist/memority-ui/* dist/memority/usr/lib/memority/
 cp -r memority/ui dist/memority/usr/lib/memority/
 cp -r memority/smart_contracts/binaries dist/memority/usr/lib/memority/smart_contracts/
 cp -r memority/smart_contracts/install dist/memority/usr/lib/memority/smart_contracts/
@@ -64,7 +64,7 @@ Encoding=UTF-8
 Version=${VERSION}
 Type=Application
 Terminal=false
-Exec=/usr/lib/memority/Memority\ Core
+Exec=/usr/lib/memority/memority-core
 Name=Memority Core
 Icon=/usr/share/pixmaps/memority_icon.png
 " > dist/memority/usr/share/applications/memority-core.desktop
@@ -74,7 +74,7 @@ Encoding=UTF-8
 Version=${VERSION}
 Type=Application
 Terminal=false
-Exec=/usr/lib/memority/Memority\ UI
+Exec=/usr/lib/memority/Memority\\ UI
 Name=Memority UI
 Icon=/usr/share/pixmaps/memority_icon.png
 " > dist/memority/usr/share/applications/memority-ui.desktop
