@@ -132,6 +132,8 @@ def create_renter_app():
     app.router.add_route('GET', '/', websocket_handler)
     app.router.add_route('GET', '/ping/', ping_handler)
     app.router.add_route('GET', '/files/', list_files)
+    app.router.add_route('GET', '/files/{file_hash}/', file_info)
+    app.router.add_route('POST', '/files/{file_hash}/deposit/', update_file_deposit)
     app.router.add_route('GET', '/check_first_run/', check_first_run_handler)
     app.router.add_route('GET', '/info/', view_config)
     app.router.add_route('GET', '/info/{name}/', view_config)

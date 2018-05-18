@@ -1,7 +1,6 @@
 import aiohttp
 import asyncio
 import contextlib
-import locale
 import logging
 import os
 import shutil
@@ -22,7 +21,7 @@ from utils import ask_for_password, check_first_run, DecryptionError, get_ip, ch
 
 __all__ = ['upload_file', 'download_file', 'list_files', 'view_config', 'set_disk_space_for_hosting',
            'upload_to_hoster', 'view_user_info', 'create_account', 'unlock', 'import_account', 'export_account',
-           'request_mmr', 'change_box_dir']
+           'request_mmr', 'change_box_dir', 'file_info', 'update_file_deposit']
 
 logger = logging.getLogger('memority')
 
@@ -375,6 +374,28 @@ async def list_files(request):
         "data": {
             "files": await RenterFile.list()
         }
+    })
+
+
+async def file_info(request):
+    file_hash = request.match_info.get('file_hash')
+    file = RenterFile.objects.get(hash=file_hash)
+    return web.json_response({
+        "status": "success",
+        "data": await file.to_json()
+    })
+
+
+async def update_file_deposit(request: web.Request):
+    file_hash = request.match_info.get('file_hash')
+    data = await request.json()
+    value = data.get('value')
+    before = await token_contract.get_deposit(file_hash=file_hash)
+    await client_contract.make_deposit(value=value, file_hash=file_hash)
+    if not await token_contract.get_deposit(file_hash=file_hash) > before:
+        return _error_response('Failed deposit updating.')
+    return web.json_response({
+        "status": "success",
     })
 
 

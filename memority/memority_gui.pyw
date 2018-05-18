@@ -23,6 +23,18 @@ if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 
+def file_size_human_readable(size):
+    if size < 1024:
+        size = f'{size} B'
+    elif size < 1024 ** 2:
+        size = f'{size / 1024:.2f} KB'
+    elif size < 1024 ** 3:
+        size = f'{size / 1024 ** 2:.2f} MB'
+    else:
+        size = f'{size / 1024 ** 3:.2f} GB'
+    return size
+
+
 class DaemonInterface:
 
     def __init__(self, daemon_address):
@@ -155,6 +167,25 @@ class DaemonInterface:
 
     def change_box_dir(self, box_dir):
         requests.post(f'{self.daemon_address}/change_box_dir/', json={"box_dir": box_dir})
+
+    def get_file_metadata(self, file_hash):
+        result = requests.get(f'{self.daemon_address}/files/{file_hash}/').json()
+        if result.get('status') == 'success':
+            return result.get('data')
+
+    def prolong_deposit_for_file(self, file_hash, value):
+        resp = requests.post(
+            f'{self.daemon_address}/files/{file_hash}/deposit/',
+            json={
+                "value": value
+            }
+        )
+        if resp.status_code == 200:
+            return True, ...
+        else:
+            data = resp.json()
+            msg = data.get('message')
+            return False, f'Deposit creation failed.\n{msg}'
 
 
 # noinspection PyArgumentList
@@ -305,8 +336,10 @@ class MainWindow(QMainWindow):
             file_list_item.uploaded_on_display.setText(file.get('timestamp'))
             file_list_item.name_display.setText(file.get('name'))
             file_list_item.hash_display.setText(file.get('hash'))
+            file_list_item.size_display.setText(file_size_human_readable(file.get('size')))
             file_list_item.deposit_end_display.setText(file.get('deposit_ends_on'))
             file_list_item.download_btn.clicked.connect(partial(self.download_file, file.get('hash')))
+            file_list_item.prolong_deposit_btn.clicked.connect(partial(self.prolong_deposit, file.get('hash')))
             self.ui.file_list_scrollarea_layout.addWidget(file_list_item)
         self.ui.file_list_scrollarea_layout.addItem(QSpacerItem(QSizePolicy.Expanding, QSizePolicy.Expanding, 0, 0))
 
@@ -501,14 +534,69 @@ class MainWindow(QMainWindow):
         )
 
     # noinspection PyUnresolvedReferences
-    def choose_tokens_for_deposit(self, size, price_per_hour):
+    @pyqtSlot()
+    def prolong_deposit(self, _hash):
+        file_metadata = self.daemon_interface.get_file_metadata(file_hash=_hash)
+        size = file_metadata.get('size')
+        price_per_hour = file_metadata.get('price_per_hour')
+        deposit_ends_on = datetime.strptime(file_metadata.get('deposit_ends_on', [])[:-4], '%Y-%m-%d %H:%M')
+
         dialog: QDialog = uic.loadUi(ui_settings.ui_create_deposit_for_file)
         dialog.calendarWidget: QCalendarWidget
         dialog.deposit_size_input: QDoubleSpinBox
+        dialog.calendarWidget.setMinimumDate((deposit_ends_on + timedelta(weeks=2)).date())
+        dialog.deposit_size_input.setValue(price_per_hour * 24 * 14)
 
         # noinspection PyTypeChecker,PyCallByClass
         @pyqtSlot(float)
         def upd_date(value: float):
+            if value < price_per_hour * 24 * 14:
+                dialog.deposit_size_input.setValue(price_per_hour * 24 * 14)
+                return
+            try:
+                deposit_end = datetime.now() + timedelta(hours=value // price_per_hour)
+            except OverflowError:
+                deposit_end = datetime.max
+            deposit_end = QDate.fromString(deposit_end.strftime('%Y-%m-%d'), 'yyyy-MM-dd')
+            dialog.calendarWidget.setSelectedDate(deposit_end)
+
+        @pyqtSlot(QDate)
+        def upd_value(date: QDate):
+            deposit_end = date.toPyDate()
+            hours = (deposit_end - datetime.now().date()).days * 24
+            _value = hours * price_per_hour
+            dialog.deposit_size_input.setValue(_value)
+
+        size = file_size_human_readable(size)
+        dialog.file_size_display.setText(size)
+        dialog.calendarWidget.clicked[QDate].connect(upd_value)
+        dialog.deposit_size_input.valueChanged.connect(upd_date)
+
+        if dialog.exec_():
+            value = dialog.deposit_size_input.value()
+            self.log(f'Adding {value:.18f} MMR to deposit | file: {_hash}.\n'
+                     f'Please wait...')
+            ok, result = self.daemon_interface.prolong_deposit_for_file(file_hash=_hash, value=value)
+            if ok:
+                self.refresh_files_tab()
+                self.notify('File deposit successfully updated.')
+                self.log('File deposit successfully updated.')
+            else:
+                self.error(result)
+
+    # noinspection PyUnresolvedReferences
+    def choose_tokens_for_deposit(self, size, price_per_hour):
+        dialog: QDialog = uic.loadUi(ui_settings.ui_create_deposit_for_file)
+        dialog.calendarWidget: QCalendarWidget
+        dialog.deposit_size_input: QDoubleSpinBox
+        dialog.calendarWidget.setMinimumDate((datetime.now() + timedelta(weeks=2)).date())
+
+        # noinspection PyTypeChecker,PyCallByClass
+        @pyqtSlot(float)
+        def upd_date(value: float):
+            if value < price_per_hour * 24 * 14:
+                dialog.deposit_size_input.setValue(price_per_hour * 24 * 14)
+                return
             try:
                 deposit_end = datetime.now() + timedelta(hours=value // price_per_hour)
             except OverflowError:
@@ -523,14 +611,7 @@ class MainWindow(QMainWindow):
             value = hours * price_per_hour
             dialog.deposit_size_input.setValue(value)
 
-        if size < 1024:
-            size = f'{size} B'
-        elif size < 1024 ** 2:
-            size = f'{size / 1024:.2f} KB'
-        elif size < 1024 ** 3:
-            size = f'{size / 1024 ** 2:.2f} MB'
-        else:
-            size = f'{size / 1024 ** 3:.2f} GB'
+        size = file_size_human_readable(size)
         dialog.file_size_display.setText(size)
         dialog.calendarWidget.clicked[QDate].connect(upd_value)
         dialog.deposit_size_input.valueChanged.connect(upd_date)
