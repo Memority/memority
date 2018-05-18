@@ -485,6 +485,8 @@ class RenterFile(Base, ManagedMixin):
         except DecryptionError:
             name = self.name
         res['name'] = name
+        res['size'] = client_contract.get_file_size(self.hash)
+        res['price_per_hour'] = token_contract.wmmr_to_mmr(token_contract.tokens_per_byte_hour * res['size'] * 10)
         res['timestamp'] = self.timestamp.astimezone(tzlocal.get_localzone()).strftime('%Y-%m-%d %H:%M') + ' UTC'
         try:
             res['deposit_ends_on'] = (
