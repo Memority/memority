@@ -74,7 +74,7 @@ Encoding=UTF-8
 Version=${VERSION}
 Type=Application
 Terminal=false
-Exec=/usr/lib/memority/Memority\\ UI
+Exec=/usr/lib/memority/memority-ui
 Name=Memority UI
 Icon=/usr/share/pixmaps/memority_icon.png
 " > dist/memority/usr/share/applications/memority-ui.desktop
