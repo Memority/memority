@@ -415,7 +415,10 @@ class ClientContract(Contract):
 
     def get_file_hosts(self, file_hash):
         logger.info(f'Get file hosts from Client contract | file: {file_hash}')
-        return self.contract.getFileHosts(file_hash)
+        try:
+            return self.contract.getFileHosts(file_hash)
+        except BadFunctionCallOutput:
+            return []
 
     async def replace_host(self, file_hash, old_host_address, from_address=None):
         if not from_address:
