@@ -21,7 +21,7 @@ from utils import ask_for_password, check_first_run, DecryptionError, get_ip, ch
 
 __all__ = ['upload_file', 'download_file', 'list_files', 'view_config', 'set_disk_space_for_hosting',
            'upload_to_hoster', 'view_user_info', 'create_account', 'unlock', 'import_account', 'export_account',
-           'request_mmr', 'change_box_dir', 'file_info', 'update_file_deposit']
+           'request_mmr', 'change_box_dir', 'file_info', 'update_file_deposit', 'list_transactions']
 
 logger = logging.getLogger('memority')
 
@@ -590,3 +590,10 @@ async def change_box_dir(request: web.Request):
     os.rmdir(from_dir)
     settings.boxes_dir = box_dir
     return web.json_response({"status": "success"})
+
+
+async def list_transactions(request):
+    return web.json_response({
+        "status": "success",
+        "data": memo_db_contract.get_transactions()
+    })

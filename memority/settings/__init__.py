@@ -24,7 +24,7 @@ def get_app_data_dir():
         raise Exception(f'Unknown platform name: {_platform_name}')
     __path = __app_data_dir()
     if not os.path.exists(__path):
-        os.makedirs(__path)
+        os.makedirs(__path, exist_ok=True)
     return __path
 
 

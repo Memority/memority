@@ -7,7 +7,7 @@ from .get_ip import get_ip, check_if_white_ip
 
 __all__ = ['check_first_run', 'ask_for_password',
            'compute_hash', 'verify_signature', 'encrypt', 'decrypt', 'sign', 'InvalidSignature', 'DecryptionError',
-           'get_ip']
+           'get_ip', 'check_if_white_ip']
 
 
 def check_first_run():

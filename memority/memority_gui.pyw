@@ -13,8 +13,8 @@ from PyQt5.QtWidgets import *
 from datetime import datetime, timedelta
 from functools import partial
 
-from ui_settings import ui_settings
 from settings import settings as daemon_settings
+from ui_settings import ui_settings
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
@@ -33,6 +33,10 @@ def file_size_human_readable(size):
     else:
         size = f'{size / 1024 ** 3:.2f} GB'
     return size
+
+
+def parse_date_from_string(d_: str):
+    return datetime.strptime(d_[:-4], '%Y-%m-%d %H:%M').date()
 
 
 class DaemonInterface:
@@ -187,6 +191,11 @@ class DaemonInterface:
             msg = data.get('message')
             return False, f'Deposit creation failed.\n{msg}'
 
+    def get_transactions(self):
+        result = requests.get(f'{self.daemon_address}/transactions/').json()
+        if result.get('status') == 'success':
+            return result.get('data')
+
 
 # noinspection PyArgumentList
 class MainWindow(QMainWindow):
@@ -216,8 +225,16 @@ class MainWindow(QMainWindow):
         self.ui.closeEvent = self.closeEvent
         self.ui.buy_mmr_btn.hide()
         self.ui.transfer_mmr_btn.hide()
+
         self.ui.transaction_history_lbl.hide()
         self.ui.transaction_history_table.hide()
+        header = self.ui.transaction_history_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.Stretch)
+
         self.ui.refresh_btn.clicked.connect(self.refresh)
         self.ui.copy_address_btn.clicked.connect(self.copy_address_to_clipboard)
         self.ui.create_account_btn.clicked.connect(self.create_account)
@@ -230,6 +247,7 @@ class MainWindow(QMainWindow):
         self.ui.disk_space_input.valueChanged.connect(self.enable_hosting_settings_controls)
         self.ui.directory_input.textChanged.connect(self.enable_hosting_settings_controls)
         self.ui.upload_file_btn.clicked.connect(self.upload_file)
+        self.ui.bulk_prolong_deposit_btn.clicked.connect(self.prolong_deposit_for_all_files)
 
     def clear_layout(self, layout):
         if layout is not None:
@@ -256,9 +274,15 @@ class MainWindow(QMainWindow):
         dialog.adjustSize()
         dialog.exec_()
 
-    @staticmethod
-    def notify(msg):
-        QMessageBox.information(None, 'Info', msg)
+    def notify(self, msg):
+        self.log(msg)
+        msg = msg.replace('\n', '<br/>')
+        dialog: QDialog = uic.loadUi(ui_settings.ui_info_msg)
+        dialog.msg.setText(
+            f'<html><body>{msg}</html></body>'
+        )
+        dialog.adjustSize()
+        dialog.exec_()
 
     def ws_send(self, data: dict):
         self.ws_client.sendTextMessage(json.dumps(data))
@@ -323,6 +347,31 @@ class MainWindow(QMainWindow):
         # endregion
         self.ui.address_display.setText(address)
         self.ui.balance_display.setText(f'{balance} MMR')
+        # region TX History
+        self.ui.transaction_history_table: QTableWidget
+        self.ui.transaction_history_table.setRowCount(0)  # clear table
+        transactions = self.daemon_interface.get_transactions()
+        if transactions:
+            self.ui.transaction_history_lbl.show()
+            self.ui.transaction_history_table.show()
+        for tx in transactions:
+            from_item = QTableWidgetItem(tx['from'] or '-')
+            to_item = QTableWidgetItem(tx['to'])
+            date_item = QTableWidgetItem(tx['date'])
+            value_item = QTableWidgetItem(str(tx['value']))
+            comment_item = QTableWidgetItem(tx['comment'])
+            for item in [from_item, to_item, date_item, value_item, comment_item]:
+                item.setToolTip(item.text())
+                item.setFlags(item.flags() ^ Qt.ItemIsEditable)
+                item.setTextAlignment(Qt.AlignCenter)
+            row_position = self.ui.transaction_history_table.rowCount()
+            self.ui.transaction_history_table.insertRow(row_position)
+            self.ui.transaction_history_table.setItem(row_position, 0, from_item)
+            self.ui.transaction_history_table.setItem(row_position, 1, to_item)
+            self.ui.transaction_history_table.setItem(row_position, 2, date_item)
+            self.ui.transaction_history_table.setItem(row_position, 3, value_item)
+            self.ui.transaction_history_table.setItem(row_position, 4, comment_item)
+        # endregion
 
     def refresh_files_tab(self):
         self.ui.file_list_scrollarea_layout: QVBoxLayout
@@ -536,17 +585,6 @@ class MainWindow(QMainWindow):
     # noinspection PyUnresolvedReferences
     @pyqtSlot()
     def prolong_deposit(self, _hash):
-        file_metadata = self.daemon_interface.get_file_metadata(file_hash=_hash)
-        size = file_metadata.get('size')
-        price_per_hour = file_metadata.get('price_per_hour')
-        deposit_ends_on = datetime.strptime(file_metadata.get('deposit_ends_on', [])[:-4], '%Y-%m-%d %H:%M')
-
-        dialog: QDialog = uic.loadUi(ui_settings.ui_create_deposit_for_file)
-        dialog.calendarWidget: QCalendarWidget
-        dialog.deposit_size_input: QDoubleSpinBox
-        dialog.calendarWidget.setMinimumDate((deposit_ends_on + timedelta(weeks=2)).date())
-        dialog.deposit_size_input.setValue(price_per_hour * 24 * 14)
-
         # noinspection PyTypeChecker,PyCallByClass
         @pyqtSlot(float)
         def upd_date(value: float):
@@ -567,22 +605,116 @@ class MainWindow(QMainWindow):
             _value = hours * price_per_hour
             dialog.deposit_size_input.setValue(_value)
 
+        def paint_cell(painter, rect, date):
+            QCalendarWidget.paintCell(dialog.calendarWidget, painter, rect, date)
+            if date == QDate(deposit_ends_on):
+                color = dialog.calendarWidget.palette().color(QPalette.Highlight)
+                color.setAlpha(128)
+                painter.fillRect(rect, color)
+
+        file_metadata = self.daemon_interface.get_file_metadata(file_hash=_hash)
+        size = file_metadata.get('size')
+        price_per_hour = file_metadata.get('price_per_hour')
+        deposit_ends_on = datetime.strptime(file_metadata.get('deposit_ends_on', [])[:-4], '%Y-%m-%d %H:%M')
+
+        dialog: QDialog = uic.loadUi(ui_settings.ui_create_deposit_for_file)
+        dialog.calendarWidget: QCalendarWidget
+        dialog.deposit_size_input: QDoubleSpinBox
+        dialog.calendarWidget.setMinimumDate((deposit_ends_on + timedelta(weeks=2)).date())
+        dialog.deposit_size_input.setValue(price_per_hour * 24 * 14)
+        dialog.calendarWidget.paintCell = paint_cell
+        dialog.calendarWidget.updateCells()
+
         size = file_size_human_readable(size)
         dialog.file_size_display.setText(size)
         dialog.calendarWidget.clicked[QDate].connect(upd_value)
         dialog.deposit_size_input.valueChanged.connect(upd_date)
 
         if dialog.exec_():
-            value = dialog.deposit_size_input.value()
-            self.log(f'Adding {value:.18f} MMR to deposit | file: {_hash}.\n'
+            input_value = dialog.deposit_size_input.value()
+            self.log(f'Adding {input_value:.18f} MMR to deposit | file: {_hash}.\n'
                      f'Please wait...')
-            ok, result = self.daemon_interface.prolong_deposit_for_file(file_hash=_hash, value=value)
+            ok, result = self.daemon_interface.prolong_deposit_for_file(file_hash=_hash, value=input_value)
             if ok:
                 self.refresh_files_tab()
                 self.notify('File deposit successfully updated.')
                 self.log('File deposit successfully updated.')
             else:
                 self.error(result)
+
+    # noinspection PyUnresolvedReferences,PyReferencedBeforeAssignment
+    @pyqtSlot()
+    def prolong_deposit_for_all_files(self):
+        @pyqtSlot(QDate)
+        def upd_value(date: QDate):
+            deposit_end_ = date.toPyDate()
+            self.clear_layout(dialog.labels_layout)
+            total_val = 0
+            i = 0
+            for i, file_ in enumerate(files):
+                val_ = file_['price_per_hour'] \
+                       * (deposit_end_ - parse_date_from_string(file_['deposit_ends_on'])).days * 24
+                total_val += val_
+                dialog.labels_layout.addWidget(
+                    QLabel(f'to {file_["name"] if len(file_["name"]) < 64 else file_["name"][:64] + "..."}:'), i, 0
+                )
+                dialog.labels_layout.addWidget(
+                    QLabel(f'{val_:.18f} MMR'), i, 1
+                )
+            dialog.total_val_display.setText(f'{total_val:.18f} MMR')
+            dialog.labels_layout.addItem(QSpacerItem(QSizePolicy.Expanding, QSizePolicy.Expanding, 0, 0), i + 2, 0)
+
+        def paint_cell(painter, rect, date: QDate):
+            QCalendarWidget.paintCell(dialog.calendarWidget, painter, rect, date)
+            for f in files:
+                if date.toPyDate() == parse_date_from_string(f['deposit_ends_on']):
+                    color = dialog.calendarWidget.palette().color(QPalette.Highlight)
+                    color.setAlpha(128)
+                    painter.fillRect(rect, color)
+                    painter.drawText(rect.bottomLeft(), f['name'])
+
+        files = self.daemon_interface.get_files()
+        if not files:
+            self.error('You don`t have files to prolong deposit.')
+            return
+        min_date = min(
+            [
+                parse_date_from_string(f['deposit_ends_on'])
+                for f in files
+            ]
+        ) + timedelta(weeks=2)
+
+        dialog: QDialog = uic.loadUi(ui_settings.ui_bulk_prolong_deposit)
+        dialog.calendarWidget: QCalendarWidget
+        dialog.labels_layout: QGridLayout
+        dialog.calendarWidget.setMinimumDate(min_date)
+        upd_value(QDate(min_date))
+        dialog.calendarWidget.paintCell = paint_cell
+        dialog.calendarWidget.updateCells()
+        dialog.calendarWidget.clicked[QDate].connect(upd_value)
+
+        if dialog.exec_():
+            deposits = []
+            for file in files:
+                deposit_end = dialog.calendarWidget.selectedDate().toPyDate()
+                val = file['price_per_hour'] * (deposit_end - parse_date_from_string(file['deposit_ends_on'])).days * 24
+                if val:
+                    deposits.append(
+                        (
+                            file['hash'],
+                            val
+                        )
+                    )
+            self.log(f'Adding {sum([d[1] for d in deposits]):.18f} MMR to deposits')
+            for d in deposits:
+                self.log(f'Adding {d[1]:.18f} MMR to deposit | file: {d[0]}. Please wait...')
+                ok, result = self.daemon_interface.prolong_deposit_for_file(file_hash=d[0], value=d[1])
+                if ok:
+                    self.refresh_files_tab()
+                    self.log('File deposit successfully updated.')
+                else:
+                    self.error(result)
+            self.notify(f'Successfully updated deposits for {len(deposits)} files.')
 
     # noinspection PyUnresolvedReferences
     def choose_tokens_for_deposit(self, size, price_per_hour):

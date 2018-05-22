@@ -77,7 +77,7 @@ background: none;
 QTextBrowser{
 background: rgba(255, 255, 255, 30);
 }
-QTableView QTableCornerButton::section {
+QTableWidget QTableCornerButton::section {
     background: rgba(255,255,255, 30);
     border: 1px inset rgba(255,255,255, 60);
 }
@@ -90,19 +90,19 @@ QHeaderView::section{
 	 border: 1px solid rgba(255,255,255, 30);
 	padding: 5px;
 }
-QTableView {
+QTableWidget {
 gridline-color: rgba(170, 170, 170,  6);
 }
-QTableView {
-    selection-background-color: qlineargradient(x1: 0, y1: 0, x2: 0.5, y2: 0.5,
-     stop: 0 #FF92BB, stop: 1 white);
-}
-QTableView::item{
+QTableWidget::item{
 	padding: 5px;
 	border: 1px solid rgba(255, 255, 255, 60);
-	background: rgba(255,255,255, 30);
-	width: 20%;
-
+	background: rgba(255,255,255, 15);
+}
+QTableWidget::item:selected{
+	background: rgba(255,255,255, 60);
+}
+QTableWidget::item:fosus{
+	background: rgba(255,255,255, 60);
 }
 QHBoxLayout{
 	border: none;
@@ -335,6 +335,12 @@ padding-top: 5px;</string>
        </item>
        <item>
         <widget class="QLabel" name="transaction_history_lbl">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>42</height>
+          </size>
+         </property>
          <property name="text">
           <string>Transaction history:</string>
          </property>
@@ -351,7 +357,7 @@ padding-top: 5px;</string>
             <x>0</x>
             <y>0</y>
             <width>1101</width>
-            <height>175</height>
+            <height>161</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -360,10 +366,16 @@ padding-top: 5px;</string>
              <property name="enabled">
               <bool>true</bool>
              </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>150</height>
+               <height>0</height>
               </size>
              </property>
              <property name="acceptDrops">
@@ -401,13 +413,13 @@ padding-top: 5px;</string>
               <bool>true</bool>
              </property>
              <property name="rowCount">
-              <number>1</number>
+              <number>0</number>
              </property>
              <property name="columnCount">
               <number>5</number>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>false</bool>
@@ -442,57 +454,43 @@ padding-top: 5px;</string>
              <attribute name="verticalHeaderStretchLastSection">
               <bool>false</bool>
              </attribute>
-             <row/>
              <column>
               <property name="text">
-               <string>id</string>
+               <string>From</string>
+              </property>
+              <property name="textAlignment">
+               <set>AlignCenter</set>
               </property>
              </column>
              <column>
               <property name="text">
-               <string>Transaction</string>
+               <string>To</string>
+              </property>
+              <property name="textAlignment">
+               <set>AlignCenter</set>
               </property>
              </column>
              <column>
               <property name="text">
-               <string>Date</string>
+               <string>Date (UTC)</string>
+              </property>
+              <property name="textAlignment">
+               <set>AlignCenter</set>
               </property>
              </column>
              <column>
               <property name="text">
-               <string>Info</string>
+               <string>Value (MMR)</string>
+              </property>
+              <property name="textAlignment">
+               <set>AlignCenter</set>
               </property>
              </column>
              <column>
               <property name="text">
-               <string>Details</string>
+               <string>Comment</string>
               </property>
              </column>
-             <item row="0" column="0">
-              <property name="text">
-               <string/>
-              </property>
-             </item>
-             <item row="0" column="1">
-              <property name="text">
-               <string/>
-              </property>
-             </item>
-             <item row="0" column="2">
-              <property name="text">
-               <string/>
-              </property>
-             </item>
-             <item row="0" column="3">
-              <property name="text">
-               <string/>
-              </property>
-             </item>
-             <item row="0" column="4">
-              <property name="text">
-               <string/>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>
@@ -524,7 +522,7 @@ border: 1px solid rgba(255,255,255, 130);</string>
             <x>0</x>
             <y>0</y>
             <width>1101</width>
-            <height>323</height>
+            <height>331</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -550,12 +548,12 @@ padding: 10px 20px;
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="prolong_deposit_btn">
+              <widget class="QPushButton" name="bulk_prolong_deposit_btn">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
                <property name="toolTip">
-                <string>This feature is under development.</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="styleSheet">
                 <string notr="true">QPushButton{
@@ -571,7 +569,7 @@ color: #dbdbdb;
 }</string>
                </property>
                <property name="text">
-                <string>Prolong the deposit for all files</string>
+                <string>Prolong deposits for all files</string>
                </property>
               </widget>
              </item>
@@ -605,7 +603,7 @@ border: 	1px solid  rgba(255,255,255, 30);</string>
                 <x>0</x>
                 <y>0</y>
                 <width>1087</width>
-                <height>261</height>
+                <height>269</height>
                </rect>
               </property>
               <property name="styleSheet">
@@ -786,7 +784,7 @@ border: 1px solid rgba(255,255,255, 130);</string>
             <x>0</x>
             <y>0</y>
             <width>1101</width>
-            <height>323</height>
+            <height>331</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
