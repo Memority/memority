@@ -35,6 +35,10 @@ class Settings:
         return os.path.join(self.ui_dir, 'create_deposit_for_file.ui')
 
     @property
+    def ui_bulk_prolong_deposit(self):
+        return os.path.join(self.ui_dir, 'bulk_prolong_deposit.ui')
+
+    @property
     def ui_enter_password(self):
         return os.path.join(self.ui_dir, 'enter_password.ui')
 
@@ -45,6 +49,10 @@ class Settings:
     @property
     def ui_error_msg(self):
         return os.path.join(self.ui_dir, 'error_msg.ui')
+
+    @property
+    def ui_info_msg(self):
+        return os.path.join(self.ui_dir, 'info_msg.ui')
 
 
 _base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))

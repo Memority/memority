@@ -24,7 +24,7 @@ def get_app_data_dir():
         raise Exception(f'Unknown platform name: {_platform_name}')
     __path = __app_data_dir()
     if not os.path.exists(__path):
-        os.makedirs(__path)
+        os.makedirs(__path, exist_ok=True)
     return __path
 
 
@@ -45,6 +45,13 @@ class Settings:
 
     class InvalidPassword(Exception):
         ...
+
+    def __init__(self) -> None:
+        if not self.__hasattr__('boxes_dir'):
+            path = os.path.join(_app_data_dir, 'boxes')
+            if not os.path.exists(path):
+                os.makedirs(path)
+            self.boxes_dir = path
 
     def __setattr__(self, name: str, value) -> None:
         data = self.load()
@@ -98,11 +105,6 @@ class Settings:
             data = self.load()
             self.encrypt_secrets(data)
         else:
-            if 'boxes_dir' not in data:
-                path = os.path.join(_app_data_dir, 'boxes')
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                data['boxes_dir'] = path
             with open(self.local_settings_path, 'w') as outfile:
                 yaml.dump(data, outfile, default_flow_style=False)
 

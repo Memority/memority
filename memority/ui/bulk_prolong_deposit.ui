@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>404</width>
-    <height>379</height>
+    <width>543</width>
+    <height>517</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -26,7 +26,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Create deposit for file</string>
+   <string>Prolong deposits</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -54,53 +54,6 @@ padding: 2px;
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>15</height>
-        </size>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background: rgba(255, 255, 255, 0);
-color: #fff;
-height: 20px;</string>
-       </property>
-       <property name="text">
-        <string>Size of encrypted file:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="file_size_display">
-       <property name="styleSheet">
-        <string notr="true">background: rgba(255, 255, 255, 0);
-color: #fff;
-height: 20px;</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
     <widget class="QLabel" name="label_2">
      <property name="maximumSize">
       <size>
@@ -120,6 +73,18 @@ height: 20px;</string>
    </item>
    <item>
     <widget class="QCalendarWidget" name="calendarWidget">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>300</height>
+      </size>
+     </property>
      <property name="styleSheet">
       <string notr="true">background: rgb(255,255,255);
 color: rgb(0, 0, 0)</string>
@@ -127,19 +92,42 @@ color: rgb(0, 0, 0)</string>
     </widget>
    </item>
    <item>
-    <widget class="QDoubleSpinBox" name="deposit_size_input">
+    <widget class="QScrollArea" name="scrollArea">
      <property name="styleSheet">
-      <string notr="true"/>
+      <string notr="true">background-color: rgba(255, 255, 255, 0);
+border: none;</string>
      </property>
-     <property name="decimals">
-      <number>18</number>
+     <property name="widgetResizable">
+      <bool>true</bool>
      </property>
-     <property name="minimum">
-      <double>0.000000000000000</double>
-     </property>
-     <property name="maximum">
-      <double>10000.000000000000000</double>
-     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>531</width>
+        <height>132</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Will be added:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="labels_layout"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -150,6 +138,31 @@ color: rgb(0, 0, 0)</string>
      <property name="sizeConstraint">
       <enum>QLayout::SetDefaultConstraint</enum>
      </property>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgba(255, 255, 255, 0);
+border: none;</string>
+       </property>
+       <property name="text">
+        <string>Total:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="total_val_display">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgba(255, 255, 255, 0);
+border: none;</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">

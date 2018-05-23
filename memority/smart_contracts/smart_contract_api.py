@@ -4,8 +4,8 @@ import os
 import pickle
 import platform
 import traceback
+from datetime import datetime
 from decimal import Decimal
-
 from solc import compile_source
 from web3 import Web3, IPCProvider, HTTPProvider
 from web3.contract import ConciseContract
@@ -317,6 +317,23 @@ class MemoDBContract(Contract):
         except BadFunctionCallOutput:
             return None
 
+    def get_transactions(self, address=None):
+        if not address:
+            address = settings.address
+        res = []
+        tx_count = self.contract.transactionsCount(address)
+        for i in range(tx_count):
+            tx_id = memo_db_contract.contract.transactionsId(address, i)
+            tx_from, tx_to, file, date, value = memo_db_contract.contract.transactions(tx_id)
+            res.append({
+                "from": tx_from,
+                "to": tx_to,
+                "comment": file.strip('\x00'),
+                "date": datetime.fromtimestamp(date).isoformat(),
+                "value": token_contract.wmmr_to_mmr(value)
+            })
+        return res
+
 
 class ClientContract(Contract):
 
@@ -415,7 +432,10 @@ class ClientContract(Contract):
 
     def get_file_hosts(self, file_hash):
         logger.info(f'Get file hosts from Client contract | file: {file_hash}')
-        return self.contract.getFileHosts(file_hash)
+        try:
+            return self.contract.getFileHosts(file_hash)
+        except BadFunctionCallOutput:
+            return []
 
     async def replace_host(self, file_hash, old_host_address, from_address=None):
         if not from_address:

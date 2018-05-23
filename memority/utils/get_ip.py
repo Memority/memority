@@ -36,7 +36,7 @@ async def get_ip():
 
 
 async def check_if_white_ip(ip):
-    with contextlib.suppress(asyncio.TimeoutError):
+    with contextlib.suppress(asyncio.TimeoutError, aiohttp.client_exceptions.ClientConnectorError):
         async with aiohttp.ClientSession() as session:
             async with session.get(f'http://{ip}/', timeout=1) as resp:
                 if resp:

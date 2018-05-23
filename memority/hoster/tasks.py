@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import logging
 import random
 from contextlib import redirect_stdout, suppress
@@ -214,14 +215,16 @@ async def make_task(file):
 
 
 async def check_ip():
-    ip_from_contract = memo_db_contract.get_host_ip(settings.address)
-    my_ip = await get_ip()
-    my_ip = f'{my_ip}:{settings.hoster_app_port}'
-    if ip_from_contract != my_ip:
-        logger.warning(f'IP addresses are not equal. Replacing in contract... | '
-                       f'IP from contract: {ip_from_contract} | '
-                       f'My IP: {my_ip}')
-        await memo_db_contract.add_or_update_host(ip=my_ip, address=settings.address)
+    with contextlib.suppress(settings.Locked):
+        ip_from_contract = memo_db_contract.get_host_ip(settings.address)
+        if ip_from_contract:
+            my_ip = await get_ip()
+            my_ip = f'{my_ip}:{settings.hoster_app_port}'
+            if ip_from_contract != my_ip:
+                logger.warning(f'IP addresses are not equal. Replacing in contract... | '
+                               f'IP from contract: {ip_from_contract} | '
+                               f'My IP: {my_ip}')
+                await memo_db_contract.add_or_update_host(ip=my_ip, address=settings.address)
 
 
 def get_hour_and_minute_by_number(my_monitoring_number) -> dict:
