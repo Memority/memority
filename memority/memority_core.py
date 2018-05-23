@@ -15,7 +15,7 @@ from threading import Thread
 
 import renter
 import smart_contracts
-from bugtracking import raven_client
+# from bugtracking import raven_client
 from hoster.server import create_hoster_app
 from logger import setup_logging
 from renter.server import create_renter_app
@@ -47,7 +47,10 @@ def enqueue_output(out, queue):
 
 
 class MemorityCore:
-    def __init__(self, *, event_loop, _password=None, _run_geth=True) -> None:
+    def __init__(self, *, event_loop=None, _password=None, _run_geth=True) -> None:
+        if not event_loop:
+            event_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(event_loop)
         self.event_loop = event_loop
         self.password = _password
         self.run_geth = _run_geth
@@ -70,7 +73,7 @@ class MemorityCore:
             pass
         except Exception:
             traceback.print_exc()
-            raven_client.captureException()
+            # raven_client.captureException()
         finally:
             self.cleanup()
 
@@ -186,7 +189,7 @@ class MemorityCore:
         print(f'Renter App started on http://{renter_address}:{renter_app_port}')
         # endregion
 
-    def cleanup(self):
+    def cleanup(self, *args, **kwargs):
         with contextlib.suppress(RuntimeError, AttributeError):
             self.hoster_server.close()
             self.event_loop.run_until_complete(self.hoster_app.shutdown())
@@ -200,8 +203,6 @@ class MemorityCore:
         if self.p:
             self.p.terminate()
             self.p.wait()
-        # if self.t:
-        #     self.t.join()
 
 
 ON_POSIX = 'posix' in sys.builtin_module_names

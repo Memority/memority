@@ -5,7 +5,7 @@ from logging.config import DictConfigurator
 
 from aiohttp import web
 
-from bugtracking import raven_client
+# from bugtracking import raven_client
 from settings import settings
 
 __all__ = ['setup_logging']
@@ -41,7 +41,7 @@ def rotating_log_file_handler(filename, formatter):
 
 
 _aiohttp_logger_config = {
-    'handlers': ['stdout', 'aiohttp_log_file', 'sentry'],
+    'handlers': ['stdout', 'aiohttp_log_file'],
     'level': 'INFO',
 }
 
@@ -52,10 +52,10 @@ def setup_logging():
             'version': 1,
             'disable_existing_loggers': True,
             'formatters': {
-                'sentry': {
-                    'format': '[%(asctime)s][%(levelname)s] %(name)s '
-                              '%(filename)s:%(funcName)s:%(lineno)d | %(message)s',
-                },
+                # 'sentry': {
+                #     'format': '[%(asctime)s][%(levelname)s] %(name)s '
+                #               '%(filename)s:%(funcName)s:%(lineno)d | %(message)s',
+                # },
                 'default': {
                     'format': '[%(levelname)s] [%(asctime)s] [%(module)s] || %(message)s'
                 },
@@ -66,12 +66,12 @@ def setup_logging():
                     'class': 'logging.StreamHandler',
                     'formatter': 'default'
                 },
-                'sentry': {
-                    'level': 'ERROR',
-                    'class': 'raven.handlers.logging.SentryHandler',
-                    'client': raven_client,
-                    'formatter': 'sentry'
-                },
+                # 'sentry': {
+                #     'level': 'ERROR',
+                #     'class': 'raven.handlers.logging.SentryHandler',
+                #     'client': raven_client,
+                #     'formatter': 'sentry'
+                # },
                 'aiohttp_log_file': rotating_log_file_handler("aiohttp", "default"),
                 'memority_log_file': rotating_log_file_handler("memority", "default"),
                 'monitoring_log_file': rotating_log_file_handler("monitoring", "default"),
@@ -84,15 +84,15 @@ def setup_logging():
                 'aiohttp.web': _aiohttp_logger_config,
                 'aiohttp.websocket': _aiohttp_logger_config,
                 'memority': {
-                    'handlers': ['stdout', 'memority_log_file', 'sentry'],
+                    'handlers': ['stdout', 'memority_log_file'],
                     'level': 'INFO',
                 },
                 'monitoring': {
-                    'handlers': ['stdout', 'monitoring_log_file', 'sentry'],
+                    'handlers': ['stdout', 'monitoring_log_file'],
                     'level': 'INFO',
                 },
                 'apscheduler': {
-                    'handlers': ['stdout', 'monitoring_log_file', 'sentry'],
+                    'handlers': ['stdout', 'monitoring_log_file'],
                     'level': 'INFO',
                 },
             }

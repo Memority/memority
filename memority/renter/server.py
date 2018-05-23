@@ -4,7 +4,7 @@ import renter.views
 import traceback
 from aiohttp import web, WSMsgType
 from asyncio import CancelledError
-from bugtracking import raven_client
+# from bugtracking import raven_client
 from functools import partial
 from settings import settings
 from utils import check_first_run
@@ -109,7 +109,7 @@ async def error_middleware(request, handler):
         }, status=403)
     except Exception as ex:
         traceback.print_exc()
-        raven_client.captureException()
+        # raven_client.captureException()
         return web.json_response({
             "status": "error",
             "message": f'{ex.__class__.__name__}: {ex}'

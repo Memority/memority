@@ -275,7 +275,12 @@ async def update_schedule(_scheduler):
 
 
 def create_scheduler():
-    _scheduler = AsyncIOScheduler()
+    try:
+        _scheduler = AsyncIOScheduler()
+    except:  # ToDo: specify exception
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        _scheduler = AsyncIOScheduler()
     _scheduler.update = lambda: asyncio.ensure_future(update_schedule(_scheduler))
     _scheduler.update()
     return _scheduler

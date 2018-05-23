@@ -1,7 +1,6 @@
 import errno
 import sys
 
-import asyncio
 import contextlib
 import json
 import os
@@ -15,12 +14,13 @@ from PyQt5.QtWebSockets import QWebSocket
 from PyQt5.QtWidgets import *
 from datetime import datetime, timedelta
 from functools import partial
-from quamash import QEventLoop
 
-from bugtracking import raven_client
 from memority_core import MemorityCore
 from settings import settings as daemon_settings
 from ui_settings import ui_settings
+
+# from bugtracking import raven_client
+
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
@@ -45,33 +45,17 @@ def parse_date_from_string(d_: str):
     return datetime.strptime(d_[:-4], '%Y-%m-%d %H:%M').date()
 
 
-class R:
+class Worker(QThread):
 
-    def __init__(self, logger_widget) -> None:
-        self.logger_widget = logger_widget
+    def __init__(self, parent=None):
+        super(Worker, self).__init__(parent)
+        self.memority_core = MemorityCore()
 
-    def write(self, msg):
-        if msg.strip():
-            self.logger_widget.appendPlainText(msg.strip())
-            self.logger_widget.moveCursor(QTextCursor.End)
+    def stop(self):
+        self.memority_core.cleanup()
 
-
-class LogWindow(QMainWindow):
-
-    def __init__(self, _memority_core, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.memority_core = _memority_core
-
-        self.setMinimumSize(QSize(1024, 480))
-        self.setWindowTitle("Memority Core")
-        self.logger = QPlainTextEdit()
-        self.logger.setReadOnly(True)
-        self.logger.document().setMaximumBlockCount(10000)
-        self.setCentralWidget(self.logger)
-
-    def closeEvent(self, event):
-        event.ignore()
-        self.hide()
+    def run(self):
+        self.memority_core.run()
 
 
 class DaemonInterface:
@@ -96,7 +80,7 @@ class DaemonInterface:
             return resp.get('data').get('role')
 
     def ping_daemon(self):
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(requests.exceptions.ConnectionError):
             resp = requests.get(f'{self.daemon_address}/ping/')
             return resp.status_code == 200
 
@@ -252,21 +236,25 @@ class MainWindow(QMainWindow):
             int((sg.width() - widget.width()) / 4),
             int((sg.height() - widget.height()) / 3)
         )
-        self.ui.show()
         self.daemon_started_signal.connect(self.on_daemon_started)
+        self._worker = Worker()
+        self._worker.start()
         self.timer = QTimer(self)
         self.timer.setInterval(500)
         self.timer.timeout.connect(self.ping_daemon)
+        self.timer.start()
 
     def ping_daemon(self):
         if self.daemon_interface.ping_daemon():
             self.daemon_started_signal.emit()
 
     def on_daemon_started(self):
+        self.timer.stop()
         self.unlock_account()
         self.ws_client.error.connect(self.ws_error)
         self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
         self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}'))
+        self.ui.show()
         self.refresh()
 
     def setup_ui(self):
@@ -303,20 +291,14 @@ class MainWindow(QMainWindow):
 
         show_action = QAction("Show", self)
         hide_action = QAction("Hide", self)
-        show_log_action = QAction("Show log", self)
-        hide_log_action = QAction("Hide log", self)
         quit_action = QAction("Exit", self)
-        show_action.triggered.connect(self.show)
-        hide_action.triggered.connect(self.hide)
-        show_log_action.triggered.connect(log_window.show)
-        hide_log_action.triggered.connect(log_window.hide)
+        show_action.triggered.connect(self.ui.show)
+        hide_action.triggered.connect(self.ui.hide)
         quit_action.triggered.connect(self.shutdown)
 
         tray_menu = QMenu()
         tray_menu.addAction(show_action)
         tray_menu.addAction(hide_action)
-        tray_menu.addAction(show_log_action)
-        tray_menu.addAction(hide_log_action)
         tray_menu.addAction(quit_action)
         tray_icon.setContextMenu(tray_menu)
         return tray_icon
@@ -388,10 +370,6 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def refresh(self):
-        """
-        get role
-        enable-disable tabs
-        """
         role = self.daemon_interface.get_user_role()
         self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.My_files))
         self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.Hosting_statistics))
@@ -878,11 +856,12 @@ class MainWindow(QMainWindow):
             if err.errno == errno.EADDRINUSE:
                 self.error(
                     'Ports are already in use!\n'
-                    'Seems like Memority Core is already running or another application uses them.'
+                    'Seems like Memority is already running or another application uses them.'
                 )
                 sys.exit(0)
             else:
-                raven_client.captureException()
+                ...
+                # raven_client.captureException()
 
     def unlock_account(self):
         if not self.daemon_interface.is_first_run():
@@ -896,12 +875,11 @@ class MainWindow(QMainWindow):
                 if self.daemon_interface.unlock_account(password):
                     break
                 else:
-                    QMessageBox().critical(None, 'Error!', 'Invalid password!')
+                    self.error('Invalid password!')
                     continue
 
     @staticmethod
     def shutdown():
-        memority_core.cleanup()
         qApp.quit()
         sys.exit(0)
 
@@ -909,16 +887,5 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_EnableHighDpiScaling)
-    loop = QEventLoop(app)
-    asyncio.set_event_loop(loop)
-    memority_core = MemorityCore(
-        event_loop=loop,
-        _password=None,
-        _run_geth=True
-    )
-    log_window = LogWindow(memority_core)
     w = MainWindow()
-    with contextlib.redirect_stdout(R(log_window.logger)):
-        with contextlib.redirect_stderr(R(log_window.logger)):
-            memority_core.run()
     sys.exit(app.exec_())
