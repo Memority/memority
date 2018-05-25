@@ -1,7 +1,7 @@
 import errno
 import sys
 
-import contextlib
+import asyncio
 import json
 import os
 import requests
@@ -14,8 +14,10 @@ from PyQt5.QtWebSockets import QWebSocket
 from PyQt5.QtWidgets import *
 from datetime import datetime, timedelta
 from functools import partial
+from quamash import QEventLoop
 
 from memority_core import MemorityCore
+from pyqt_requests import *
 from settings import settings as daemon_settings
 from ui_settings import ui_settings
 
@@ -27,6 +29,15 @@ if hasattr(Qt, 'AA_EnableHighDpiScaling'):
 
 if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+
+
+def del_from_pool(func):
+    def wrapper(pool: list, item, *args, **kwargs):
+        del pool[pool.index(item)]
+        del item
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def file_size_human_readable(size):
@@ -45,214 +56,217 @@ def parse_date_from_string(d_: str):
     return datetime.strptime(d_[:-4], '%Y-%m-%d %H:%M').date()
 
 
-class Worker(QThread):
-
-    def __init__(self, parent=None):
-        super(Worker, self).__init__(parent)
-        self.memority_core = MemorityCore()
-
-    def stop(self):
-        self.memority_core.cleanup()
-
-    def run(self):
-        self.memority_core.run()
-
-
-class DaemonInterface:
-
-    def __init__(self, daemon_address):
-        self.daemon_address = daemon_address
-
-    def get_user_address(self):
-        resp = requests.get(f'{self.daemon_address}/info/address/').json()
-        if resp.get('status') == 'success':
-            return resp.get('data').get('address')
-
-    def get_user_balance(self):
-        resp = requests.get(f'{self.daemon_address}/user/balance/').json()
-        if resp.get('status') == 'success':
-            return resp.get('data').get('balance') or 0
-        return 0
-
-    def get_user_role(self):
-        resp = requests.get(f'{self.daemon_address}/user/role/').json()
-        if resp.get('status') == 'success':
-            return resp.get('data').get('role')
-
-    def ping_daemon(self):
-        with contextlib.suppress(requests.exceptions.ConnectionError):
-            resp = requests.get(f'{self.daemon_address}/ping/')
-            return resp.status_code == 200
-
-    def is_first_run(self):
-        resp = requests.get(f'{self.daemon_address}/check_first_run/').json()
-        if resp.get('status') == 'success':
-            return resp.get('result')
-
-    def unlock_account(self, password):
-        resp = requests.post(f'{self.daemon_address}/unlock/', json={"password": password})
-        return resp.status_code == 200
-
-    def get_disk_space_for_hosting(self):
-        resp = requests.get(f'{self.daemon_address}/info/disk_space_for_hosting/').json()
-        if resp.get('status') == 'success':
-            return resp.get('data').get('disk_space_for_hosting')
-
-    def get_box_dir(self):
-        resp = requests.get(f'{self.daemon_address}/info/boxes_dir/').json()
-        if resp.get('status') == 'success':
-            return resp.get('data').get('boxes_dir')
-
-    def generate_address(self, password):
-        resp = requests.post(
-            f'{self.daemon_address}/user/create/',
-            json={
-                "password": password
-            }
-        )
-        data = resp.json()
-        if resp.status_code == 201:
-            return True, data.get('address')
-        else:
-            msg = data.get('message')
-            return False, f'Generating address failed.\n{msg}'
-
-    def request_mmr(self, key):
-        resp = requests.post(
-            f'{self.daemon_address}/request_mmr/',
-            json={
-                "key": key
-            }
-        )
-        data = resp.json()
-        if data.get('status') == 'success':
-            return True, data.get('balance')
-        else:
-            msg = data.get('message')
-            return False, f'Requesting MMR failed.\n{msg}\nPlease ensure if the key was entered correctly.'
-
-    def create_account(self, role):
-        resp = requests.post(
-            f'{self.daemon_address}/user/create/',
-            json={
-                "role": role
-            }
-        )
-        if resp.status_code == 201:
-            return True, ...
-        else:
-            data = resp.json()
-            msg = data.get('message')
-            return False, f'Account creation failed.\n{msg}'
-
-    def get_files(self):
-        resp = requests.get(f'{self.daemon_address}/files/').json()
-        return resp.get('data').get('files')
-
-    def export_account(self, filename):
-        resp = requests.post(
-            f'{self.daemon_address}/user/export/',
-            json={
-                "filename": filename
-            }
-        )
-        if resp.status_code != 200:
-            data = resp.json()
-            msg = data.get('message')
-            return False, msg
-        return True, ...
-
-    def import_account(self, filename):
-        resp = requests.post(
-            f'{self.daemon_address}/user/import/',
-            json={
-                "filename": filename
-            }
-        )
-        if resp.status_code != 200:
-            data = resp.json()
-            msg = data.get('message')
-            return False, msg
-        return True, ...
-
-    def get_user_ip(self):
-        result = requests.get(f'{self.daemon_address}/info/host_ip/').json()
-        if result.get('status') == 'success':
-            return result.get('data').get('host_ip')
-
-    def get_space_used(self):
-        result = requests.get(f'{self.daemon_address}/info/space_used/').json()
-        if result.get('status') == 'success':
-            return result.get('data').get('space_used')
-
-    def set_disk_space_for_hosting(self, disk_space):
-        requests.post(f'{self.daemon_address}/disk_space/', json={"disk_space": disk_space})
-
-    def change_box_dir(self, box_dir):
-        requests.post(f'{self.daemon_address}/change_box_dir/', json={"box_dir": box_dir})
-
-    def get_file_metadata(self, file_hash):
-        result = requests.get(f'{self.daemon_address}/files/{file_hash}/').json()
-        if result.get('status') == 'success':
-            return result.get('data')
-
-    def prolong_deposit_for_file(self, file_hash, value):
-        resp = requests.post(
-            f'{self.daemon_address}/files/{file_hash}/deposit/',
-            json={
-                "value": value
-            }
-        )
-        if resp.status_code == 200:
-            return True, ...
-        else:
-            data = resp.json()
-            msg = data.get('message')
-            return False, f'Deposit creation failed.\n{msg}'
-
-    def get_transactions(self):
-        result = requests.get(f'{self.daemon_address}/transactions/').json()
-        if result.get('status') == 'success':
-            return result.get('data')
+# class DaemonInterface:
+#
+#     def __init__(self, daemon_address):
+#         self.daemon_address = daemon_address
+#
+#     def get_user_address(self):
+#         resp = requests.get(f'{self.daemon_address}/info/address/').json()
+#         if resp.get('status') == 'success':
+#             return resp.get('data').get('address')
+#
+#     def get_user_balance(self):
+#         resp = requests.get(f'{self.daemon_address}/user/balance/').json()
+#         if resp.get('status') == 'success':
+#             return resp.get('data').get('balance') or 0
+#         return 0
+#
+#     def get_user_role(self):
+#         resp = requests.get(f'{self.daemon_address}/user/role/').json()
+#         if resp.get('status') == 'success':
+#             return resp.get('data').get('role')
+#
+#     def ping_daemon(self):
+#         with contextlib.suppress(requests.exceptions.ConnectionError):
+#             resp = requests.get(f'{self.daemon_address}/ping/')
+#             return resp.status_code == 200
+#
+#     def is_first_run(self):
+#         resp = requests.get(f'{self.daemon_address}/check_first_run/').json()
+#         if resp.get('status') == 'success':
+#             return resp.get('result')
+#
+#     def unlock_account(self, password):
+#         resp = requests.post(f'{self.daemon_address}/unlock/', json={"password": password})
+#         return resp.status_code == 200
+#
+#     def get_disk_space_for_hosting(self):
+#         resp = requests.get(f'{self.daemon_address}/info/disk_space_for_hosting/').json()
+#         if resp.get('status') == 'success':
+#             return resp.get('data').get('disk_space_for_hosting')
+#
+#     def get_box_dir(self):
+#         resp = requests.get(f'{self.daemon_address}/info/boxes_dir/').json()
+#         if resp.get('status') == 'success':
+#             return resp.get('data').get('boxes_dir')
+#
+#     def generate_address(self, password):
+#         resp = requests.post(
+#             f'{self.daemon_address}/user/create/',
+#             json={
+#                 "password": password
+#             }
+#         )
+#         data = resp.json()
+#         if resp.status_code == 201:
+#             return True, data.get('address')
+#         else:
+#             msg = data.get('message')
+#             return False, f'Generating address failed.\n{msg}'
+#
+#     def request_mmr(self, key):
+#         resp = requests.post(
+#             f'{self.daemon_address}/request_mmr/',
+#             json={
+#                 "key": key
+#             }
+#         )
+#         data = resp.json()
+#         if data.get('status') == 'success':
+#             return True, data.get('balance')
+#         else:
+#             msg = data.get('message')
+#             return False, f'Requesting MMR failed.\n{msg}\nPlease ensure if the key was entered correctly.'
+#
+#     def create_account(self, role):
+#         resp = requests.post(
+#             f'{self.daemon_address}/user/create/',
+#             json={
+#                 "role": role
+#             }
+#         )
+#         if resp.status_code == 201:
+#             return True, ...
+#         else:
+#             data = resp.json()
+#             msg = data.get('message')
+#             return False, f'Account creation failed.\n{msg}'
+#
+#     def get_files(self):
+#         resp = requests.get(f'{self.daemon_address}/files/').json()
+#         return resp.get('data').get('files')
+#
+#     def export_account(self, filename):
+#         resp = requests.post(
+#             f'{self.daemon_address}/user/export/',
+#             json={
+#                 "filename": filename
+#             }
+#         )
+#         if resp.status_code != 200:
+#             data = resp.json()
+#             msg = data.get('message')
+#             return False, msg
+#         return True, ...
+#
+#     def import_account(self, filename):
+#         resp = requests.post(
+#             f'{self.daemon_address}/user/import/',
+#             json={
+#                 "filename": filename
+#             }
+#         )
+#         if resp.status_code != 200:
+#             data = resp.json()
+#             msg = data.get('message')
+#             return False, msg
+#         return True, ...
+#
+#     def get_user_ip(self):
+#         result = requests.get(f'{self.daemon_address}/info/host_ip/').json()
+#         if result.get('status') == 'success':
+#             return result.get('data').get('host_ip')
+#
+#     def get_space_used(self):
+#         result = requests.get(f'{self.daemon_address}/info/space_used/').json()
+#         if result.get('status') == 'success':
+#             return result.get('data').get('space_used')
+#
+#     def set_disk_space_for_hosting(self, disk_space):
+#         requests.post(f'{self.daemon_address}/disk_space/', json={"disk_space": disk_space})
+#
+#     def change_box_dir(self, box_dir):
+#         requests.post(f'{self.daemon_address}/change_box_dir/', json={"box_dir": box_dir})
+#
+#     def get_file_metadata(self, file_hash):
+#         result = requests.get(f'{self.daemon_address}/files/{file_hash}/').json()
+#         if result.get('status') == 'success':
+#             return result.get('data')
+#
+#     def prolong_deposit_for_file(self, file_hash, value):
+#         resp = requests.post(
+#             f'{self.daemon_address}/files/{file_hash}/deposit/',
+#             json={
+#                 "value": value
+#             }
+#         )
+#         if resp.status_code == 200:
+#             return True, ...
+#         else:
+#             data = resp.json()
+#             msg = data.get('message')
+#             return False, f'Deposit creation failed.\n{msg}'
+#
+#     def get_transactions(self):
+#         result = requests.get(f'{self.daemon_address}/transactions/').json()
+#         if result.get('status') == 'success':
+#             return result.get('data')
 
 
 # noinspection PyArgumentList
 class MainWindow(QMainWindow):
-    daemon_started_signal = pyqtSignal(name="daemon_started_signal")
+    daemon_started = pyqtSignal()
+    unlocked = pyqtSignal()
+    request_pool = []
 
-    # noinspection PyUnresolvedReferences
-    def __init__(self, *args, **kwargs):
+    def __init__(self, event_loop, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.daemon_interface = DaemonInterface(f'http://{daemon_settings.daemon_address}')
         self.ui: QWidget = uic.loadUi(ui_settings.ui_main_window)
         self.setup_ui()
         self.tray_icon = self.setup_tray_icon()
         self.tray_icon.show()
         self.ensure_addr_not_in_use()
+        self.memority_core = MemorityCore(event_loop=event_loop)
+        self.memority_core.prepare()
         self.ws_client = QWebSocket()
+        self.timer = QTimer(self)
+        self.timer.setInterval(500)
+        self.timer.start()
+        self.connect_signals()
         sg = QDesktopWidget().screenGeometry()
         widget = self.ui.geometry()
         self.ui.move(
             int((sg.width() - widget.width()) / 4),
             int((sg.height() - widget.height()) / 3)
         )
-        self.daemon_started_signal.connect(self.on_daemon_started)
-        self._worker = Worker()
-        self._worker.start()
-        self.timer = QTimer(self)
-        self.timer.setInterval(500)
+
+    # noinspection PyUnresolvedReferences
+    def connect_signals(self):
+        self.ws_client.error.connect(self.ws_error)
+        self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
+        self.daemon_started.connect(self.on_daemon_started)
+        self.unlocked.connect(self.on_unlocked)
         self.timer.timeout.connect(self.ping_daemon)
-        self.timer.start()
 
     def ping_daemon(self):
-        if self.daemon_interface.ping_daemon():
-            self.daemon_started_signal.emit()
+        @del_from_pool
+        def done(started: bool):
+            if started:
+                self.daemon_started.emit()
 
+        r = PingRequest()
+        self.request_pool.append(r)
+        r.finished.connect(partial(done, self.request_pool, r))
+        r.send()
+
+    @pyqtSlot()
     def on_daemon_started(self):
         self.timer.stop()
         self.unlock_account()
-        self.ws_client.error.connect(self.ws_error)
-        self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
+
+    @pyqtSlot()
+    def on_unlocked(self):
         self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}'))
         self.ui.show()
         self.refresh()
@@ -864,28 +878,53 @@ class MainWindow(QMainWindow):
                 # raven_client.captureException()
 
     def unlock_account(self):
-        if not self.daemon_interface.is_first_run():
-            while True:
-                password_dialog: QDialog = uic.loadUi(ui_settings.ui_enter_password)
-                password_dialog.password_input.setFocus()
-                if not password_dialog.exec_():
-                    self.shutdown()
-                    sys.exit()
-                password = password_dialog.password_input.text()
-                if self.daemon_interface.unlock_account(password):
-                    break
-                else:
-                    self.error('Invalid password!')
-                    continue
+        @del_from_pool
+        @pyqtSlot()
+        def done_unlock(success: bool):
+            if success:
+                self.unlocked.emit()
+            else:
+                self.error('Invalid password!')
+                nonlocal _unlock_account
+                _unlock_account()
 
-    @staticmethod
-    def shutdown():
+        def _unlock_account():
+            password_dialog: QDialog = uic.loadUi(ui_settings.ui_enter_password)
+            password_dialog.password_input.setFocus()
+            if not password_dialog.exec_():
+                self.shutdown()
+                return
+            password = password_dialog.password_input.text()
+            r = UnlockRequest(password=password)
+            self.request_pool.append(r)
+            r.finished.connect(partial(done_unlock, self.request_pool, r))
+            r.send()
+
+        @del_from_pool
+        @pyqtSlot()
+        def done_check_first_run(first_run: bool):
+            if first_run:
+                self.unlocked.emit()
+            else:
+                nonlocal _unlock_account
+                _unlock_account()
+
+        r = CheckFirstRunRequest()
+        self.request_pool.append(r)
+        r.finished.connect(partial(done_check_first_run, self.request_pool, r))
+        r.send()
+
+    def shutdown(self):
+        self.memority_core.cleanup()
         qApp.quit()
         sys.exit(0)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
     app.setAttribute(Qt.AA_EnableHighDpiScaling)
-    w = MainWindow()
+    loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
+    w = MainWindow(event_loop=loop)
     sys.exit(app.exec_())

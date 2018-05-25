@@ -50,7 +50,6 @@ class MemorityCore:
     def __init__(self, *, event_loop=None, _password=None, _run_geth=True) -> None:
         if not event_loop:
             event_loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(event_loop)
         self.event_loop = event_loop
         self.password = _password
         self.run_geth = _run_geth
@@ -171,9 +170,8 @@ class MemorityCore:
             settings.hoster_app_host,
             settings.hoster_app_port
         )
-        self.hoster_server = self.event_loop.run_until_complete(hoster_app_coroutine)
-        hoster_address, hoster_app_port = self.hoster_server.sockets[0].getsockname()
-        print(f'Hoster App started on http://{hoster_address}:{hoster_app_port}')
+        self.hoster_server = asyncio.run_coroutine_threadsafe(hoster_app_coroutine, self.event_loop)
+        print(f'Hoster App started on http://{settings.hoster_app_host}:{settings.hoster_app_port}')
         # endregion
 
         # region Renter app configuration
@@ -184,13 +182,14 @@ class MemorityCore:
             settings.renter_app_host,
             settings.renter_app_port
         )
-        self.renter_server = self.event_loop.run_until_complete(renter_app_coroutine)
-        renter_address, renter_app_port = self.renter_server.sockets[0].getsockname()
-        print(f'Renter App started on http://{renter_address}:{renter_app_port}')
+        self.renter_server = asyncio.run_coroutine_threadsafe(renter_app_coroutine, self.event_loop)
+        print(f'Renter App started on http://{settings.renter_app_host}:{settings.renter_app_port}')
         # endregion
 
     def cleanup(self, *args, **kwargs):
+        print('Cleanup...')
         with contextlib.suppress(RuntimeError, AttributeError):
+            print('Servers...')
             self.hoster_server.close()
             self.event_loop.run_until_complete(self.hoster_app.shutdown())
             self.event_loop.run_until_complete(self.hoster_app_handler.shutdown(60.0))
@@ -200,9 +199,12 @@ class MemorityCore:
             self.event_loop.run_until_complete(self.renter_app.shutdown())
             self.event_loop.run_until_complete(self.renter_app_handler.shutdown(60.0))
             self.event_loop.run_until_complete(self.renter_app.cleanup())
+            print('Servers closed.')
         if self.p:
+            print('Geth...')
             self.p.terminate()
             self.p.wait()
+        print('Done.')
 
 
 ON_POSIX = 'posix' in sys.builtin_module_names
