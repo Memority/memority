@@ -1,28 +1,14 @@
-import json
-from PyQt5.QtCore import *
-from PyQt5.QtNetwork import *
+from PyQt5.QtCore import pyqtSignal
 
-from settings import settings
+from .base import AbstractGetRequest
 
 
-class CheckFirstRunRequest(QObject):
+class CheckFirstRunRequest(AbstractGetRequest):
     finished = pyqtSignal(bool)
 
-    def __init__(self, parent=None):
-        print('init CheckFirstRunRequest')
-        super().__init__(parent)
-        self.url = QUrl(f'http://{settings.daemon_address}/check_first_run/')
-        self.req = QNetworkRequest(self.url)
-        self.nam = QNetworkAccessManager()
-        self.nam.finished.connect(self.process_response)
+    def __init__(self):
+        super().__init__('/check_first_run/')
 
-    def send(self):
-        print('send CheckFirstRunRequest')
-        self.nam.get(self.req)
-
-    def process_response(self, response: QNetworkReply):
-        print('done CheckFirstRunRequest')
-        data: QByteArray = response.readAll()
-        resp_data = json.loads(data.data().decode('utf-8'))
-        if resp_data.get('status') == 'success':
-            self.finished.emit(resp_data.get('result'))
+    def process_response_data(self, data: dict):
+        if data.get('status') == 'success':
+            self.finished.emit(data.get('result'))
