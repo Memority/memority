@@ -19,7 +19,7 @@ from .create_account import CreateAccountRequest
 from .export_account import ExportAccountRequest
 from .generate_address import GenerateAddressRequest
 from .import_account import ImportAccountRequest
-from .proloong_deposit_for_file import ProlongDepositForFileRequest
+from .prolong_deposit_for_file import ProlongDepositForFileRequest
 from .request_mmr import RequestMMRRequest
 from .set_disk_space_for_hosting import SetDiskSpaceForHostingRequest
 from .unlock_account import UnlockRequest
