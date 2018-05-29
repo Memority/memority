@@ -72,9 +72,11 @@ class MainWindow(QMainWindow):
         self.memority_core = MemorityCore(event_loop=event_loop)
         self.memority_core.prepare()
         self.ws_client = QWebSocket()
-        self.timer = QTimer(self)
-        self.timer.setInterval(500)
-        self.timer.start()
+        self.ping_daemon_timer = QTimer(self)
+        self.ping_daemon_timer.setInterval(500)
+        self.ping_daemon_timer.start()
+        self.sync_status_timer = QTimer(self)
+        self.sync_status_timer.setInterval(2000)
         self.connect_signals()
         sg = QDesktopWidget().screenGeometry()
         widget = self.ui.geometry()
@@ -90,6 +92,7 @@ class MainWindow(QMainWindow):
 
         self.ui.transaction_history_lbl.hide()
         self.ui.transaction_history_table.hide()
+        self.ui.sync_display_widget.hide()
         self.ui.copy_address_btn.setDisabled(True)
         header = self.ui.transaction_history_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
@@ -137,7 +140,8 @@ class MainWindow(QMainWindow):
         self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
         self.daemon_started.connect(self.on_daemon_started)
         self.unlocked.connect(self.on_unlocked)
-        self.timer.timeout.connect(self.ping_daemon)
+        self.ping_daemon_timer.timeout.connect(self.ping_daemon)
+        self.sync_status_timer.timeout.connect(self.update_sync_status)
 
     def ensure_addr_not_in_use(self):
         try:
@@ -171,9 +175,25 @@ class MainWindow(QMainWindow):
         r.finished.connect(partial(done, self.request_pool, r))
         r.send()
 
+    def update_sync_status(self):
+        @del_from_pool
+        @pyqtSlot()
+        def got_sync_status(syncing: bool, percent: int):
+            if syncing:
+                self.ui.sync_display_widget.show()
+                self.ui.sync_progressbar.setValue(percent)
+            else:
+                self.ui.sync_display_widget.hide()
+
+        r = GetSyncStatusRequest()
+        self.request_pool.append(r)
+        r.finished.connect(partial(got_sync_status, self.request_pool, r))
+        r.send()
+
     @pyqtSlot()
     def on_daemon_started(self):
-        self.timer.stop()
+        self.ping_daemon_timer.stop()
+        self.sync_status_timer.start()
         self.unlock_account()
 
     def unlock_account(self):
@@ -311,7 +331,6 @@ class MainWindow(QMainWindow):
         @del_from_pool
         @pyqtSlot()
         def got_address(address: str):
-            print('*' * 100, address, bool(address), type(address))
             if address:
                 self.ui.copy_address_btn.setEnabled(True)
             else:

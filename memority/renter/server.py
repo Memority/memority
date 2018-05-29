@@ -131,6 +131,7 @@ def create_renter_app():
     app = web.Application(middlewares=[allowed_hosts_middleware, error_middleware])
     app.router.add_route('GET', '/', websocket_handler)
     app.router.add_route('GET', '/ping/', ping_handler)
+    app.router.add_route('GET', '/sync_status/', sync_status_handler)
     app.router.add_route('GET', '/files/', list_files)
     app.router.add_route('GET', '/files/{file_hash}/', file_info)
     app.router.add_route('POST', '/files/{file_hash}/deposit/', update_file_deposit)

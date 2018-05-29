@@ -21,7 +21,8 @@ from utils import ask_for_password, check_first_run, DecryptionError, get_ip, ch
 
 __all__ = ['upload_file', 'download_file', 'list_files', 'view_config', 'set_disk_space_for_hosting',
            'upload_to_hoster', 'view_user_info', 'create_account', 'unlock', 'import_account', 'export_account',
-           'request_mmr', 'change_box_dir', 'file_info', 'update_file_deposit', 'list_transactions']
+           'request_mmr', 'change_box_dir', 'file_info', 'update_file_deposit', 'list_transactions',
+           'sync_status_handler']
 
 logger = logging.getLogger('memority')
 
@@ -40,6 +41,28 @@ def _error_response(msg):
         "status": "error",
         "message": msg
     }
+
+
+async def sync_status_handler(request):
+    w3 = smart_contracts.smart_contract_api.create_w3()
+    status = w3.eth.syncing
+    if status:
+        current = status.get('currentBlock')
+        highest = status.get('highestBlock')
+        percent = int(current / highest * 100)
+        data = {
+            "syncing": True,
+            "percent": percent
+        }
+    else:
+        data = {
+            "syncing": False,
+            "percent": 100
+        }
+    return web.json_response({
+        "status": "success",
+        "data": data
+    })
 
 
 async def upload_to_hoster(hoster, data, file, _logger=None):

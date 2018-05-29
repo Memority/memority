@@ -3,6 +3,7 @@ from .check_first_run import CheckFirstRunRequest
 from .get_box_dir import GetBoxDirRequest
 from .get_space_for_hosting import GetDiskSpaceForHostingRequest
 from .get_space_used import GetSpaceUsedRequest
+from .get_sync_status import GetSyncStatusRequest
 from .get_user_address import GetUserAddressRequest
 from .get_user_balance import GetUserBalanceRequest
 from .get_user_files import GetUserFilesRequest
