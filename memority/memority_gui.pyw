@@ -90,6 +90,7 @@ class MainWindow(QMainWindow):
 
         self.ui.transaction_history_lbl.hide()
         self.ui.transaction_history_table.hide()
+        self.ui.copy_address_btn.setDisabled(True)
         header = self.ui.transaction_history_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
@@ -474,14 +475,14 @@ class MainWindow(QMainWindow):
         # region Disk Space
         r = GetDiskSpaceForHostingRequest()
         self.request_pool.append(r)
-        r.finished.connect(partial(got_user_role, self.request_pool, r))
+        r.finished.connect(partial(got_disk_space_for_hosting, self.request_pool, r))
         r.send()
         # endregion
 
         # region Box Dir
         r = GetBoxDirRequest()
         self.request_pool.append(r)
-        r.finished.connect(partial(got_user_role, self.request_pool, r))
+        r.finished.connect(partial(got_box_dir, self.request_pool, r))
         r.send()
         # endregion
 
@@ -517,7 +518,7 @@ class MainWindow(QMainWindow):
             }.get(create_account_dialog.role_input.currentIndex())
 
             self.log(f'Creating account for role "{role}"...\n'
-                     f'This can take up to 60 seconds, as transaction is being written in blockchain.')
+                     f'This can take some time, as transaction is being written in blockchain.')
             if role in ['client', 'both']:
                 self.log('Creating client account. When finished, the "My Files" tab appears.')
                 r = CreateAccountRequest(role='client')
@@ -648,7 +649,7 @@ class MainWindow(QMainWindow):
             self.refresh()
 
         self.log('Adding your address and IP to contract...\n'
-                 'This can take up to 60 seconds, as transaction is being written in blockchain.\n'
+                 'This can take some time, as transaction is being written in blockchain.\n'
                  'When finished, the "Hosting statistics" tab appears.')
 
         r = CreateAccountRequest(role='host')
@@ -715,7 +716,7 @@ class MainWindow(QMainWindow):
             @pyqtSlot(QDate)
             def upd_value(date: QDate):
                 deposit_end = date.toPyDate()
-                hours = (deposit_end - datetime.now().date()).days * 24
+                hours = (deposit_end - deposit_ends_on.date()).days * 24
                 _value = hours * price_per_hour
                 dialog.deposit_size_input.setValue(_value)
 

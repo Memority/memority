@@ -137,7 +137,7 @@ async def upload_file(**kwargs):
             return _error_response(f'Deposit can not be bigger than your balance.'
                                    f'| mmr balance: {token_balance}')
         await notify_user(f'Creating deposit for file {file.hash}, value: {tokens_to_deposit} MMR...'
-                          f'This can take up to 60 seconds, as transaction is being written in blockchain.')
+                          f'This can take some time, as transaction is being written in blockchain.')
         await client_contract.make_deposit(value=tokens_to_deposit, file_hash=file.hash)
 
         if not await token_contract.get_deposit(file_hash=file.hash):
@@ -220,7 +220,7 @@ async def upload_file(**kwargs):
     try:
         logger.info(f'Sending file metadata to contract | file: {file.hash}')
         await notify_user(f'Sending file metadata to contract | file: {file.hash}...\n'
-                          f'This can take up to 60 seconds, as transaction is being written in blockchain.')
+                          f'This can take some time, as transaction is being written in blockchain.')
         await client_contract.add_hosts(**file_metadata_for_contract)
     except Exception as err:
         # raven_client.captureException()

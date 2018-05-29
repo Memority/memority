@@ -14,3 +14,5 @@ class GetUserAddressRequest(AbstractGetRequest):
             self.finished.emit(
                 data.get('data').get('address')
             )
+        else:
+            self.finished.emit('')

@@ -15,7 +15,7 @@ class RequestMMRRequest(AbstractPostRequest):
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
             self.finished.emit(
-                True, data.get('balance')
+                True, str(data.get('balance'))
             )
         else:
             msg = data.get('message')
