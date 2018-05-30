@@ -70,6 +70,7 @@ class MainWindow(QMainWindow):
         self.tray_icon = self.setup_tray_icon()
         self.tray_icon.show()
         self.ensure_addr_not_in_use()
+        self.event_loop = event_loop
         self.memority_core = MemorityCore(event_loop=event_loop)
         self.memority_core.prepare()
         self.ws_client = QWebSocket()
@@ -991,16 +992,14 @@ class MainWindow(QMainWindow):
             event.ignore()
 
     def shutdown(self):
-        self.memority_core.cleanup()
+        self.sync_status_timer.stop()
         for task in asyncio.Task.all_tasks():
             task.cancel()
+        self.memority_core.cleanup()
         qApp.quit()
+        self.event_loop.stop()
+        self.event_loop.close()
         sys.exit(0)
-
-
-def shutdown():
-    for task in asyncio.Task.all_tasks():
-        task.cancel()
 
 
 if __name__ == '__main__':
