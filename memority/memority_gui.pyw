@@ -23,6 +23,7 @@ from ui_settings import ui_settings
 
 # from bugtracking import raven_client
 
+__version__ = 'v0.1.0'
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
@@ -238,6 +239,24 @@ class MainWindow(QMainWindow):
         self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}'))
         self.ui.show()
         self.refresh()
+        self.check_updates()
+
+    def check_updates(self):
+        @del_from_pool
+        @pyqtSlot()
+        def got_response(latest_version, download_url):
+            if latest_version > __version__:
+                self.notify(
+                    f'<html><body>'
+                    f'<p>New version is available!</p>'
+                    f'<p>You can download it on <a href={download_url}>{download_url}</a></p>'
+                    f'</html></body>'
+                )
+
+        r = GetLatestVersionRequest()
+        self.request_pool.append(r)
+        r.finished.connect(partial(got_response, self.request_pool, r))
+        r.send()
 
     def clear_layout(self, layout):
         if layout is not None:

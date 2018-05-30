@@ -1,8 +1,7 @@
 import json
 from PyQt5.QtCore import *
 from PyQt5.QtNetwork import *
-from abc import ABC, abstractmethod
-from abc import ABCMeta
+from abc import ABC, abstractmethod, ABCMeta
 
 from settings import settings
 

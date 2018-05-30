@@ -1,6 +1,7 @@
 # region GET requests
 from .check_first_run import CheckFirstRunRequest
 from .get_box_dir import GetBoxDirRequest
+from .get_latest_version import GetLatestVersionRequest
 from .get_space_for_hosting import GetDiskSpaceForHostingRequest
 from .get_space_used import GetSpaceUsedRequest
 from .get_sync_status import GetSyncStatusRequest
