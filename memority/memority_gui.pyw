@@ -1009,7 +1009,5 @@ if __name__ == '__main__':
     app.setAttribute(Qt.AA_EnableHighDpiScaling)
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
-    loop.add_signal_handler(signal.SIGHUP, shutdown)
-    loop.add_signal_handler(signal.SIGTERM, shutdown)
     w = MainWindow(event_loop=loop)
     sys.exit(app.exec_())
