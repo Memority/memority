@@ -115,8 +115,9 @@ async def perform_monitoring_for_file(file: HosterFile):
         a.lower()
         for a in file.client_contract.get_file_hosts(file.hash)
     ]:
-        logger.info(f'Deleting file (i am not in file host list from contract) | file: {file.hash}')
-        file.delete()
+        logger.info(f'Deleting file (i am not in file host list from contract) | file: {file.hash} '
+                    f'| {file.client_contract.get_file_hosts(file.hash)}')
+        # file.delete()
         return
 
     if not await file.check_deposit():
