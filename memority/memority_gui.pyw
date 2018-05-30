@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
                     self.clear_layout(item.layout())
 
     def log(self, msg):
-        self.ui.log_widget.appendPlainText(msg)
+        self.ui.log_widget.appendHtml(msg)
         self.ui.log_widget.moveCursor(QTextCursor.End)
         self.ui.log_widget.repaint()
 
@@ -1010,4 +1010,4 @@ if __name__ == '__main__':
     loop = QEventLoop(app)
     asyncio.set_event_loop(loop)
     w = MainWindow(event_loop=loop)
-    sys.exit(app.exec_())
+    loop.run_forever()
