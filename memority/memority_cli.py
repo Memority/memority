@@ -132,7 +132,7 @@ async def create_account(args):
         return
 
     print(f'Creating account for role "{role}"...\n'
-          f'This can take up to 60 seconds, as transaction is being written in blockchain.')
+          f'This can take some time, as transaction is being written in blockchain.')
 
     if role in ['client', 'both']:
         print('Creating client account...')

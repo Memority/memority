@@ -320,6 +320,8 @@ class MemoDBContract(Contract):
     def get_transactions(self, address=None):
         if not address:
             address = settings.address
+        if not address:
+            return []
         res = []
         tx_count = self.contract.transactionsCount(address)
         for i in range(tx_count):

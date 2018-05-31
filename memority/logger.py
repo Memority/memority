@@ -1,32 +1,10 @@
-import json
 import os
-from logging import Handler, NOTSET, Formatter
 from logging.config import DictConfigurator
-
-from aiohttp import web
 
 from bugtracking import raven_client
 from settings import settings
 
 __all__ = ['setup_logging']
-
-
-class WSLogHandler(Handler):
-    def __init__(self, *, level=NOTSET, ws: web.WebSocketResponse):
-        super().__init__(level)
-        self.ws = ws
-        self.setFormatter(
-            Formatter('[%(levelname)s] [%(asctime)s] [%(module)s] || %(message)s')
-        )
-
-    def emit(self, record):
-        log_entry = self.format(record)
-        data = json.dumps({
-            "status": "action_needed",
-            "details": "append_logs",
-            "log_string": log_entry
-        })
-        self.ws._writer.send(data, binary=False, compress=None)
 
 
 def rotating_log_file_handler(filename, formatter):
