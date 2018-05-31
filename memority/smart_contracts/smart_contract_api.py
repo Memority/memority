@@ -11,7 +11,7 @@ from web3 import Web3, IPCProvider, HTTPProvider
 from web3.contract import ConciseContract
 from web3.exceptions import BadFunctionCallOutput
 
-# from bugtracking import raven_client
+from bugtracking import raven_client
 from settings import settings
 
 logger = logging.getLogger('memority')
@@ -90,7 +90,7 @@ async def _unlock_account():
         address = settings.address
         w3.personal.unlockAccount(address, password)
     except Exception as err:
-        # raven_client.captureException()
+        raven_client.captureException()
         logger.error(f'Account unlocking failed | address: {settings.address} '
                      f'| exception: {err.__class__.__name__} | message: {str(err)}')
         raise

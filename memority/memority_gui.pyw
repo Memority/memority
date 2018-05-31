@@ -4,7 +4,6 @@ import sys
 import asyncio
 import json
 import os
-import signal
 import socket
 from PyQt5 import uic
 from PyQt5.QtCore import *
@@ -16,12 +15,11 @@ from datetime import datetime, timedelta
 from functools import partial
 from quamash import QEventLoop
 
+from bugtracking import raven_client
 from memority_core import MemorityCore
 from pyqt_requests import *
 from settings import settings as daemon_settings
 from ui_settings import ui_settings
-
-# from bugtracking import raven_client
 
 __version__ = 'v0.1.0'
 
@@ -163,8 +161,7 @@ class MainWindow(QMainWindow):
                 )
                 sys.exit(0)
             else:
-                ...
-                # raven_client.captureException()
+                raven_client.captureException()
 
     def ping_daemon(self):
         @del_from_pool

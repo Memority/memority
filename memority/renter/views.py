@@ -9,7 +9,7 @@ from functools import partial
 from sqlalchemy.exc import IntegrityError
 
 import smart_contracts
-# from bugtracking import raven_client
+from bugtracking import raven_client
 from models import Host, RenterFile, HosterFile
 from settings import settings
 from smart_contracts import client_contract, token_contract, memo_db_contract, import_private_key_to_eth
@@ -94,7 +94,7 @@ async def upload_to_hoster(hoster, data, file, _logger=None):
                         f'| message: {err.__class__.__name__} {str(err)}')
         return hoster, False
     except Exception as err:
-        # raven_client.captureException()
+        raven_client.captureException()
         _logger.error(f'Uploading to hoster failed | file: {file.hash} | hoster: {hoster.address} '
                       f'| message: {err.__class__.__name__} {str(err)}')
         return hoster, False
@@ -117,7 +117,7 @@ async def upload_file_host_list_to_hoster(hoster, data, file):
         logger.info(f'File host list is uploaded | file: {file.hash} | hoster ip: {ip}')
         return hoster, True
     except Exception as err:
-        # raven_client.captureException()
+        raven_client.captureException()
         logger.warning(f'Uploading host list to hoster failed | file: {file.hash} | hoster: {hoster.address} '
                        f'| message: {err.__class__.__name__} {str(err)}')
         return hoster, False
@@ -246,7 +246,7 @@ async def upload_file(**kwargs):
                           f'This can take some time, as transaction is being written in blockchain.')
         await client_contract.add_hosts(**file_metadata_for_contract)
     except Exception as err:
-        # raven_client.captureException()
+        raven_client.captureException()
         async with aiohttp.ClientSession() as session:
             for hoster in hosters:
                 await session.delete(f'http://{hoster.ip}/files/{file.hash}/')

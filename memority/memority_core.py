@@ -2,7 +2,6 @@
 import sys
 
 import asyncio
-import contextlib
 import locale
 import os
 import platform
@@ -15,7 +14,7 @@ from threading import Thread
 
 import renter
 import smart_contracts
-# from bugtracking import raven_client
+from bugtracking import raven_client
 from hoster.server import create_hoster_app
 from logger import setup_logging
 from renter.server import create_renter_app
@@ -72,7 +71,7 @@ class MemorityCore:
             pass
         except Exception:
             traceback.print_exc()
-            # raven_client.captureException()
+            raven_client.captureException()
         finally:
             self.cleanup()
 

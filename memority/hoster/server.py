@@ -1,6 +1,6 @@
 from aiohttp import web
 
-# from bugtracking import raven_client
+from bugtracking import raven_client
 from .tasks import create_scheduler
 from .views import *
 
@@ -16,7 +16,7 @@ async def error_middleware(request, handler):
             "message": ex.reason
         }, status=ex.status)
     except Exception as ex:
-        # raven_client.captureException()
+        raven_client.captureException()
         return web.json_response({
             "status": "error",
             "message": f'{ex.__class__.__name__}: {ex}'
