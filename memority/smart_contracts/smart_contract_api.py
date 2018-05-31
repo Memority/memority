@@ -437,6 +437,12 @@ class ClientContract(Contract):
         try:
             return self.contract.getFileHosts(file_hash)
         except BadFunctionCallOutput:
+            raven_client.captureException(extra={
+                "client_contract": self.address,
+                "file": file_hash,
+                "host": settings.address,
+                "sync_status": str(create_w3().eth.syncing)
+            })
             return []
 
     async def replace_host(self, file_hash, old_host_address, from_address=None):
