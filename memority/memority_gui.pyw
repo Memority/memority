@@ -21,7 +21,7 @@ from pyqt_requests import *
 from settings import settings as daemon_settings
 from ui_settings import ui_settings
 
-__version__ = 'v0.1.0'
+__version__ = 'v0.2.0'
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
