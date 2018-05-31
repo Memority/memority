@@ -441,7 +441,8 @@ class ClientContract(Contract):
                 "client_contract": self.address,
                 "file": file_hash,
                 "host": settings.address,
-                "sync_status": str(create_w3().eth.syncing)
+                "sync_status": str(create_w3().eth.syncing),
+                "client_files": str(self.get_files())
             })
             return []
 
