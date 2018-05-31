@@ -222,6 +222,7 @@ async def check_ip():
         if ip_from_contract:
             ok = await check_if_white_ip(ip_from_contract)
             if not ok:
+                logger.warning('Your computer is not accessible by IP from contract!')
                 my_ip = await get_ip()
                 my_ip = f'{my_ip}:{settings.hoster_app_port}'
                 ok = await check_if_white_ip(my_ip)
