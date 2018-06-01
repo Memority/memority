@@ -48,9 +48,9 @@ Architecture: amd64
 Maintainer: A. Vityk <andrii.vityk@gmail.com>
 Description: Blockchain Based Data Storage
  Memority is a blockchain-based platform for encrypted decentralized cloud storage of valuable data.
-" > dist/memority/DEBIAN/control
+" > dist/dist/memority/DEBIAN/control
 
-cp dist-utils/postinst dist/memority/DEBIAN
+cp dist-utils/postinst dist/dist/memority/DEBIAN
 
 echo "[Desktop Entry]
 Encoding=UTF-8
@@ -60,9 +60,9 @@ Terminal=false
 Exec=/usr/lib/memority/memority
 Name=Memority
 Icon=/usr/share/pixmaps/memority_icon.png
-" > dist/memority/usr/share/applications/memority.desktop
+" > dist/dist/memority/usr/share/applications/memority.desktop
 
-cp img/icon.png dist/memority/usr/share/pixmaps/memority_icon.png
+cp img/icon.png dist/dist/memority/usr/share/pixmaps/memority_icon.png
 
 echo "--------------------------------------------------"
 echo "Building package"
