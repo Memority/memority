@@ -191,14 +191,14 @@ class MemorityCore:
         with contextlib.suppress(RuntimeError, AttributeError):
             print('Servers...')
             self.hoster_server.cancel()
-            self.event_loop.run_until_complete(self.hoster_app.shutdown())
-            self.event_loop.run_until_complete(self.hoster_app_handler.shutdown(60.0))
-            self.event_loop.run_until_complete(self.hoster_app.cleanup())
+            asyncio.ensure_future(self.hoster_app.shutdown())
+            asyncio.ensure_future(self.hoster_app_handler.shutdown(60.0))
+            asyncio.ensure_future(self.hoster_app.cleanup())
 
             self.renter_server.cancel()
-            self.event_loop.run_until_complete(self.renter_app.shutdown())
-            self.event_loop.run_until_complete(self.renter_app_handler.shutdown(60.0))
-            self.event_loop.run_until_complete(self.renter_app.cleanup())
+            asyncio.ensure_future(self.renter_app.shutdown())
+            asyncio.ensure_future(self.renter_app_handler.shutdown(60.0))
+            asyncio.ensure_future(self.renter_app.cleanup())
         print('Servers closed.')
         if self.p:
             print('Geth...')

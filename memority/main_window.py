@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         self.memority_core.prepare()
         self.ws_client = QWebSocket()
         self.ping_daemon_timer = QTimer(self)
-        self.ping_daemon_timer.setInterval(500)
+        self.ping_daemon_timer.setInterval(1000)
         self.ping_daemon_timer.start()
         self.sync_status_timer = QTimer(self)
         self.sync_status_timer.setInterval(2000)
@@ -975,15 +975,15 @@ class MainWindow(QMainWindow):
         dialog: QDialog = uic.loadUi(ui_settings.ui_submit_exit)
         if dialog.exec_():  # submitted
             self.shutdown()
-            # event.accept()
+            event.accept()
         else:
             event.ignore()
 
     def shutdown(self):
         self.sync_status_timer.stop()
+        self.memority_core.cleanup()
         for task in asyncio.Task.all_tasks():
             task.cancel()
-        self.memority_core.cleanup()
         qApp.quit()
         self.event_loop.stop()
         self.event_loop.close()
