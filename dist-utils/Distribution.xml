@@ -2,22 +2,16 @@
 <installer-gui-script minSpecVersion="1">
     <title>Memority</title>
     <license file="License.txt"/>
-    <pkg-ref id="io.memority.memoritycore"/>
-    <pkg-ref id="io.memority.memorityui"/>
+    <pkg-ref id="io.memority.memority"/>
     <options customize="never" require-scripts="false"/>
     <choices-outline>
         <line choice="default">
-            <line choice="io.memority.memoritycore"/>
-            <line choice="io.memority.memorityui"/>
+            <line choice="io.memority.memority"/>
         </line>
     </choices-outline>
     <choice id="default"/>
-    <choice id="io.memority.memoritycore" visible="false">
-        <pkg-ref id="io.memority.memoritycore"/>
+    <choice id="io.memority.memority" visible="false">
+        <pkg-ref id="io.memority.memority"/>
     </choice>
-    <pkg-ref id="io.memority.memoritycore" version="" onConclusion="none">Memority%20Core.pkg</pkg-ref>
-    <choice id="io.memority.memorityui" visible="false">
-        <pkg-ref id="io.memority.memorityui"/>
-    </choice>
-    <pkg-ref id="io.memority.memorityui" version="" onConclusion="none">Memority%20UI.pkg</pkg-ref>
+    <pkg-ref id="io.memority.memority" version="" onConclusion="none">Memority.pkg</pkg-ref>
 </installer-gui-script>
