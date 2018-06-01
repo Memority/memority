@@ -142,7 +142,7 @@ class MemorityCore:
             if isinstance(line, bytes):
                 line = line.decode('utf-8')
             if line:
-                print(line.strip())
+                print(line.strip().encode('utf-8'))
             if 'IPC endpoint opened' in line:
                 geth_ipc_path = line[line.index('=') + 1:].strip()
                 print('Geth IPC file path:', geth_ipc_path)
