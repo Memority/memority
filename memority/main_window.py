@@ -975,7 +975,7 @@ class MainWindow(QMainWindow):
         dialog: QDialog = uic.loadUi(ui_settings.ui_submit_exit)
         if dialog.exec_():  # submitted
             self.shutdown()
-            event.accept()
+            # event.accept()
         else:
             event.ignore()
 
