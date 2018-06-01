@@ -20,8 +20,6 @@ from pyqt_requests import *
 from settings import settings as daemon_settings
 from ui_settings import ui_settings
 
-__version__ = 'v0.2.0'
-
 
 def del_from_pool(func):
     def wrapper(pool: list, item, *args, **kwargs):
@@ -236,7 +234,7 @@ class MainWindow(QMainWindow):
         @del_from_pool
         @pyqtSlot()
         def got_response(latest_version, download_url):
-            if latest_version > __version__:
+            if latest_version > daemon_settings.version:
                 self.notify(
                     f'<html><body>'
                     f'<p>New version is available!</p>'

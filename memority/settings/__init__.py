@@ -73,7 +73,8 @@ class Settings:
             data = self.read_encrypted()
         elif item in [
             'token_contract_address',
-            'memodb_contract_address'
+            'memodb_contract_address',
+            'version'
         ]:
             data = self.load_defaults()
         else:

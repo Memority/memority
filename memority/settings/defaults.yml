@@ -14,3 +14,5 @@ w3_provider: 'ipc'
 w3_url: ''
 
 disk_space_for_hosting: 10
+
+version: 'v0.2.0-alpha-1'

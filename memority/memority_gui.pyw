@@ -9,15 +9,14 @@ from quamash import QEventLoop
 
 from settings import settings as daemon_settings
 
-__version__ = 'v0.2.0'
 
-if hasattr(Qt, 'AA_EnableHighDpiScaling'):
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+def main():
+    if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 
-if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
-if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     app.setAttribute(Qt.AA_EnableHighDpiScaling)
@@ -30,8 +29,13 @@ if __name__ == '__main__':
     splash.show()
     splash.showMessage('Processing imports', alignment=Qt.AlignBottom | Qt.AlignCenter, color=Qt.white)
     from main_window import MainWindow
+
     splash.showMessage('Starting application', alignment=Qt.AlignBottom | Qt.AlignCenter, color=Qt.white)
     w = MainWindow(event_loop=loop)
     splash.finish(w)
 
     loop.run_forever()
+
+
+if __name__ == '__main__':
+    main()
