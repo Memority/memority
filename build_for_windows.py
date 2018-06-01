@@ -99,6 +99,15 @@ def main():
     shutil.copyfile(
         os.path.join('memority', 'geth', 'Windows', 'geth.exe'),
         os.path.join('dist', 'Memority', 'geth', 'geth.exe'))
+    shutil.copyfile(
+        os.path.join('dist-utils', 'win-openssl-libs', 'libeay32.dll'),
+        os.path.join('dist', 'Memority', 'libeay32.dll'))
+    shutil.copyfile(
+        os.path.join('dist-utils', 'win-openssl-libs', 'libssl32.dll'),
+        os.path.join('dist', 'Memority', 'libssl32.dll'))
+    shutil.copyfile(
+        os.path.join('dist-utils', 'win-openssl-libs', 'ssleay32.dll'),
+        os.path.join('dist', 'Memority', 'ssleay32.dll'))
     # endregion
 
     # region Create nsi template
