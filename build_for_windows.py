@@ -53,21 +53,13 @@ def main():
         shutil.rmtree('dist')
     # endregion
 
-    # region Compile
+    # region Build
     print('-' * 100)
-    print('Compile GUI')
+    print('Build')
     run_subprocess([
         'pyinstaller',
         os.path.join('memority', 'memority_gui.pyw'),
-        f'--icon={os.path.join("img", "icon.ico")}',
-        '--windowed'
-    ])
-
-    print('-' * 100)
-    print('Compile Core')
-    run_subprocess([
-        'pyinstaller',
-        os.path.join('memority', 'memority_core_systray.pyw'),
+        '--name',  'Memority',
         '--hidden-import', 'cytoolz.utils',
         '--hidden-import', 'cytoolz._signatures',
         '--hidden-import', 'raven.handlers',
@@ -82,32 +74,31 @@ def main():
     # region Add files to build
     print('-' * 100)
     print('Add files to build')
-    makedirs(os.path.join('dist', 'memority_gui', 'settings'))
-    shutil.copyfile(
-        os.path.join('memority', 'settings', 'defaults.yml'),
-        os.path.join('dist', 'memority_gui', 'settings', 'defaults.yml'))
+    makedirs(os.path.join('dist', 'Memority', 'settings'))
+    makedirs(os.path.join('dist', 'Memority', 'smart_contracts'))
+    makedirs(os.path.join('dist', 'Memority', 'geth'))
+
     shutil.copytree(
         os.path.join('memority', 'ui'),
-        os.path.join('dist', 'memority_gui', 'ui'))
-
-    makedirs(os.path.join('dist', 'memority_core_systray', 'settings'))
-    makedirs(os.path.join('dist', 'memority_core_systray', 'smart_contracts'))
-    makedirs(os.path.join('dist', 'memority_core_systray', 'geth'))
+        os.path.join('dist', 'Memority', 'ui'))
     shutil.copyfile(
-        os.path.join('img', 'icon.ico'),
-        os.path.join('dist', 'memority_core_systray', 'icon.ico'))
+        os.path.join('memority', 'icon.ico'),
+        os.path.join('dist', 'Memority', 'icon.ico'))
+    shutil.copyfile(
+        os.path.join('memority', 'splashscreen.jpg'),
+        os.path.join('dist', 'Memority', 'splashscreen.jpg'))
     shutil.copyfile(
         os.path.join('memority', 'settings', 'defaults.yml'),
-        os.path.join('dist', 'memority_core_systray', 'settings', 'defaults.yml'))
+        os.path.join('dist', 'Memority', 'settings', 'defaults.yml'))
     shutil.copytree(
         os.path.join('memority', 'smart_contracts', 'binaries'),
-        os.path.join('dist', 'memority_core_systray', 'smart_contracts', 'binaries'))
+        os.path.join('dist', 'Memority', 'smart_contracts', 'binaries'))
     shutil.copytree(
         os.path.join('memority', 'smart_contracts', 'install'),
-        os.path.join('dist', 'memority_core_systray', 'smart_contracts', 'install'))
+        os.path.join('dist', 'Memority', 'smart_contracts', 'install'))
     shutil.copyfile(
         os.path.join('memority', 'geth', 'Windows', 'geth.exe'),
-        os.path.join('dist', 'memority_core_systray', 'geth', 'geth.exe'))
+        os.path.join('dist', 'Memority', 'geth', 'geth.exe'))
     # endregion
 
     # region Create nsi template
@@ -115,22 +106,14 @@ def main():
     print('Create nsi template')
     context = {
         "version": sys.argv[1],
-        "core_files": [
+        "build_files": [
             (
-                os.path.join('core', *list(reversed(split(d)))[2:]),
+                os.path.join(*list(reversed(split(d)))[2:]) if list(reversed(split(d)))[2:] else '',
                 [os.path.join(d, file) for file in files]
             ) for d, _, files
-            in os.walk(os.path.join('dist', 'memority_core_systray'))
+            in os.walk(os.path.join('dist', 'Memority'))
             if files
         ],
-        "ui_files": [
-            (
-                os.path.join('ui', *list(reversed(split(d)))[2:]),
-                [os.path.join(d, file) for file in files]
-            ) for d, _, files
-            in os.walk(os.path.join('dist', 'memority_gui'))
-            if files
-        ]
     }
     compiled = jinja2.Environment(
         loader=jinja2.FileSystemLoader('dist-utils')

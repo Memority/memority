@@ -35,54 +35,39 @@ OutFile "Memority-{{ version }}-windows-setup.exe"
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
-Section "Memority Core" Section1
+Section "Memority" Section1
 
 	; Set Section properties
 	SectionIn RO
 	SetOverwrite on
 
 	; Set Section Files and Shortcuts
-{% for dir, files in core_files %}
+{% for dir, files in build_files %}
 	SetOutPath "$INSTDIR\{{ dir }}\"{% for file in files %}
 	File "{{ file }}"{% endfor %}{% endfor %}
 
 SectionEnd
 
-Section "Memority UI" Section2
-
-	; Set Section properties
-	SectionIn RO
-	SetOverwrite on
-
-	; Set Section Files and Shortcuts
-{% for dir, files in ui_files %}
-	SetOutPath "$INSTDIR\{{ dir }}\"{% for file in files %}
-	File "{{ file }}"{% endfor %}{% endfor %}
-
-SectionEnd
-
-Section "Start Menu Shortcuts" Section3
+Section "Start Menu Shortcuts" Section2
 
 	; Set Section Files and Shortcuts
 	CreateDirectory "$SMPROGRAMS\Memority"
 	CreateShortCut "$SMPROGRAMS\Memority\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-	CreateShortCut "$SMPROGRAMS\Memority\Memority Core.lnk" "$INSTDIR\core\memority_core_systray.exe"
-	CreateShortCut "$SMPROGRAMS\Memority\Memority UI.lnk" "$INSTDIR\ui\memority_gui.exe"
+	CreateShortCut "$SMPROGRAMS\Memority\Memority.lnk" "$INSTDIR\Memority.exe"
 
 SectionEnd
 
-Section "Desktop Shortcuts" Section4
+Section "Desktop Shortcuts" Section3
 
 	; Set Section Files and Shortcuts
-	CreateShortCut "$DESKTOP\Memority Core.lnk" "$INSTDIR\core\memority_core_systray.exe"
-	CreateShortCut "$DESKTOP\Memority UI.lnk" "$INSTDIR\ui\memority_gui.exe"
+	CreateShortCut "$DESKTOP\Memority.lnk" "$INSTDIR\Memority.exe"
 
 SectionEnd
 
-Section "Run Memority Core on startup" Section5
+Section "Launch Memority on startup" Section4
 
 	; Set Section Files and Shortcuts
-	CreateShortCut "$SMSTARTUP\Memority Core.lnk" "$INSTDIR\core\memority_core_systray.exe"
+	CreateShortCut "$SMSTARTUP\Memority.lnk" "$INSTDIR\Memority.exe"
 
 SectionEnd
 
@@ -98,7 +83,6 @@ SectionEnd
 ; Modern install component descriptions
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${Section1} ""
-	!insertmacro MUI_DESCRIPTION_TEXT ${Section2} ""
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;Uninstall section
@@ -113,11 +97,9 @@ Section Uninstall
 
 	; Delete Shortcuts
 	Delete "$SMPROGRAMS\Memority\Uninstall.lnk"
-	Delete "$SMPROGRAMS\Memority\Memority Core.lnk"
-	Delete "$DESKTOP\Memority Core.lnk"
-	Delete "$SMPROGRAMS\Memority\Memority UI.lnk"
-	Delete "$DESKTOP\Memority UI.lnk"
-	Delete "$SMSTARTUP\Memority Core.lnk"
+	Delete "$SMPROGRAMS\Memority\Memority.lnk"
+	Delete "$DESKTOP\Memority.lnk"
+	Delete "$SMSTARTUP\Memority.lnk"
 
 	; Clean up Memority
 	RMDir "$SMPROGRAMS\Memority"
@@ -129,8 +111,7 @@ SectionEnd
 BrandingText "memority.io"
 
 Function LaunchMemority
-  Exec "$INSTDIR\core\memority_core_systray.exe"
-  Exec "$INSTDIR\ui\memority_gui.exe"
+  Exec "$INSTDIR\Memority.exe"
 FunctionEnd
 
 ; eof
