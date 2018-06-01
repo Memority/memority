@@ -40,7 +40,9 @@ class GetLatestVersionRequest(QObject):
                 )
             )
         except json.decoder.JSONDecodeError as err:
-            raven_client.captureException()
+            raven_client.captureException(extra={
+                "error": response.errorString()
+            })
             print(response.errorString())
             print(err)
 
