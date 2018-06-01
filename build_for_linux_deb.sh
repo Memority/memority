@@ -66,5 +66,5 @@ cp img/icon.png dist/memority/usr/share/pixmaps/memority_icon.png
 
 echo "--------------------------------------------------"
 echo "Building package"
-fakeroot dpkg-deb --build dist/memority
-mv dist/memority.deb Memority-v${VERSION}-linux-setup.deb
+fakeroot dpkg-deb --build dist/dist/memority
+mv dist/dist/memority.deb Memority-v${VERSION}-linux-setup.deb
