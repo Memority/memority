@@ -7,7 +7,7 @@ from settings import settings
 from smart_contracts import token_contract
 from utils import InvalidSignature
 
-__all__ = ['final_metadata', 'proof', 'create_metadata', 'load_body', 'get_file', 'file_list', 'file_host_status']
+__all__ = ['get_free_space', 'proof', 'create_metadata', 'load_body', 'get_file', 'file_list', 'file_host_status']
 
 logger = logging.getLogger('memority')
 
@@ -20,6 +20,15 @@ def _error_response(msg, code=200):
         },
         status=code
     )
+
+
+async def get_free_space(request):
+    return web.json_response({
+        "status": "success",
+        "data": {
+            "result": settings.disk_space_for_hosting * (1024 ** 3) - HosterFile.get_total_size()
+        }
+    })
 
 
 async def get_file(request):
@@ -159,28 +168,3 @@ async def file_host_status(request):
             }
         }
     )
-
-
-async def final_metadata(request):
-    # ToDo: merge with create_metadata
-    file_hash = request.match_info.get('id', None)
-    logger.info(f'Uploading final metadata | file: {file_hash}')
-    try:
-        instance = HosterFile.find(file_hash)
-    except HosterFile.NotFound:
-        logger.warning(f'File not found | file: {file_hash}')
-        raise web.HTTPNotFound(reason='File not found!')
-    data = await request.json()
-    hosts = data.get('hosts')
-    instance.add_hosts(hosts)
-    logger.info('Updating schedule...')
-    request.app['scheduler'].update()
-    logger.info('Schedule updated')
-    return web.json_response({
-        "status": "success",
-        "data": {
-            "file": {
-                "hash": instance.hash
-            }
-        }
-    })

@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_unlocked(self):
-        self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}'))
+        self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}/ws/'))
         self.ui.show()
         self.refresh()
         self.check_updates()

@@ -397,8 +397,8 @@ class ClientContract(Contract):
     def need_replace(self, old_host_address, file_hash) -> bool:
         return self.contract.needReplace(old_host_address, file_hash)
 
-    async def add_hosts(self, file_hash, file_name, file_size, hosts, signature,
-                        vendor=None, from_address=None):
+    async def new_file(self, file_hash, file_name, file_size, hosts, signature,
+                       vendor=None, from_address=None):
         if not vendor:
             vendor = settings.address
         if not from_address:

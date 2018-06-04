@@ -32,12 +32,6 @@ def process_line(line):
         line = line.decode('utf-8')
     if line:
         print(line.strip())
-    if 'Block synchronisation started' in line:
-        renter.server.STATE = 1
-    if 'Imported new chain segment' in line:
-        renter.server.STATE = 2
-    if 'Database closed' in line:
-        sys.exit(0)
 
 
 def enqueue_output(out, queue):

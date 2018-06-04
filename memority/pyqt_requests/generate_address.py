@@ -8,7 +8,7 @@ class GenerateAddressRequest(AbstractPostRequest):
 
     def __init__(self, password):
         super().__init__(
-            '/user/create/',
+            '/user/generate_address/',
             {"password": password}
         )
 
