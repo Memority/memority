@@ -913,6 +913,7 @@ class MainWindow(QMainWindow):
 
         size = file_size_human_readable(size)
         dialog.file_size_display.setText(size)
+        dialog.deposit_size_input.setValue(price_per_hour * 24 * 14)
         dialog.calendarWidget.clicked[QDate].connect(upd_value)
         dialog.deposit_size_input.valueChanged.connect(upd_date)
 
@@ -980,7 +981,8 @@ class MainWindow(QMainWindow):
             event.ignore()
 
     def shutdown(self):
-        self.sync_status_timer.stop()
+        if hasattr(self, 'sync_status_timer'):
+            self.sync_status_timer.stop()
         self.memority_core.cleanup()
         for task in asyncio.Task.all_tasks():
             task.cancel()

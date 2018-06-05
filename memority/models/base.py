@@ -220,7 +220,8 @@ class HosterFile(Base, ManagedMixin):
         instance.path = path
 
         instance.save()
-        if instance.send_data_to_contract_after_uploading_body:
+        if settings.address.lower() not in \
+                [h.lower() for h in instance.client_contract.get_file_hosts()]:
             if instance.replacing_host_address:
                 await instance.client_contract.replace_host(
                     file_hash,

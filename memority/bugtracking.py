@@ -2,6 +2,8 @@ import os
 
 import raven
 
+from settings import settings
+
 raven_client = raven.Client(
     dsn='https://7f943c9a0edc4af688fab169e0cac527:0c84e4329d044d589763e6c852a14d84@sentry.io/306286',
 
@@ -10,5 +12,6 @@ raven_client = raven.Client(
         KeyboardInterrupt,
         NotImplementedError,
         'asyncio.CancelledError'
-    ]
+    ],
+    release=settings.version
 )
