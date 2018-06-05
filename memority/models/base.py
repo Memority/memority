@@ -221,7 +221,7 @@ class HosterFile(Base, ManagedMixin):
 
         instance.save()
         if settings.address.lower() not in \
-                [h.lower() for h in instance.client_contract.get_file_hosts()]:
+                [h.lower() for h in instance.client_contract.get_file_hosts(instance.hash)]:
             if instance.replacing_host_address:
                 await instance.client_contract.replace_host(
                     file_hash,
