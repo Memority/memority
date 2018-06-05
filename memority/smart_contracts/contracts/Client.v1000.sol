@@ -6,6 +6,7 @@ contract Token {
     function preparePayout(address _addresses, bytes32 _hash) public returns (bool success){}
     function replacePayout(address _address_from, address _address_to, bytes32 _hash, address[] voters) public returns (bool){}
     function depositForFile(uint256 _value, bytes32 _hash) public returns (bool success) {}
+    function deleteDeposit(bytes32 _hash) public returns (bool success) {}
 }
 
 contract MemoDB {
@@ -32,6 +33,7 @@ contract Client is owned {
         uint size;
         uint timestamp;
         address developer;
+        string path;
     }
 
     mapping (bytes32 => file) public fileList;
@@ -64,7 +66,13 @@ contract Client is owned {
         return status;
     }
 
-    function newFile(bytes32 hash, string name, uint size, address developer, address[] hosts) external onlyOwner {
+    function deleteDeposit(bytes32 _hash) external onlyOwner returns (bool success) {
+        Token token = Token(token_address);
+        bool status = token.deleteDeposit(_hash);
+        return status;
+    }
+
+    function newFile(bytes32 hash, string name, uint size, address developer, address[] hosts, string path) external onlyOwner {
         if(fileList[hash].size == 0){
             files.push(hash);
         }
@@ -75,6 +83,7 @@ contract Client is owned {
         fileList[hash].hosts = hosts;
         fileList[hash].timestamp = now;
         fileList[hash].developer = developer;
+        fileList[hash].path = path;
 
         Token token = Token(token_address);
         token.preparePayouts(hosts, hash);
@@ -212,5 +221,15 @@ contract Client is owned {
         return actualVotes > activeHosts / 2;
     }
 
+    // Import section
+    function importFile(bytes32 hash, string name, uint size, uint timestamp, address developer, address[] hosts) public onlyOwner {
+        files.push(hash);
 
+        fileList[hash].hash = hash;
+        fileList[hash].name = name;
+        fileList[hash].size = size;
+        fileList[hash].hosts = hosts;
+        fileList[hash].timestamp = now;
+        fileList[hash].developer = developer;
+    }
 }

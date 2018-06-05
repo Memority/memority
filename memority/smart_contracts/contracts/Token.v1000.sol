@@ -105,31 +105,9 @@ contract Token is owned, TokenERC20 {
     address public dbAddress;
     uint256 version = 1000;
 
-//    struct host {
-//        address hostAddress;
-//        bytes32 ip;
-//        uint power;
-//        bool active;
-//    }
-
-//    struct transaction {
-//        address from;
-//        address to;
-//        bytes32 file;
-//        uint256 date;
-//        uint256 value;
-//    }
-
     mapping (address => mapping (bytes32 => uint256)) public deposits;
     mapping (bytes32 => mapping (uint256 => uint256)) public depositPrice;
     mapping (bytes32 => mapping (address => uint)) public payouts;
-//    mapping (address => host) public hostInfo;
-//    mapping (address => address) public clientContract;
-//    mapping (address => bytes32[]) public transactionsId;
-//    mapping (bytes32 => transaction) public transactions;
-//    address[] public hostList;
-
-//    event HostAdded(address from);
 
     function Token(
         uint256 initialSupply,
@@ -137,20 +115,6 @@ contract Token is owned, TokenERC20 {
         string tokenName,
         string tokenSymbol
     ) TokenERC20(initialSupply, _tokenPrice, tokenName, tokenSymbol) public {}
-
-    /* Internal transfer, only can be called by this contract */
-    /*
-    function _transfer(address _from, address _to, uint _value) internal {
-        require (_to != _from);
-        require (_to != 0x0);
-        require (balanceOf[_from] >= _value);
-        require (balanceOf[_to] + _value > balanceOf[_to]);
-        balanceOf[_from] -= _value;
-        balanceOf[_to] += _value;
-        addToHolderList(_to);
-        Transfer(_from, _to, _value);
-    }
-    */
 
     /** @notice Allow users to buy tokens and sell tokens for eth
     *   @param _tokenPrice Price the users can sell or buy
@@ -166,14 +130,6 @@ contract Token is owned, TokenERC20 {
     function updateMinForHost(uint256 _value) onlyOwner public {
         minTokenForHost = _value;
     }
-
-    /// @notice Buy tokens from contract by sending ether
-//    function buy() payable public {
-//        uint amount = msg.value / tokenPrice;
-//        tokenForSale -= amount;
-//        balanceOf[msg.sender] += amount;
-//        //_transfer(owner, msg.sender, amount);
-//    }
 
     function enroll(address _address, uint256 _value) onlyOwner public {
         require(tokenForSale >= _value);
@@ -207,28 +163,7 @@ contract Token is owned, TokenERC20 {
 
         MemoDB db = MemoDB(dbAddress);
         db.updateHost(ip);
-
-//        if( ! hostInfo[msg.sender].active){
-//            hostList.push(msg.sender);
-//
-//            hostInfo[msg.sender].active = true;
-//            hostInfo[msg.sender].hostAddress = msg.sender;
-//            hostInfo[msg.sender].power = 1;
-//        }
-//
-//        hostInfo[msg.sender].ip = ip;
-//
-//        HostAdded(msg.sender);
     }
-
-//    function getHosts() view public returns (address[]) {
-//        return hostList;
-//    }
-
-//    function getHostIp(address hostAddress) view public returns (bytes32) {
-//        require( hostInfo[hostAddress].active );
-//        return hostInfo[hostAddress].ip;
-//    }
 
     function depositForFile(uint256 _value, bytes32 _hash) public returns (bool success) {
         Client client = Client(msg.sender);
@@ -243,6 +178,22 @@ contract Token is owned, TokenERC20 {
 
         logTransaction(msg.sender, address(0), _hash, _value);
         Transfer(owner, 0, _value);
+
+        return true;
+    }
+
+    function deleteDeposit(bytes32 _hash) public returns (bool success) {
+        Client client = Client(msg.sender);
+        address owner = client.owner();
+
+        require(deposits[msg.sender][_hash] > 0);
+
+        uint256 value = deposits[msg.sender][_hash];
+        balanceOf[owner] += value;
+        deposits[msg.sender][_hash] = 0;
+
+        logTransaction(address(0), msg.sender, _hash, value);
+        Transfer(0, owner, value);
 
         return true;
     }
@@ -268,17 +219,6 @@ contract Token is owned, TokenERC20 {
         return true;
     }
 
-//    function newClient(address owner) public {
-//        //Client client = Client(msg.sender);
-//        //address owner = client.owner();
-//
-//        if(clientContract[owner] != address(0)){
-//            // todo: merge data from old client contract?
-//        }
-//
-//        clientContract[owner] = msg.sender;
-//    }
-
     function setHoldersMinBalance(uint256 _tokens_wei) onlyOwner public {
         minHoldersBalance = _tokens_wei;
     }
@@ -296,25 +236,7 @@ contract Token is owned, TokenERC20 {
 
         MemoDB db = MemoDB(dbAddress);
         db.logTransaction(_from, _to, _file, _value);
-
-//        bytes32 unique = keccak256(now, _from, _to);
-//
-//        transactionsId[_to].push(unique);
-//
-//        transactions[unique].from = _from;
-//        transactions[unique].to = _to;
-//        transactions[unique].file = _file;
-//        transactions[unique].date = now;
-//        transactions[unique].value = _value;
-//
-//        if(_from != address(0)){
-//            transactionsId[_from].push(unique);
-//        }
     }
-
-//    function transactionsCount(address _address) public returns (uint256) {
-//        return transactionsId[_address].length;
-//    }
 
     // called by Client contract
     function replacePayout(address _address_from, address _address_to, bytes32 _hash, address[] voters) public returns (bool) {
@@ -364,15 +286,14 @@ contract Token is owned, TokenERC20 {
         addToHolderList(msg.sender);
         addToHolderList(developer);
 
+        logTransaction(address(0), msg.sender, 'host_reward', hostReward);
+        logTransaction(address(0), developer, 'developer_reward', userReward);
+
         Transfer(0, msg.sender, hostReward);
         Transfer(0, developer, userReward);
 
         return amount;
     }
-
-//    function hasDeposit(address _address, bytes32 _hash) view public returns (bool success) {
-//        return deposits[_address][_hash] > 0;
-//    }
 
     function doHoldersReward() public onlyOwner {
         require(holdersToken > 0);
@@ -392,39 +313,30 @@ contract Token is owned, TokenERC20 {
                 uint256 reward = balanceOf[holdersList[x]] / minHoldersBalance * rewardPerPart;
                 balanceOf[holdersList[x]] += reward;
                 holdersToken -= reward;
+                logTransaction(address(0), holdersList[x], 'holder_reward', reward);
             }
         }
     }
 
-    // function for data transfer
-
-//    function copyHost(address _address, bytes32 _ip, bool _active, uint _power) onlyOwner external {
-//        hostList.push(_address);
-//
-//        hostInfo[_address].active = _active;
-//        hostInfo[_address].hostAddress = _address;
-//        hostInfo[_address].power = _power;
-//        hostInfo[_address].ip = _ip;
-//
-//        HostAdded(_address);
-//    }
-//
-    function copyBalance(address _address, uint256 _amount) onlyOwner external {
-        balanceOf[_address] = _amount;
+    // Import section
+    function importBalance(address _address, uint256 _value) public onlyOwner {
+        balanceOf[_address] = _value;
         addToHolderList(_address);
     }
 
-    function copyTotal(uint256 _totalSupply, uint256 _tokenForSale, uint256 _holdersToken) onlyOwner external {
+    function importTotal(uint256 _totalSupply, uint256 _tokenForSale, uint256 _holdersToken) public onlyOwner {
         totalSupply = _totalSupply;
         tokenForSale = _tokenForSale;
         holdersToken = _holdersToken;
     }
 
-    function copyDeposits(address _address, uint256 _value, bytes32 _hash) onlyOwner external {
-        deposits[_address][_hash] += _value;
-        depositPrice[_hash][tokensPerByteHour] = _value;
+    function importDeposits(address _address, bytes32 _file, uint256 _value) public onlyOwner {
+        deposits[_address][_file] = _value;
     }
 
+    function importPayouts(bytes32 _file, address _address, uint256 _time) public onlyOwner {
+        payouts[_file][_address] = _time;
+    }
 
 }
 

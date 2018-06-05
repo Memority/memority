@@ -85,7 +85,10 @@ return: ['0xFrom', '0xTo'', 'file_hash', date, value]
 **makeDeposit(uint256 _value, bytes32 _hash)**  
 Сделать депозит в токенах (_value) для оплаты периода хостинга для файла (_hash).    
 
-**newFile(bytes32 hash, bytes32 name, uint size, address developer, address[] hosts)**   
+**deleteDeposit(bytes32 _hash)**  
+Удалить депозит для файла (_hash).    
+
+**newFile(bytes32 hash, bytes32 name, uint size, address developer, address[] hosts, string path)**   
 добавить новый файл (hash) с именем (name), размером (size), разработчик приложения (developer).  
 со списком хостов (hosts) на которые он уже загружен клиентом.        
 
@@ -127,6 +130,14 @@ _address должен быть в списке хостов файла.
 
 **needReplace(address _address, bytes32 _hash)**   
 хост (_address) для файла (_hash) ждет замены по причине недоступности. 
+
+# Server API
+First register here and get your Install key - http://api.memority.io/register  
+   
+**new app installed**   
+curl -v -H "Accept: application/json" -X POST -F "code=install_key" -F "address=0xe8dc39344b33d3aa580de5fd11ab65afa60c00e9" "http://api.memority.io/api/app/new"  
+**response** 
+{'status': 'success|error', 'result': 'tx', 'error': 'error message on error'} 
 
  
 # Work logic  

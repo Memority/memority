@@ -108,4 +108,30 @@ contract MemoDB is owned{
 
         clientContract[owner] = msg.sender;
     }
+
+    // Import section
+    function importHost(address _address, bytes32 _ip, uint _power, bool _active) public onlyOwner {
+        hostInfo[_address].active = _active;
+        hostInfo[_address].hostAddress = _address;
+        hostInfo[_address].power = _power;
+        hostInfo[_address].ip = _ip;
+
+        hostList.push(_address);
+    }
+
+    function importClient(address _address, address _contract) public onlyOwner {
+        clientContract[_address] = _contract;
+        clientList.push(_address);
+    }
+
+    function importTransaction(bytes32 _id, address _client, address _from, address _to, bytes32 _file, uint256 _date, uint256 _value) public onlyOwner {
+
+        transactionsId[_client].push(_id);
+
+        transactions[_id].from = _from;
+        transactions[_id].to = _to;
+        transactions[_id].file = _file;
+        transactions[_id].date = _date;
+        transactions[_id].value = _value;
+    }
 }

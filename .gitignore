@@ -107,8 +107,6 @@ boxes
 memority.db
 /memority/memority_core/geth/geth
 backups
-_dev
-_dev.*
 .DS_Store
 *.pkg
 *.dmg
