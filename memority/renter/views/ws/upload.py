@@ -26,6 +26,7 @@ class FileUploader:
             await self.open_file()
             self.check_file_not_already_uploaded()
             self.prepare_file()
+            await self.notify_user('Search for hosters...')
             await self.find_hosters()
             await self.create_file_metadata()
             await self.create_deposit()

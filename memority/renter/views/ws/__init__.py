@@ -21,9 +21,11 @@ async def websocket_handler(request):
                 command = data.get('command')
                 try:
                     if command == 'upload':
-                        resp = await FileUploader(**data.get('kwargs')).perform_uploading()
+                        resp = await FileUploader(websocket=ws, **data.get('kwargs'))\
+                            .perform_uploading()
                     elif command == 'download':
-                        resp = await FileDownloader(**data.get('kwargs')).perform_downloading()
+                        resp = await FileDownloader(websocket=ws, **data.get('kwargs'))\
+                            .perform_downloading()
                     else:
                         resp = {
                             "status": "error",
