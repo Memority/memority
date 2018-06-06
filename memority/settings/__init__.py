@@ -258,6 +258,10 @@ class Settings:
     def base_dir(self):
         return _base_dir
 
+    @property
+    def contracts_json(self):
+        return os.path.join(_base_dir, 'smart_contracts', 'contracts.json')
+
     def import_account(self, filename):
         # region Backup current account
         if os.path.isfile(self.local_settings_secrets_path):

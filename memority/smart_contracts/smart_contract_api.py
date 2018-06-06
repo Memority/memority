@@ -1,12 +1,10 @@
 import asyncio
+import json
 import logging
-import os
-import pickle
 import platform
 import traceback
 from datetime import datetime
 from decimal import Decimal
-from solc import compile_source
 from web3 import Web3, IPCProvider, HTTPProvider
 from web3.contract import ConciseContract
 from web3.exceptions import BadFunctionCallOutput
@@ -65,14 +63,6 @@ def import_private_key_to_eth(password, key=None):
     w3.personal.importRawKey(key, password)
 
 
-def _contract_sol_file(contract_name):
-    return os.path.join(settings.contract_sources_dir, f'{contract_name}.sol')
-
-
-def _contract_bin_file(contract_name):
-    return os.path.join(settings.contract_binaries_dir, f'{contract_name}.bin')
-
-
 def _get_contract_address_by_tx(tx_hash):
     tx_receipt = w3.eth.getTransactionReceipt(tx_hash)
     contract_address = tx_receipt['contractAddress']
@@ -115,33 +105,27 @@ def _get_contract_address(contract_name):
             return address
 
 
-def _compile_contract(contract_name):
-    logger.info(f'Compiling contract | name: {contract_name}')
-    with open(_contract_sol_file(contract_name), 'r') as f:
-        contract_source_code = f.read()
+def _get_contract_abi(contract_name):
+    with open(settings.contracts_json, 'r') as f:
+        data = json.load(f)
 
-    compiled_sol = compile_source(contract_source_code)
-    contract_interface = compiled_sol[f'<stdin>:{contract_name}']
+    version = max([int(v) for v in data[contract_name].keys()])
 
-    with open(_contract_bin_file(contract_name), 'wb') as f:
-        pickle.dump(contract_interface, f, pickle.HIGHEST_PROTOCOL)
-
-    return contract_interface
+    return data[contract_name][version]['abi']
 
 
-def _get_contract_interface(contract_name):
-    contract_bin_file = _contract_bin_file(contract_name)
-    if not os.path.isfile(contract_bin_file):
-        _compile_contract(contract_name)
-    with open(contract_bin_file, 'rb') as f:
-        contract_interface = pickle.load(f)
-        return contract_interface
+def _get_contract_bin(contract_name='Client'):
+    with open(settings.contracts_json, 'r') as f:
+        data = json.load(f)
+
+    version = max([int(v) for v in data[contract_name].keys()])
+
+    return data[contract_name][version]['bin']
 
 
 def _get_contract_instance(contract_name, address=None):
-    interface = _get_contract_interface(contract_name)
     return w3.eth.contract(
-        interface['abi'],
+        _get_contract_abi(contract_name),
         address if address else _get_contract_address(contract_name),
         ContractFactoryClass=ConciseContract
     )
@@ -149,11 +133,10 @@ def _get_contract_instance(contract_name, address=None):
 
 async def _deploy_contract(contract_name, gas, args):
     await _unlock_account()
-    contract_interface = _get_contract_interface(contract_name)
 
     contract = w3.eth.contract(
-        abi=contract_interface['abi'],
-        bytecode=contract_interface['bin']
+        abi=_get_contract_abi(contract_name),
+        bytecode=_get_contract_bin(contract_name)
     )
     tx_hash = contract.deploy(
         transaction={'from': settings.address, 'gas': gas},
@@ -161,7 +144,6 @@ async def _deploy_contract(contract_name, gas, args):
     )
     setattr(settings, f'{contract_name.lower()}_contract_creation_tx_hash', tx_hash)
     setattr(settings, f'{contract_name.lower()}_contract_address', '')
-    # settings.dump()
     _lock_account()
     return tx_hash
 
@@ -336,6 +318,12 @@ class MemoDBContract(Contract):
             })
         return res
 
+    async def new_client(self, contract_address):
+        await _unlock_account()
+        tx_hash = self.contract.newClient(contract_address)
+        await wait_for_transaction_completion(tx_hash)
+        _lock_account()
+
 
 class ClientContract(Contract):
 
@@ -346,6 +334,11 @@ class ClientContract(Contract):
             deploy_args=[token_contract.address],
             address=address
         )
+
+    async def deploy(self):
+        contract_address = await super().deploy()
+        await memo_db_contract.new_client(contract_address)
+        return contract_address
 
     async def make_deposit(self, value, file_hash):
         """
