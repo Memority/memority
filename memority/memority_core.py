@@ -13,11 +13,11 @@ from queue import Queue
 from shutil import copyfile
 from threading import Thread
 
-import renter
 import smart_contracts
 from bugtracking import raven_client
 from hoster.server import create_hoster_app
 from logger import setup_logging
+from models import db_manager
 from renter.server import create_renter_app
 from settings import settings
 from smart_contracts.smart_contract_api import w3, import_private_key_to_eth, token_contract, client_contract, \
@@ -71,6 +71,7 @@ class MemorityCore:
             self.cleanup()
 
     def prepare(self):
+        db_manager.ensure_db_up_to_date()
         if self.password:  # debug only
             settings.unlock(self.password)
             smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, self.password)

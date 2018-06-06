@@ -207,6 +207,10 @@ class Settings:
         return os.path.join(_app_data_dir, 'memority.db')
 
     @property
+    def db_migrations_path(self):
+        return os.path.join(_base_dir, 'models', 'db_migrations')
+
+    @property
     def default_settings_path(self):
         return _default_settings_path
 

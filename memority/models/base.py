@@ -60,7 +60,7 @@ class Host(Base, ManagedMixin):
 
     id = Column(Integer, primary_key=True)
     address = Column(String(128), nullable=False, unique=True)
-    ip = Column(String(15), nullable=False, unique=True)
+    ip = Column(String(15), nullable=False, unique=False)
     last_ping = Column(TIMESTAMP, nullable=True)
     rating = Column(Integer, default=0)
     hosted_files = relationship('HosterFile', secondary='hoster_files_m2m')
@@ -561,14 +561,6 @@ class RenterFileM2M(Base, ManagedMixin):
     host_id = Column(Integer, ForeignKey('hosts.id'), primary_key=True)
     file = relationship(RenterFile, backref=backref("renter_files_assoc"))
     host = relationship(Host, backref=backref("rf_hosts_assoc"))
-
-
-class Wallet(Base, ManagedMixin):
-    __tablename__ = 'wallets'
-
-    id = Column(Integer, primary_key=True)
-    address = Column(String(64), nullable=False)
-    balance = Column(Integer, default=0)
 
 
 class Stats(Base, ManagedMixin):
