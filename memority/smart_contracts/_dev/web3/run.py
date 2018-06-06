@@ -4,7 +4,9 @@ import sys
 
 from w3base import W3Base
 
-ether = W3Base()
+version_to_use = 1000
+
+ether = W3Base(version_to_use)
 
 if len(sys.argv) < 2:
     ether.error('usage: python3 run.py cmd')
@@ -18,6 +20,10 @@ elif str(sys.argv[1]) == 'tx':
     print(result)
 
 elif str(sys.argv[1]) == 'set_token_db':
-    result = ether.set_token_db('0x853A9E1017bC9D9117ddDA4Ec9f4087fc51a9C1D')
+    result = ether.set_token_db('0x27C823b254C74989201cEc2A9db6eBbBf169eED0')
+    print(result)
+
+elif str(sys.argv[1]) == 'set_client_contract':
+    result = ether.set_client_contract('0xBf5a83294Ca896Ef70F666C4826f46317Df33233')
     print(result)
 

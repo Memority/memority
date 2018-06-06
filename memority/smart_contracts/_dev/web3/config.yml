@@ -6,7 +6,7 @@ w3_url: http://localhost:18501
 token_json: '../contracts/bin/Token.json'
 
 token_owner: '0x31b9114AA172588eFEc3Ba90e90eD46bda06deC4'
-token_owner_password: '123123'
+token_owner_password: ''
 
 token_address: '0x8C6beb352014dA46Ba85B5164f0b95DAEF5375d5'
 db_address: '0x46FDE65ce40E753B08106560E2Bc82eb28715198'
@@ -19,5 +19,6 @@ client: '0x0648e02088fCa3e643aEFBEd7c3BE827436D1A10'
 sale_address: '0xaa642A991FD67627708380F172b16590Bd704fDE'
 
 version_1000:
-  token_address: '0x2FA2a9ce6e97a05a57297ecdd0270c386594e8a3'
-  db_address: '0x853A9E1017bC9D9117ddDA4Ec9f4087fc51a9C1D'
+  token_address: '0x124D1f206646Fe9C26693981459471b893be286c'
+  db_address: '0x27C823b254C74989201cEc2A9db6eBbBf169eED0'
+  client: '0xBf5a83294Ca896Ef70F666C4826f46317Df33233'

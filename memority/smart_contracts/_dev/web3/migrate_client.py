@@ -13,7 +13,7 @@ class Migrate(W3Base):
 
     def import_files(self, client_files, contract_instance):
         for file in client_files:
-            self.w3.personal.unlockAccount(self.cfg['client_address'], self.cfg['client_pass'])
+            self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
             result = contract_instance.importFile(
                 file['hash'],
                 file['name'],
@@ -21,7 +21,7 @@ class Migrate(W3Base):
                 file['timestamp'],
                 file['developer'],
                 file['hosts'],
-                transact={'from':  self.cfg['client_address'], 'gas': self.cfg['gas']})
+                transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
             self.log('import file: ' + file['name'])
             print(result)
 
@@ -73,7 +73,8 @@ class Migrate(W3Base):
 
 
 migration_version = 1000
-contract_address = ''     # deploy new if empty
+previous_version = ''
+contract_address = '0xBf5a83294Ca896Ef70F666C4826f46317Df33233'     # deploy new if empty
 
-migration = Migrate()
+migration = Migrate(previous_version)
 migration.transfer_db(migration_version, contract_address)

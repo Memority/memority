@@ -103,7 +103,7 @@ contract Token is owned, TokenERC20 {
     uint256 public minHoldersBalance = 100 * 10 ** 12;
     uint256 etherPerUser = 5000000000000000000;
     address public dbAddress;
-    uint256 version = 1000;
+    uint256 public version = 1000;
 
     mapping (address => mapping (bytes32 => uint256)) public deposits;
     mapping (bytes32 => mapping (uint256 => uint256)) public depositPrice;
@@ -116,9 +116,6 @@ contract Token is owned, TokenERC20 {
         string tokenSymbol
     ) TokenERC20(initialSupply, _tokenPrice, tokenName, tokenSymbol) public {}
 
-    /** @notice Allow users to buy tokens and sell tokens for eth
-    *   @param _tokenPrice Price the users can sell or buy
-    */
     function setPrices(uint256 _tokenPrice) onlyOwner public {
         tokenPrice = _tokenPrice;
     }

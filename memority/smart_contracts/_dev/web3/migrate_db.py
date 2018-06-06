@@ -20,7 +20,7 @@ class Migrate(W3Base):
 
     def import_hosts(self, host_list, contract_instance):
         for host in host_list:
-            self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+            self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
 
             result = contract_instance.importHost(
                 host, host_list[host]['ip'], host_list[host]['power'], host_list[host]['active'],
@@ -31,7 +31,7 @@ class Migrate(W3Base):
 
     def import_clients(self, client_contract, contract_instance):
         for client in client_contract:
-            self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+            self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
 
             if client_contract[client]:
                 result = contract_instance.importClient(
@@ -43,7 +43,7 @@ class Migrate(W3Base):
     def import_transactions(self, transactions, contract_instance):
         for client in transactions:
             for transaction in transactions[client]:
-                self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+                self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
 
                 from_addr = transaction['from'] if transaction['from'] else '0x0000000000000000000000000000000000000000'
                 to_addr = transaction['to'] if transaction['to'] else '0x0000000000000000000000000000000000000000'
@@ -120,7 +120,8 @@ class Migrate(W3Base):
 
 
 migration_version = 1000
-contract_address = ''     # deploy new if empty
+previous_version = ''
+contract_address = '0x27C823b254C74989201cEc2A9db6eBbBf169eED0'     # deploy new if empty
 
-migration = Migrate()
+migration = Migrate(previous_version)
 migration.transfer_db(migration_version, contract_address)

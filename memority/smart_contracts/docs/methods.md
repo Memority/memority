@@ -79,7 +79,36 @@ return address
 детали транзакции uid.   
 return: ['0xFrom', '0xTo'', 'file_hash', date, value]  
 
- 
+**version()**   
+версия контракта    
+
+## DB contract 
+**newClient(address contract_address)**   
+записать данные о клиенте. Вызвать стразу после публикации клиентского контракта    
+
+**actualDbVersion()**    
+актуальная версия DB. при несоответствии блокировать действия и обновлять контракт   
+
+**actualTokenVersion()**    
+актуальная версия Token. при несоответствии блокировать действия и обновлять контракт   
+
+**actualClientVersion()**    
+актуальная версия Client. при несоответствии блокировать действия и обновлять контракт   
+
+**setVersions(uint256 db_version, uint256 token_version, uint256 client_version)**   
+
+**transactionsCount(address _address)**   
+
+**clientsCount()**   
+
+**updateHost(bytes32 ip)**   
+
+**getHosts()**   
+
+**getHostIp(address hostAddress)**    
+
+**version()**   
+версия контракта   
  
 ## Client contract
 **makeDeposit(uint256 _value, bytes32 _hash)**  
@@ -130,6 +159,9 @@ _address должен быть в списке хостов файла.
 
 **needReplace(address _address, bytes32 _hash)**   
 хост (_address) для файла (_hash) ждет замены по причине недоступности. 
+
+**version()**   
+версия контракта   
 
 # Server API
 First register here and get your Install key - http://api.memority.io/register  

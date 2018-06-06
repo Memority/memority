@@ -14,7 +14,7 @@ contract MemoDB {
     modifier onlyToken {require(msg.sender == tokenAddress);_;}
     function logTransaction(address _from, address _to, bytes32 _file, uint256 _value) external onlyToken {}
     function updateHost(bytes32 ip) public {}
-    function newClient(address owner) public {}
+    function newClient(address contract_address) public {}
 }
 
 contract owned {
@@ -44,7 +44,7 @@ contract Client is owned {
     bytes32[] public files;
     uint file_copies = 10;
     address public dbAddress;
-    uint256 version = 1000;
+    uint256 public version = 1000;
 
     function Client(address _token_address) public {
         token_address = _token_address;
@@ -52,9 +52,11 @@ contract Client is owned {
         Token token = Token(_token_address);
         dbAddress = token.dbAddress();
 
-        MemoDB db = MemoDB(dbAddress);
-        db.newClient(msg.sender);
+//        MemoDB db = MemoDB(dbAddress);
+//        db.newClient(msg.sender);
+
     }
+
 
     function changeTokenAddress(address _address) external onlyOwner {
         token_address = _address;
