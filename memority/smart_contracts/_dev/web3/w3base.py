@@ -20,17 +20,25 @@ class W3Base:
 
     contract_path = '../../contracts/'
     cfg = ''
+    passwords = ''
     __location__ = ''
     contract_interface = ''
     contract_instance = ''
     contract_address = ''
     w3 = ''
+    version = ''
 
-    def __init__(self):
+    def __init__(self, version=''):
+        self.version = version
         self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
         with open(os.path.join(self.__location__, 'config.yml'), 'r') as ymlfile:
             self.cfg = yaml.load(ymlfile)
+
+        with open(os.path.join(self.__location__, 'passwords.yml'), 'r') as ymlfile:
+            self.passwords = yaml.load(ymlfile)
+
+        self.log('contract version: ' + str(self.version))
 
     @staticmethod
     def error(msg):
@@ -41,12 +49,24 @@ class W3Base:
     def log(msg):
         print('[=] ' + msg)
 
+    def get_conf(self, key):
+        if self.version:
+            if 'version_' + str(self.version) not in self.cfg:
+                self.error('version section not found')
+
+            if key not in self.cfg['version_' + str(self.version)]:
+                self.error('version config not found')
+
+            return self.cfg['version_' + str(self.version)][key]
+        else:
+            return self.cfg[key]
+
     def prepare_contract(self, contract_name, contract_address=''):
 
         addresses = {
-            'Token': self.cfg['token_address'],
-            'MemoDB': self.cfg['db_address'],
-            'Client': self.cfg['client']
+            'Token': self.get_conf('token_address'),
+            'MemoDB': self.get_conf('db_address'),
+            'Client': self.get_conf('client')
         }
 
         if not contract_address:
@@ -83,7 +103,7 @@ class W3Base:
             return self.get_address_by_tx(tx)
 
     def deploy(self, contract_interface, args):
-        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
         contract = self.w3.eth.contract(abi=contract_interface['abi'], bytecode=contract_interface['bin'])
         tx_hash = contract.deploy(transaction={'from': self.cfg['token_owner'], 'gas': self.cfg['gas']}, args=args)
         self.log('tx hash: ' + tx_hash)
@@ -112,7 +132,8 @@ class W3Base:
         return result
 
     def compile(self, name):
-        contract_bin_file = os.path.join(self.__location__, self.contract_path + 'bin/'+name+'.bin')
+        bin_name = name+'.v'+str(self.version)+'.bin' if self.version else name+'.bin'
+        contract_bin_file = os.path.join(self.__location__, self.contract_path + 'bin/' + bin_name)
         with open(contract_bin_file, 'rb') as f:
             self.contract_interface = pickle.load(f)
 
@@ -134,36 +155,43 @@ class W3Base:
     def from_mmr_wei(self, amount):
         return int(amount) / 10 ** self.cfg['token_decimals']
 
-    # def enroll(self, to, amount):
-    #     amount = self.to_mmr_wei(amount)
-    #     self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
-    #     result = self.contract_instance.enroll(to, amount, transact={'from': self.cfg['token_owner'], 'gas': self.cfg['gas']})
-    #     return format(result)
-
     def set_token_db(self, address):
         self.prepare_contract('Token')
-        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
         result = self.contract_instance.setDbAddress(address, transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
+        return format(result)
+
+    def set_client_contract(self, address):
+        self.prepare_contract('MemoDB')
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
+        result = self.contract_instance.newClient(address, transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
         return format(result)
 
     def status(self):
         self.prepare_contract('Token')
 
         result = 'Total supply: ' + format(self.contract_instance.totalSupply()) + \
-                 ' MMR; For Sale: ' + format(self.contract_instance.tokenForSale()) + " MMR\n" + \
+                 'MMR; For Sale: ' + format(self.contract_instance.tokenForSale()) + " MMR\n" + \
                  'Token price: ' + format(self.contract_instance.tokenPrice()) + " Eth\n" + \
-                 'DB address: ' + format(self.contract_instance.dbAddress()) + "\n"
+                 'DB address: ' + format(self.contract_instance.dbAddress()) + "\n" + \
+                 'Version: ' + format(self.contract_instance.version()) + "\n"
 
         client_balance = format(self.contract_instance.balanceOf(self.cfg['client_address']))
 
         self.prepare_contract('MemoDB')
 
         result += 'Total hosts: ' + format(len(self.contract_instance.getHosts())) + "\n" + \
-            'Client contract: ' + format(self.contract_instance.clientContract(self.cfg['client_address'])) + "\n"
+            'Total clients: ' + format(self.contract_instance.clientsCount()) + "\n" + \
+            'Client contract: ' + format(self.contract_instance.clientContract(self.cfg['token_owner'])) + "\n"
 
         self.prepare_contract('Client')
         result += 'Total client files: ' + format(len(self.contract_instance.getFiles())) + "\n" + \
-            'Client balance: ' + format(self.from_mmr_wei(client_balance)) + ' MMR'
+            'Client balance: ' + format(self.from_mmr_wei(client_balance)) + ' MMR' + " \n"
+
+        # # debug
+        # self.prepare_contract('MemoDB')
+        # result += ('msg_sender: ' + format(self.contract_instance.msg_sender())) + " \n"
+        # result += ('param_sender: ' + format(self.contract_instance.param_sender())) + " \n"
 
         return result
 

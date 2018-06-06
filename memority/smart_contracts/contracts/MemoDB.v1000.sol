@@ -1,5 +1,9 @@
 pragma solidity ^0.4.16;
 
+contract Client {
+    address public owner;
+}
+
 contract owned {
     address public owner;
     function owned() public {owner = msg.sender;}
@@ -31,7 +35,10 @@ contract MemoDB is owned{
     address tokenAddress;
     address[] public hostList;
     address[] public clientList;
-    uint256 version = 1000;
+    uint256 public version = 1000;
+    uint256 public actualDbVersion = 1000;
+    uint256 public actualTokenVersion = 1000;
+    uint256 public actualClientVersion = 1000;
 
     event HostAdded(address from);
 
@@ -46,6 +53,18 @@ contract MemoDB is owned{
 
     function changeToken(address _token) onlyOwner public {
         tokenAddress = _token;
+    }
+
+    function setVersions(uint256 db_version, uint256 token_version, uint256 client_version) onlyOwner public {
+        if(actualDbVersion != db_version){
+            actualDbVersion = db_version;
+        }
+        if(actualTokenVersion != token_version){
+            actualTokenVersion = token_version;
+        }
+        if(actualClientVersion != client_version){
+            actualClientVersion = client_version;
+        }
     }
 
     function logTransaction(address _from, address _to, bytes32 _file, uint256 _value) external {
@@ -96,9 +115,11 @@ contract MemoDB is owned{
         return hostInfo[hostAddress].ip;
     }
 
-    function newClient(address owner) public {
-        //Client client = Client(msg.sender);
-        //address owner = client.owner();
+    function newClient(address contract_address) public {
+        Client client = Client(contract_address);
+        address owner = client.owner();
+
+        require(owner == msg.sender);
 
         if(clientContract[owner] != address(0)){
             // todo: merge data from old client contract?
@@ -106,7 +127,11 @@ contract MemoDB is owned{
             clientList.push(owner);
         }
 
-        clientContract[owner] = msg.sender;
+        clientContract[owner] = contract_address;
+    }
+
+    function clientsCount() public returns (uint256) {
+        return clientList.length;
     }
 
     // Import section

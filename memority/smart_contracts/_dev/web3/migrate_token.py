@@ -12,7 +12,7 @@ class Migrate(W3Base):
 
     def import_balance(self, holders_balances, contract_instance):
         for client in holders_balances:
-            self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+            self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
 
             result = contract_instance.importBalance(
                 client, holders_balances[client]['balance'],
@@ -21,7 +21,7 @@ class Migrate(W3Base):
             self.log('import balance ' + client + ' = ' + str(holders_balances[client]['balance']))
 
     def import_total(self, data, contract_instance):
-        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
 
         result = contract_instance.importTotal(
             data['totalSupply'], data['tokenForSale'], data['holdersToken'],
@@ -32,7 +32,7 @@ class Migrate(W3Base):
             for file in client_files[client]:
                 deposit = self.contract_instance.deposits(client, file)
                 print('deposit for ' + file + ' = ' + str(deposit))
-                self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+                self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
                 result = contract_instance.importDeposits(
                     client, file, deposit,
                     transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
@@ -43,7 +43,7 @@ class Migrate(W3Base):
             for host in client_file_hosts[file]:
                 time = self.contract_instance.payouts(file, host)
                 print('payout for ' + file + ' ['+host+'] > ' + str(time))
-                self.w3.personal.unlockAccount(self.cfg['token_owner'], self.cfg['token_owner_password'])
+                self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
                 result = contract_instance.importPayouts(
                     file, host, time,
                     transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
@@ -120,7 +120,8 @@ class Migrate(W3Base):
 
 
 migration_version = 1000
-contract_address = ''     # deploy new if empty
+previous_version = ''
+contract_address = '0x124D1f206646Fe9C26693981459471b893be286c'     # deploy new if empty
 
-migration = Migrate()
+migration = Migrate(previous_version)
 migration.transfer_db(migration_version, contract_address)
