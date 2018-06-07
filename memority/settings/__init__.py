@@ -56,7 +56,7 @@ class Settings:
     def __setattr__(self, name: str, value) -> None:
         data = self.load()
         data[name] = value
-        self.dump(data)
+        self.encrypt_secrets(data)
 
     def __getattr__(self, item):
         if item in [
@@ -73,9 +73,7 @@ class Settings:
                 raise self.Locked
             data = self.read_encrypted()
         elif item in [
-            'token_contract_address',
-            'memodb_contract_address',
-            'version'
+            'version',
         ]:
             data = self.load_defaults()
         else:
@@ -126,10 +124,10 @@ class Settings:
                 data_to_enc[key] = val
         if data_to_enc:
             self.dump_encrypted({
-                **data_to_enc,
-                **self.read_encrypted()
+                **self.read_encrypted(),
+                **data_to_enc
             })
-            self.dump(data)
+        self.dump(data)
 
     def dump_encrypted(self, data: dict):
         if not hasattr(self, 'password'):

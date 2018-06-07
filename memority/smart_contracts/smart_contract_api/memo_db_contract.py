@@ -72,7 +72,10 @@ class MemoDBContract(Contract):
     @ensure_latest_contract_version
     async def new_client(self, contract_address):
         await unlock_account()
-        tx_hash = self.contract.newClient(contract_address)
+        tx_hash = self.contract.newClient(
+            contract_address,
+            transact={'from': settings.address, 'gas': 200_000}
+        )
         await wait_for_transaction_completion(tx_hash)
         lock_account()
 

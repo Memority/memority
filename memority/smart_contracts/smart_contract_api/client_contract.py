@@ -33,7 +33,7 @@ class ClientContract(Contract):
         await unlock_account()
 
         contract = w3.eth.contract(
-            abi=get_contract_abi(self.contract_name),
+            abi=get_contract_abi(self.contract_name, client_latest_version=True),
             bytecode=get_contract_bin(self.contract_name)
         )
         tx_hash = contract.deploy(
@@ -44,7 +44,7 @@ class ClientContract(Contract):
         lock_account()
 
         address = get_contract_address_by_tx(tx_hash)
-        self.contract = get_contract_instance(self.contract_name, address)
+        self.contract = get_contract_instance(self.contract_name, address, client_latest_version=True)
 
         from smart_contracts.smart_contract_api import memo_db_contract
         await memo_db_contract.new_client(address)

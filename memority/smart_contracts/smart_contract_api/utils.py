@@ -99,25 +99,24 @@ def lock_account():
 
 
 def get_contract_address(contract_name):
-    if settings.__hasattr__(f'{contract_name.lower()}_contract_address'):
-        address = getattr(settings, f'{contract_name.lower()}_contract_address')
-        if address:
-            return address
+    if contract_name == 'Client':
+        return settings.client_contract_address
 
-    if settings.__hasattr__(f'{contract_name.lower()}_contract_creation_tx_hash'):
-        tx_hash = getattr(settings, f'{contract_name.lower()}_contract_creation_tx_hash')
-        address = get_contract_address_by_tx(tx_hash)
-        if address:
-            setattr(settings, f'{contract_name.lower()}_contract_address', address)
-            settings.dump()
-            return address
-
-
-def get_contract_abi(contract_name):
     with open(settings.contracts_json, 'r') as f:
         data = json.load(f)
+        return data[contract_name][str(max([int(v) for v in data[contract_name].keys()]))]['address']
 
-    version = str(max([int(v) for v in data[contract_name].keys()]))
+
+def get_contract_abi(contract_name, client_latest_version=False):
+    with open(settings.contracts_json, 'r') as f:
+        data = json.load(f)
+    if contract_name == 'Client':
+        if client_latest_version:
+            version = str(max([int(v) for v in data[contract_name].keys()]))
+        else:
+            version = str(settings.client_contract_version or 0)
+    else:
+        version = str(max([int(v) for v in data[contract_name].keys()]))
 
     return data[contract_name][version]['abi']
 
@@ -126,14 +125,14 @@ def get_contract_bin(contract_name='Client'):
     with open(settings.contracts_json, 'r') as f:
         data = json.load(f)
 
-    version = max([int(v) for v in data[contract_name].keys()])
+    version = str(max([int(v) for v in data[contract_name].keys()]))
 
     return data[contract_name][version]['bin']
 
 
-def get_contract_instance(contract_name, address=None):
+def get_contract_instance(contract_name, address=None, client_latest_version=False):
     return w3.eth.contract(
-        get_contract_abi(contract_name),
+        get_contract_abi(contract_name, client_latest_version=client_latest_version),
         address if address else get_contract_address(contract_name),
         ContractFactoryClass=ConciseContract
     )

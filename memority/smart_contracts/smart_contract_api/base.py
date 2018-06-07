@@ -35,7 +35,7 @@ class Contract:
     def current_version(self):
         try:
             return self.contract.version()
-        except BadFunctionCallOutput:
+        except (BadFunctionCallOutput, ValueError):
             return 0  # old contract; version not specified
 
     @property
