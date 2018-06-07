@@ -11,7 +11,8 @@ raven_client = raven.Client(
     ignore_exceptions=[
         KeyboardInterrupt,
         NotImplementedError,
-        'asyncio.CancelledError'
+        'asyncio.CancelledError',
+        'smart_contracts.smart_contract_api.exceptions.ContractNeedsUpdate'
     ],
     release=settings.version
 )

@@ -4,6 +4,7 @@ from web3.exceptions import BadFunctionCallOutput
 
 from settings import settings
 from .base import Contract
+from .decorators import ensure_latest_contract_version
 from .utils import *
 
 logger = logging.getLogger('memority')
@@ -19,6 +20,7 @@ class MemoDBContract(Contract):
             deploy_args=[token_contract.address]
         )
 
+    @ensure_latest_contract_version
     async def add_or_update_host(self, ip, address=None, wait=True):
         # ToDo: check minTokensForHost
         if not address:
@@ -67,6 +69,7 @@ class MemoDBContract(Contract):
             })
         return res
 
+    @ensure_latest_contract_version
     async def new_client(self, contract_address):
         await unlock_account()
         tx_hash = self.contract.newClient(contract_address)

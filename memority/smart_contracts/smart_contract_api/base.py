@@ -61,6 +61,7 @@ class Contract:
 
     @property
     def highest_version(self):
+        from smart_contracts.smart_contract_api import memo_db_contract
         return memo_db_contract.get_current_version(self.contract_name)
 
     @property

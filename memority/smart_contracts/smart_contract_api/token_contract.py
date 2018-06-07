@@ -4,6 +4,7 @@ from web3.exceptions import BadFunctionCallOutput
 
 from settings import settings
 from .base import Contract, w3
+from .decorators import ensure_latest_contract_version
 from .utils import *
 
 
@@ -54,6 +55,7 @@ class TokenContract(Contract):
                     continue
         return deposit
 
+    @ensure_latest_contract_version
     async def request_payout(self, owner_contract_address, file_hash) -> int:
         await self.refill()
         await unlock_account()
@@ -76,6 +78,7 @@ class TokenContract(Contract):
     def tokens_per_byte_hour(self):
         return self.contract.tokensPerByteHour()
 
+    @ensure_latest_contract_version
     async def refill(self):
         if w3.fromWei(w3.eth.getBalance(settings.address), 'ether') < 0.1:
             await unlock_account()

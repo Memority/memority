@@ -4,6 +4,8 @@ from web3.exceptions import BadFunctionCallOutput
 from bugtracking import raven_client
 from settings import settings
 from .base import Contract
+from .decorators import ensure_latest_contract_version
+from .exceptions import ContractNeedsUpdate
 from .utils import *
 
 logger = logging.getLogger('memority')
@@ -21,11 +23,18 @@ class ClientContract(Contract):
         )
 
     async def deploy(self):
+        if self.highest_version > self.highest_local_version:
+            raise ContractNeedsUpdate(
+                f'{self.contract_name} '
+                f'| local version: {self.highest_local_version} '
+                f'| update to: {self.highest_version} '
+            )
         contract_address = await super().deploy()
         from smart_contracts.smart_contract_api import memo_db_contract
         await memo_db_contract.new_client(contract_address)
         return contract_address
 
+    @ensure_latest_contract_version
     async def make_deposit(self, value, file_hash):
         """
         :param value: MMR, converted here to wmmr
@@ -45,6 +54,7 @@ class ClientContract(Contract):
         await wait_for_transaction_completion(tx_hash)
         lock_account()
 
+    @ensure_latest_contract_version
     async def add_host_to_file(self, file_hash):
         """
         Called on new host
@@ -61,6 +71,7 @@ class ClientContract(Contract):
         lock_account()
         await wait_for_transaction_completion(tx_hash)
 
+    @ensure_latest_contract_version
     async def vote_offline(self, address_of_offline, file_hash):
         logger.info(f'Vote offline | file: {file_hash} | host: {address_of_offline}')
         from smart_contracts.smart_contract_api import token_contract
@@ -79,6 +90,7 @@ class ClientContract(Contract):
     def need_replace(self, old_host_address, file_hash) -> bool:
         return self.contract.needReplace(old_host_address, file_hash)
 
+    @ensure_latest_contract_version
     async def new_file(self, file_hash, file_name, file_size, hosts, _,
                        vendor=None, from_address=None):
         if not vendor:
@@ -129,6 +141,7 @@ class ClientContract(Contract):
             })
             return []
 
+    @ensure_latest_contract_version
     async def replace_host(self, file_hash, old_host_address, from_address=None):
         if not from_address:
             from_address = settings.address

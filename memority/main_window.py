@@ -400,7 +400,10 @@ class MainWindow(QMainWindow):
     def refresh_files_tab(self):
         @del_from_pool
         @pyqtSlot()
-        def got_files(files: list):
+        def got_files(ok: bool, error: str, files: list):
+            if not ok:
+                self.error(error)
+                return
             self.ui.file_list_scrollarea_layout: QVBoxLayout
             self.ui.file_list_spacer: QSpacerItem
             if not files:
