@@ -35,7 +35,7 @@ def _error_response(msg):
 
 
 async def sync_status_handler(request):
-    w3 = smart_contracts.smart_contract_api.create_w3()
+    w3 = smart_contracts.smart_contract_api.utils.create_w3()
     status = w3.eth.syncing
     if status:
         current = status.get('currentBlock')
@@ -184,7 +184,7 @@ async def unlock(request: web.Request):
     settings.unlock(password)
     smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, password)
     global w3
-    w3 = smart_contracts.smart_contract_api.create_w3()
+    w3 = smart_contracts.smart_contract_api.utils.create_w3()
     smart_contracts.smart_contract_api.w3 = w3
     client_contract.reload()
     token_contract.reload()

@@ -55,6 +55,11 @@ def main():
 
     res['Client'][highest_client[0]]["bin"] = compile_contract(highest_client[1])['<stdin>:Client']['bin']
 
+    res['Token'][0]["address"] = '0x8C6beb352014dA46Ba85B5164f0b95DAEF5375d5'
+    res['MemoDB'][0]["address"] = '0x46FDE65ce40E753B08106560E2Bc82eb28715198'
+    res['Token'][1000]["address"] = '0x124D1f206646Fe9C26693981459471b893be286c'
+    res['MemoDB'][1000]["address"] = '0x27C823b254C74989201cEc2A9db6eBbBf169eED0'
+
     with open(settings.contracts_json, 'w') as f:
         json.dump(res, f, indent=2, sort_keys=True)
 
