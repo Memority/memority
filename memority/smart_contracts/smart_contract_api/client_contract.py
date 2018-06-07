@@ -29,10 +29,32 @@ class ClientContract(Contract):
                 f'| local version: {self.highest_local_version} '
                 f'| update to: {self.highest_version} '
             )
-        contract_address = await super().deploy()
+        logger.info(f'Deploying contract | name: {self.contract_name}')
+        await unlock_account()
+
+        contract = w3.eth.contract(
+            abi=get_contract_abi(self.contract_name),
+            bytecode=get_contract_bin(self.contract_name)
+        )
+        tx_hash = contract.deploy(
+            transaction={'from': settings.address, 'gas': self.gas},
+            args=self.deploy_args
+        )
+        await wait_for_transaction_completion(tx_hash)
+        lock_account()
+
+        address = get_contract_address_by_tx(tx_hash)
+        self.contract = get_contract_instance(self.contract_name, address)
+
         from smart_contracts.smart_contract_api import memo_db_contract
-        await memo_db_contract.new_client(contract_address)
-        return contract_address
+        await memo_db_contract.new_client(address)
+
+        settings.client_contract_address = address
+        settings.client_contract_version = self.current_version
+
+        logger.info(f'Deployed contract | name: {self.contract_name} | address: {address}')
+
+        return address
 
     @ensure_latest_contract_version
     async def make_deposit(self, value, file_hash):

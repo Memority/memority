@@ -14,6 +14,7 @@ __all__ = [
     'create_w3',
     'get_contract_abi',
     'get_contract_address',
+    'get_contract_address_by_tx',
     'get_contract_bin',
     'get_contract_instance',
     'import_private_key_to_eth',
