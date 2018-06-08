@@ -88,3 +88,6 @@ class MemoDBContract(Contract):
             }.get(contract_name, lambda: None)()
         except BadFunctionCallOutput:
             return 1000  # old contract; version not specified
+
+    def get_client_contract_address(self, owner):
+        return self.contract.clientContract(owner)

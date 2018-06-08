@@ -157,7 +157,7 @@ class FileUploader:
             "file_hash": self.file.hash,
             "owner_key": settings.public_key,
             "signature": self.file.signature,
-            "client_contract_address": settings.client_contract_address,
+            "client_address": settings.address,
             "size": self.file.size,
             "hosts": [hoster.address for hoster in self.hosters]
         }

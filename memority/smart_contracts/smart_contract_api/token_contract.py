@@ -41,13 +41,13 @@ class TokenContract(Contract):
     def time_to_pay(self, file_hash) -> bool:
         return self.contract.timeToPay(file_hash)
 
-    async def get_deposit(self, *, owner_contract_address=None, file_hash, ping=False):
-        if not owner_contract_address:
-            owner_contract_address = settings.client_contract_address
-        deposit = self.contract.deposits(owner_contract_address, file_hash)
+    async def get_deposit(self, *, owner_address=None, file_hash, ping=False):
+        if not owner_address:
+            owner_address = settings.client_contract_address
+        deposit = self.contract.deposits(owner_address, file_hash)
         if ping and not deposit:
             for i in range(5):
-                deposit = self.contract.deposits(owner_contract_address, file_hash)
+                deposit = self.contract.deposits(owner_address, file_hash)
                 if deposit:
                     break
                 else:
@@ -56,11 +56,11 @@ class TokenContract(Contract):
         return deposit
 
     @ensure_latest_contract_version
-    async def request_payout(self, owner_contract_address, file_hash) -> int:
+    async def request_payout(self, owner_address, file_hash) -> int:
         await self.refill()
         await unlock_account()
         amount = self.contract.requestPayout(
-            owner_contract_address,
+            owner_address,
             file_hash,
             transact={'from': settings.address, 'gas': 1_000_000}
         )
