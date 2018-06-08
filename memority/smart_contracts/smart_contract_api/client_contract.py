@@ -22,7 +22,7 @@ class ClientContract(Contract):
             address=address
         )
 
-    async def deploy(self):
+    async def deploy(self, overwrite_addr_in_settings=True):
         if self.highest_version > self.highest_local_version:
             raise ContractNeedsUpdate(
                 f'{self.contract_name} '
@@ -49,8 +49,9 @@ class ClientContract(Contract):
         from smart_contracts.smart_contract_api import memo_db_contract
         await memo_db_contract.new_client(address)
 
-        settings.client_contract_address = address
-        settings.client_contract_version = self.current_version
+        if overwrite_addr_in_settings:
+            settings.client_contract_address = address
+            settings.client_contract_version = self.current_version
 
         logger.info(f'Deployed contract | name: {self.contract_name} | address: {address}')
 
@@ -113,7 +114,7 @@ class ClientContract(Contract):
         return self.contract.needReplace(old_host_address, file_hash)
 
     @ensure_latest_contract_version
-    async def new_file(self, file_hash, file_name, file_size, hosts, _,
+    async def new_file(self, file_hash, file_name, file_size, hosts, signature,
                        vendor=None, from_address=None):
         if not vendor:
             vendor = settings.address
@@ -129,6 +130,7 @@ class ClientContract(Contract):
             file_size,
             vendor,
             hosts,
+            '/',  # path
             transact={'from': from_address, 'gas': 1_000_000}
         )
         logger.info(f'Added file hosts to Client contract | file: {file_hash} | address: {from_address}')

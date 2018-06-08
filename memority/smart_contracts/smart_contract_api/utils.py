@@ -78,7 +78,10 @@ def get_contract_address_by_tx(tx_hash):
 
 
 async def ask_for_password():
-    raise NotImplementedError
+    try:
+        return settings.password
+    except AttributeError:
+        raise NotImplementedError
 
 
 async def unlock_account():

@@ -32,6 +32,10 @@ class Contract:
             self.contract = None
 
     @property
+    def need_update(self):
+        return self.highest_version > self.current_version
+
+    @property
     def current_version(self):
         try:
             return self.contract.version()

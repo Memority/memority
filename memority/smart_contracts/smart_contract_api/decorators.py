@@ -4,8 +4,9 @@ from .exceptions import ContractNeedsUpdate
 
 def ensure_latest_contract_version(func):
     def wrapper(_contract: Contract, *args, **kwargs):
-        if _contract.highest_version > _contract.current_version:
+        if _contract.need_update:
             raise ContractNeedsUpdate(
+                f'Smart Contract is outdated. Please update the application. '
                 f'{_contract.contract_name} '
                 f'| current version: {_contract.current_version} '
                 f'| update to: {_contract.highest_version} '

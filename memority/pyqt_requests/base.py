@@ -16,7 +16,7 @@ class AbstractGetRequest(QObject, ABC, metaclass=AbstractRequestMeta):
 
     # noinspection PyArgumentList, PyUnresolvedReferences
     def __init__(self, rel_url: str):
-        print(f'init {self.__class__.__name__}')
+        # print(f'init {self.__class__.__name__}')
         QObject.__init__(self, parent=None)
         ABC.__init__(self)
         self.url = QUrl(f'http://{settings.daemon_address}{rel_url}')
@@ -25,11 +25,11 @@ class AbstractGetRequest(QObject, ABC, metaclass=AbstractRequestMeta):
         self.nam.finished.connect(self.process_response)
 
     def send(self):
-        print(f'send {self.__class__.__name__}')
+        # print(f'send {self.__class__.__name__}')
         self.nam.get(self.req)
 
     def process_response(self, response: QNetworkReply):
-        print(f'done {self.__class__.__name__}')
+        # print(f'done {self.__class__.__name__}')
         data: QByteArray = response.readAll()
         resp_data = json.loads(data.data().decode('utf-8'))
         return self.process_response_data(resp_data)
