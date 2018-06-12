@@ -60,7 +60,7 @@ class Host(Base, ManagedMixin):
 
     id = Column(Integer, primary_key=True)
     address = Column(String(128), nullable=False, unique=True)
-    ip = Column(String(15), nullable=False, unique=True)
+    ip = Column(String(15), nullable=False, unique=False)
     last_ping = Column(TIMESTAMP, nullable=True)
     rating = Column(Integer, default=0)
     hosted_files = relationship('HosterFile', secondary='hoster_files_m2m')
@@ -147,7 +147,7 @@ class HosterFile(Base, ManagedMixin):
     path = Column(String(512), nullable=True)
     timestamp = Column(TIMESTAMP, default=datetime.utcnow, nullable=False)
     size = Column(Integer, nullable=True)
-    client_contract_address = Column(String(128), nullable=False)
+    client_address = Column(String(128), nullable=False)
     my_monitoring_number = Column(Integer, default=0)
     status = Column(String(32), nullable=False, default=ACTIVE)
     no_deposit_counter = Column(Integer, default=0)
@@ -158,11 +158,11 @@ class HosterFile(Base, ManagedMixin):
         secondary='hoster_files_m2m'
     )
 
-    def __init__(self, hash_, owner_key, signature, client_contract_address, size=None) -> None:
+    def __init__(self, hash_, owner_key, signature, client_address, size=None) -> None:
         self.hash = hash_
         self.owner_key = owner_key
         self.signature = signature
-        self.client_contract_address = client_contract_address
+        self.client_address = client_address
         if size:
             self.size = size
 
@@ -174,10 +174,10 @@ class HosterFile(Base, ManagedMixin):
 
     @property
     def client_contract(self):
-        return ClientContract(address=self.client_contract_address)
+        return ClientContract(address=memo_db_contract.get_client_contract_address(owner=self.client_address))
 
     @classmethod
-    async def create_metadata(cls, file_hash, owner_key, signature, client_contract_address, size,
+    async def create_metadata(cls, file_hash, owner_key, signature, client_address, size,
                               hosts=None, replacing=None):
         # ToDo: size limit based on space available
         if len(signature) != 128:
@@ -187,7 +187,7 @@ class HosterFile(Base, ManagedMixin):
                 hash_=file_hash,
                 owner_key=owner_key,
                 signature=signature,
-                client_contract_address=client_contract_address,
+                client_address=client_address,
                 size=size
             )
             instance.save()
@@ -325,7 +325,7 @@ class HosterFile(Base, ManagedMixin):
     async def check_deposit(self):
         return await token_contract.get_deposit(
             file_hash=self.hash,
-            owner_contract_address=self.client_contract_address
+            owner_address=self.client_address
         )
 
     @classmethod
@@ -561,14 +561,6 @@ class RenterFileM2M(Base, ManagedMixin):
     host_id = Column(Integer, ForeignKey('hosts.id'), primary_key=True)
     file = relationship(RenterFile, backref=backref("renter_files_assoc"))
     host = relationship(Host, backref=backref("rf_hosts_assoc"))
-
-
-class Wallet(Base, ManagedMixin):
-    __tablename__ = 'wallets'
-
-    id = Column(Integer, primary_key=True)
-    address = Column(String(64), nullable=False)
-    balance = Column(Integer, default=0)
 
 
 class Stats(Base, ManagedMixin):

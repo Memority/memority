@@ -6,7 +6,7 @@ from asyncio import CancelledError
 from settings import settings
 from .download import FileDownloader
 from .upload import FileUploader
-
+from .upgrade_client_contract import ContractUpdater
 __all__ = ['websocket_handler']
 
 
@@ -26,6 +26,9 @@ async def websocket_handler(request):
                     elif command == 'download':
                         resp = await FileDownloader(websocket=ws, **data.get('kwargs'))\
                             .perform_downloading()
+                    elif command == 'update_client_contract':
+                        resp = await ContractUpdater(websocket=ws)\
+                            .perform_updating()
                     else:
                         resp = {
                             "status": "error",

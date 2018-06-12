@@ -13,11 +13,12 @@ from queue import Queue
 from shutil import copyfile
 from threading import Thread
 
-import renter
 import smart_contracts
 from bugtracking import raven_client
 from hoster.server import create_hoster_app
+from hoster.tasks import create_celery_processes
 from logger import setup_logging
+from models import db_manager
 from renter.server import create_renter_app
 from settings import settings
 from smart_contracts.smart_contract_api import w3, import_private_key_to_eth, token_contract, client_contract, \
@@ -41,21 +42,24 @@ def enqueue_output(out, queue):
 
 
 class MemorityCore:
+    hoster_app = None
+    hoster_app_handler = None
+    hoster_server = None
+    p = None
+    q = None
+    renter_app = None
+    renter_app_handler = None
+    renter_server = None
+    t = None
+    celery_processes = []
+
     def __init__(self, *, event_loop=None, _password=None, _run_geth=True) -> None:
         if not event_loop:
             event_loop = asyncio.new_event_loop()
         self.event_loop = event_loop
         self.password = _password
+
         self.run_geth = _run_geth
-        self.q = None
-        self.t = None
-        self.p = None
-        self.renter_app = None
-        self.renter_app_handler = None
-        self.renter_server = None
-        self.hoster_app = None
-        self.hoster_app_handler = None
-        self.hoster_server = None
 
     def run(self):
         # noinspection PyBroadException
@@ -71,6 +75,7 @@ class MemorityCore:
             self.cleanup()
 
     def prepare(self):
+        db_manager.ensure_db_up_to_date()
         if self.password:  # debug only
             settings.unlock(self.password)
             smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, self.password)
@@ -86,6 +91,11 @@ class MemorityCore:
 
         setup_logging()
         self.configure_apps()
+
+        self.celery_processes = create_celery_processes()
+
+        for p in self.celery_processes:
+            p.start()
 
     @staticmethod
     def init_geth():
@@ -146,7 +156,7 @@ class MemorityCore:
                 geth_ipc_path = geth_ipc_path.replace('"', '')
                 geth_ipc_path = geth_ipc_path.replace("'", '')
                 settings.w3_url = geth_ipc_path
-                smart_contracts.smart_contract_api.w3 = smart_contracts.smart_contract_api.create_w3()
+                smart_contracts.smart_contract_api.utils.w3 = smart_contracts.smart_contract_api.utils.create_w3()
                 token_contract.reload()
                 client_contract.reload()
                 memo_db_contract.reload()
@@ -198,6 +208,13 @@ class MemorityCore:
             print('Geth...')
             self.p.terminate()
             self.p.wait()
+
+        print('Celery processes...')
+        for p in self.celery_processes:
+            p.terminate()
+        for p in self.celery_processes:
+            p.join()
+
         print('Done.')
 
 

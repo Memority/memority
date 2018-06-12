@@ -69,7 +69,7 @@ def setup_logging():
                     'handlers': ['stdout', 'monitoring_log_file', 'sentry'],
                     'level': 'INFO',
                 },
-                'apscheduler': {
+                'celery': {
                     'handlers': ['stdout', 'monitoring_log_file', 'sentry'],
                     'level': 'INFO',
                 },

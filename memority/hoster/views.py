@@ -57,24 +57,24 @@ async def file_list(request):
 
 async def create_metadata(request):
     data = await request.json()
-    required = ['file_hash', 'owner_key', 'signature', 'client_contract_address', 'size']
-    logger.info(f'Creating metadata | file: {data["file_hash"]} | owner: {data["client_contract_address"]}')
+    required = ['file_hash', 'owner_key', 'signature', 'client_address', 'size']
+    logger.info(f'Creating metadata | file: {data["file_hash"]} | owner: {data["client_address"]}')
     if not all([field in data for field in required]):
         logger.warning(f'Validation error | fields: {", ".join(data.keys())}')
         raise web.HTTPBadRequest(
             reason='''Validation error!
-            Fields 'file_hash', 'owner_key', 'signature', 'client_contract_address' are required.'''
+            Fields 'file_hash', 'owner_key', 'signature', 'client_address' are required.'''
         )
 
     if data.get('size') > (settings.disk_space_for_hosting * (1024 ** 3) - HosterFile.get_total_size()):
         return _error_response('Not enough space')
 
     if not await token_contract.get_deposit(
-            owner_contract_address=data['client_contract_address'],
+            owner_address=data['client_address'],
             file_hash=data['file_hash'],
             ping=True):
         logger.warning(f'No deposit for file '
-                       f'| client contract: {data["client_contract_address"]} | file: {data["file_hash"]}')
+                       f'| client contract: {data["client_address"]} | file: {data["file_hash"]}')
         return _error_response(
             "No deposit for file!",
             402
@@ -82,8 +82,6 @@ async def create_metadata(request):
 
     try:
         instance = await HosterFile.create_metadata(**data)
-        if 'hosts' in data:
-            request.app['scheduler'].update()
     except InvalidSignature:
         logger.warning(f'Invalid signature | file: {data["file_hash"]} | signature: {data["signature"]}')
         raise web.HTTPBadRequest(reason='Invalid signature!')

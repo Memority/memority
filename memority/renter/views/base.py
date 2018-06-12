@@ -17,7 +17,7 @@ from utils import ask_for_password, check_first_run
 
 __all__ = ['list_files', 'view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'unlock', 'request_mmr',
            'change_box_dir', 'file_info', 'update_file_deposit', 'list_transactions', 'sync_status_handler',
-           'check_first_run_handler']
+           'check_first_run_handler', 'get_contract_updates']
 
 logger = logging.getLogger('memority')
 
@@ -35,7 +35,7 @@ def _error_response(msg):
 
 
 async def sync_status_handler(request):
-    w3 = smart_contracts.smart_contract_api.create_w3()
+    w3 = smart_contracts.smart_contract_api.utils.create_w3()
     status = w3.eth.syncing
     if status:
         current = status.get('currentBlock')
@@ -184,7 +184,7 @@ async def unlock(request: web.Request):
     settings.unlock(password)
     smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, password)
     global w3
-    w3 = smart_contracts.smart_contract_api.create_w3()
+    w3 = smart_contracts.smart_contract_api.utils.create_w3()
     smart_contracts.smart_contract_api.w3 = w3
     client_contract.reload()
     token_contract.reload()
@@ -257,3 +257,16 @@ async def check_first_run_handler(request):
         },
         status=200
     )
+
+
+async def get_contract_updates(request):
+    try:
+        res = client_contract.highest_local_version > client_contract.current_version
+    except AttributeError:
+        res = False
+    return web.json_response({
+        "status": "success",
+        "data": {
+            "result": res
+        }
+    })

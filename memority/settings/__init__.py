@@ -56,7 +56,7 @@ class Settings:
     def __setattr__(self, name: str, value) -> None:
         data = self.load()
         data[name] = value
-        self.dump(data)
+        self.encrypt_secrets(data)
 
     def __getattr__(self, item):
         if item in [
@@ -64,7 +64,8 @@ class Settings:
             'public_key',
             'private_key',
             'address',
-            'client_contract_address'
+            'client_contract_address',
+            'client_contract_version'
         ] and os.path.isfile(self.local_settings_secrets_path):
             if not hasattr(self, 'password'):
                 raise self.Locked
@@ -72,9 +73,7 @@ class Settings:
                 raise self.Locked
             data = self.read_encrypted()
         elif item in [
-            'token_contract_address',
-            'memodb_contract_address',
-            'version'
+            'version',
         ]:
             data = self.load_defaults()
         else:
@@ -87,7 +86,14 @@ class Settings:
     def __hasattr__(self, a):
         return (
                 a in self.load() or (
-                    a in ['encryption_key', 'public_key', 'private_key', 'address', 'client_contract_address']
+                    a in [
+                        'encryption_key',
+                        'public_key',
+                        'private_key',
+                        'address',
+                        'client_contract_address',
+                        'client_contract_version'
+                    ]
                     if os.path.isfile(self.local_settings_secrets_path)
                     else False
                 )
@@ -111,16 +117,17 @@ class Settings:
 
     def encrypt_secrets(self, data):
         data_to_enc = {}
-        for key in ['encryption_key', 'public_key', 'private_key', 'address', 'client_contract_address']:
+        for key in ['encryption_key', 'public_key', 'private_key', 'address', 'client_contract_address',
+                    'client_contract_version']:
             val = data.pop(key, None)
             if val:
                 data_to_enc[key] = val
         if data_to_enc:
             self.dump_encrypted({
-                **data_to_enc,
-                **self.read_encrypted()
+                **self.read_encrypted(),
+                **data_to_enc
             })
-            self.dump(data)
+        self.dump(data)
 
     def dump_encrypted(self, data: dict):
         if not hasattr(self, 'password'):
@@ -144,7 +151,10 @@ class Settings:
         try:
             from utils import decrypt
             decrypted = decrypt(data, self.password)
-            return json.loads(decrypted)
+            data = json.loads(decrypted)
+            if 'client_contract_version' not in data:
+                data['client_contract_version'] = 0
+            return data
         except DecryptionError:
             raise self.InvalidPassword
 
@@ -207,6 +217,10 @@ class Settings:
         return os.path.join(_app_data_dir, 'memority.db')
 
     @property
+    def db_migrations_path(self):
+        return os.path.join(_base_dir, 'models', 'db_migrations')
+
+    @property
     def default_settings_path(self):
         return _default_settings_path
 
@@ -253,6 +267,10 @@ class Settings:
     @property
     def base_dir(self):
         return _base_dir
+
+    @property
+    def contracts_json(self):
+        return os.path.join(_base_dir, 'smart_contracts', 'contracts.json')
 
     def import_account(self, filename):
         # region Backup current account

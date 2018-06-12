@@ -228,9 +228,27 @@ class MainWindow(QMainWindow):
         self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}/ws/'))
         self.ui.show()
         self.refresh()
-        self.check_updates()
+        self.check_app_updates()
+        self.check_contract_updates()
 
-    def check_updates(self):
+    def check_contract_updates(self):
+        @del_from_pool
+        @pyqtSlot()
+        def got_response(client_update_available: bool):
+            if client_update_available:
+                self.notify(
+                    'Smart Contract needs update.\n'
+                    'Please do not close the application while your data is transferring.'
+                )
+                self.ui.setDisabled(True)
+                self.update_client_contract()
+
+        r = CheckClientContractUpdatesRequest()
+        self.request_pool.append(r)
+        r.finished.connect(partial(got_response, self.request_pool, r))
+        r.send()
+
+    def check_app_updates(self):
         @del_from_pool
         @pyqtSlot()
         def got_response(latest_version, download_url):
@@ -306,9 +324,14 @@ class MainWindow(QMainWindow):
         elif status == 'success':
             if data.get('details') == 'uploaded':
                 self.notify('File successfully uploaded!')
+                self.refresh_files_tab()
             elif data.get('details') == 'downloaded':
                 self.notify('File successfully downloaded!')
-            self.refresh_files_tab()
+                self.refresh_files_tab()
+            elif data.get('details') == 'client_contract_updated':
+                self.notify('Your data successfully transferred to new Smart Contract!')
+                self.ui.setEnabled(True)
+                self.refresh()
         elif status == 'error':
             self.error(data.get('message'))
 
@@ -400,7 +423,10 @@ class MainWindow(QMainWindow):
     def refresh_files_tab(self):
         @del_from_pool
         @pyqtSlot()
-        def got_files(files: list):
+        def got_files(ok: bool, error: str, files: list):
+            if not ok:
+                self.error(error)
+                return
             self.ui.file_list_scrollarea_layout: QVBoxLayout
             self.ui.file_list_spacer: QSpacerItem
             if not files:
@@ -722,6 +748,14 @@ class MainWindow(QMainWindow):
         )
 
     @pyqtSlot()
+    def update_client_contract(self):
+        self.ws_send(
+            {
+                "command": "update_client_contract"
+            }
+        )
+
+    @pyqtSlot()
     def prolong_deposit(self, _hash):
         # noinspection PyUnresolvedReferences
         @del_from_pool
@@ -981,6 +1015,7 @@ class MainWindow(QMainWindow):
             event.ignore()
 
     def shutdown(self):
+        self.ui.hide()
         if hasattr(self, 'sync_status_timer'):
             self.sync_status_timer.stop()
         self.memority_core.cleanup()

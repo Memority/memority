@@ -10,7 +10,3 @@ Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
 session = Session()
-
-
-def create_tables():
-    return Base.metadata.create_all(engine)
