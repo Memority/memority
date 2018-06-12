@@ -125,7 +125,10 @@ app.conf.timezone = 'UTC'
 
 
 def create_celery_processes():
-    os.chdir(os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+    working_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+    if os.path.isfile(os.path.join(working_dir, 'celerybeat.pid')):
+        os.remove(os.path.join(working_dir, 'celerybeat.pid'))
+    os.chdir(working_dir)
     return [
         mp.Process(  # start beat
             target=main_,
