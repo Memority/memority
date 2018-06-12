@@ -97,16 +97,7 @@ def schedule_monitoring():
         )
 
 
-@app.task
-def test():
-    print('*' * 1000)
-
-
 app.conf.beat_schedule = {
-    'test-every-minute': {
-        'task': 'hoster.tasks.test',
-        'schedule': crontab(hour='*', minute='*')
-    },
     'check-ip-every-hour': {
         'task': 'hoster.tasks.check_ip',
         'schedule': crontab(hour='*', minute=0)
