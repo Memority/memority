@@ -260,10 +260,13 @@ async def check_first_run_handler(request):
 
 
 async def get_contract_updates(request):
+    if client_contract.contract:
+        res = client_contract.highest_local_version > client_contract.current_version
+    else:
+        res = False
     return web.json_response({
         "status": "success",
         "data": {
-            "result": client_contract.highest_local_version > client_contract.current_version
-            if client_contract.contract else False
+            "result": res
         }
     })
