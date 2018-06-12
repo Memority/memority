@@ -264,5 +264,6 @@ async def get_contract_updates(request):
         "status": "success",
         "data": {
             "result": client_contract.highest_local_version > client_contract.current_version
+            if client_contract.contract else False
         }
     })
