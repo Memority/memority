@@ -115,3 +115,4 @@ _dev.*
 *.nsi
 *.exe
 !geth.exe
+celerybeat.pid

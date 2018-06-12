@@ -1015,6 +1015,7 @@ class MainWindow(QMainWindow):
             event.ignore()
 
     def shutdown(self):
+        self.ui.hide()
         if hasattr(self, 'sync_status_timer'):
             self.sync_status_timer.stop()
         self.memority_core.cleanup()

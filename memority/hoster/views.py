@@ -82,8 +82,6 @@ async def create_metadata(request):
 
     try:
         instance = await HosterFile.create_metadata(**data)
-        if 'hosts' in data:
-            request.app['scheduler'].update()
     except InvalidSignature:
         logger.warning(f'Invalid signature | file: {data["file_hash"]} | signature: {data["signature"]}')
         raise web.HTTPBadRequest(reason='Invalid signature!')

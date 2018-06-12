@@ -25,6 +25,9 @@ def create_renter_app():
         web.post('/request_mmr/', request_mmr),
         web.post('/unlock/', unlock),
 
-        web.view('/user/{attr}/', UserView)
+        web.view('/user/{attr}/', UserView),
+
+        web.view('/tasks/{task}/', TaskView)
     ])
+
     return app

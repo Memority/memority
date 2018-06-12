@@ -1,13 +1,11 @@
 from aiohttp import web
 
 from .middlewares import error_middleware
-from .tasks import create_scheduler
 from .views import *
 
 
 def create_hoster_app():
     app = web.Application(middlewares=[error_middleware])
-    app['scheduler'] = create_scheduler()
     app.add_routes([
         web.get('/free-space/', get_free_space),
         web.get('/files/', file_list),

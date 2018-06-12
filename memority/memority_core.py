@@ -16,6 +16,7 @@ from threading import Thread
 import smart_contracts
 from bugtracking import raven_client
 from hoster.server import create_hoster_app
+from hoster.tasks import create_celery_processes
 from logger import setup_logging
 from models import db_manager
 from renter.server import create_renter_app
@@ -41,21 +42,24 @@ def enqueue_output(out, queue):
 
 
 class MemorityCore:
+    hoster_app = None
+    hoster_app_handler = None
+    hoster_server = None
+    p = None
+    q = None
+    renter_app = None
+    renter_app_handler = None
+    renter_server = None
+    t = None
+    celery_processes = []
+
     def __init__(self, *, event_loop=None, _password=None, _run_geth=True) -> None:
         if not event_loop:
             event_loop = asyncio.new_event_loop()
         self.event_loop = event_loop
         self.password = _password
+
         self.run_geth = _run_geth
-        self.q = None
-        self.t = None
-        self.p = None
-        self.renter_app = None
-        self.renter_app_handler = None
-        self.renter_server = None
-        self.hoster_app = None
-        self.hoster_app_handler = None
-        self.hoster_server = None
 
     def run(self):
         # noinspection PyBroadException
@@ -87,6 +91,11 @@ class MemorityCore:
 
         setup_logging()
         self.configure_apps()
+
+        self.celery_processes = create_celery_processes()
+
+        for p in self.celery_processes:
+            p.start()
 
     @staticmethod
     def init_geth():
@@ -199,6 +208,13 @@ class MemorityCore:
             print('Geth...')
             self.p.terminate()
             self.p.wait()
+
+        print('Celery processes...')
+        for p in self.celery_processes:
+            p.terminate()
+        for p in self.celery_processes:
+            p.join()
+
         print('Done.')
 
 
