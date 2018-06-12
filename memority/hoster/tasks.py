@@ -133,6 +133,6 @@ def create_celery_processes():
         ),
         mp.Process(  # start worker
             target=main_,
-            args=[['_', '-A', 'hoster.tasks', 'worker', '--loglevel=info', '-E']]
+            args=[['_', '-A', 'hoster.tasks', 'worker', '--loglevel=info', '--pool=eventlet', '-E']]
         )
     ]
