@@ -169,11 +169,11 @@ contract Token is owned, TokenERC20 {
         require(balanceOf[owner] >= _value);
 
         balanceOf[owner] -= _value;
-        deposits[msg.sender][_hash] += _value;
+        deposits[owner][_hash] += _value;
         // todo: diff deposits prices
         depositPrice[_hash][tokensPerByteHour] = _value;
 
-        logTransaction(msg.sender, address(0), _hash, _value);
+        logTransaction(owner, address(0), _hash, _value);
         Transfer(owner, 0, _value);
 
         return true;
@@ -183,13 +183,13 @@ contract Token is owned, TokenERC20 {
         Client client = Client(msg.sender);
         address owner = client.owner();
 
-        require(deposits[msg.sender][_hash] > 0);
+        require(deposits[owner][_hash] > 0);
 
-        uint256 value = deposits[msg.sender][_hash];
+        uint256 value = deposits[owner][_hash];
         balanceOf[owner] += value;
-        deposits[msg.sender][_hash] = 0;
+        deposits[owner][_hash] = 0;
 
-        logTransaction(address(0), msg.sender, _hash, value);
+        logTransaction(address(0), owner, _hash, value);
         Transfer(0, owner, value);
 
         return true;
@@ -239,6 +239,7 @@ contract Token is owned, TokenERC20 {
     function replacePayout(address _address_from, address _address_to, bytes32 _hash, address[] voters) public returns (bool) {
         //todo: sec check
         Client client = Client(msg.sender);
+        address owner = client.owner();
         uint256 size = client.getFileSize(_hash);
         uint256 secs = now - payouts[_hash][_address_from];
         uint256 penalty = calculateMmr(secs, size);
@@ -251,7 +252,7 @@ contract Token is owned, TokenERC20 {
         uint256 reward = penalty / voters.length;
         for (uint i = 0; i < voters.length; i++) {
             balanceOf[voters[i]] += reward;
-            deposits[msg.sender][_hash] -= reward;
+            deposits[owner][_hash] -= reward;
         }
 
         return true;
@@ -262,12 +263,13 @@ contract Token is owned, TokenERC20 {
         require( timeToPay(_hash) );
 
         Client client = Client(_address);
+        address owner = client.owner();
         uint256 size = client.getFileSize(_hash);
         uint256 secs = now - payouts[_hash][msg.sender];
         uint256 amount = calculateMmr(secs, size);
 
-        if(deposits[_address][_hash] < amount){
-            amount = deposits[_address][_hash];
+        if(deposits[owner][_hash] < amount){
+            amount = deposits[owner][_hash];
             //todo: init 'out of funds'
         }
 
@@ -275,7 +277,7 @@ contract Token is owned, TokenERC20 {
         uint256 userReward = amount / 20;
         uint256 hostReward = amount - userReward * 2;
 
-        deposits[_address][_hash] -= amount;
+        deposits[owner][_hash] -= amount;
         balanceOf[msg.sender] += hostReward;
         balanceOf[developer] += userReward;
         holdersToken += userReward;

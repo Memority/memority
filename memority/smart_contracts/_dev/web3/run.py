@@ -23,6 +23,10 @@ elif str(sys.argv[1]) == 'set_token_db':
     result = ether.set_token_db('0x27C823b254C74989201cEc2A9db6eBbBf169eED0')
     print(result)
 
+elif str(sys.argv[1]) == 'set_db_token_address':
+    result = ether.set_db_token_address('0xC62685E2Ff940FE0a73052Bd5D876d7D2c9d70b4')
+    print(result)
+
 elif str(sys.argv[1]) == 'set_client_contract':
     result = ether.set_client_contract('0xBf5a83294Ca896Ef70F666C4826f46317Df33233')
     print(result)

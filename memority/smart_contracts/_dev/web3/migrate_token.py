@@ -27,10 +27,12 @@ class Migrate(W3Base):
             data['totalSupply'], data['tokenForSale'], data['holdersToken'],
             transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
 
-    def import_deposits(self, client_files, contract_instance):
+    def import_deposits(self, client_files, holder_contract, contract_instance):
         for client in client_files:
             for file in client_files[client]:
-                deposit = self.contract_instance.deposits(client, file)
+                client_address = holder_contract[client]
+                # change contract key to client address key
+                deposit = self.contract_instance.deposits(client_address, file)
                 print('deposit for ' + file + ' = ' + str(deposit))
                 self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
                 result = contract_instance.importDeposits(
@@ -76,6 +78,7 @@ class Migrate(W3Base):
         holdersBalances = {}
         clientFiles = {}
         clientFileHosts = {}
+        holderContract = {}
         totalData = {
             'totalSupply': self.contract_instance.totalSupply(),
             'tokenForSale': self.contract_instance.tokenForSale(),
@@ -102,7 +105,9 @@ class Migrate(W3Base):
             files = self.contract_instance.getFiles()
 
             if client_address:
-                clientFiles[client_address] = files
+                holderContract[holder] = client_address
+                # clientFiles[client_address] = files
+                clientFiles[holder] = files
                 for file in files:
                     file_hosts = self.contract_instance.getFileHosts(file)
                     clientFileHosts[file] = file_hosts
@@ -115,13 +120,13 @@ class Migrate(W3Base):
         # ### insert new data
         self.import_total(totalData, new_contract_instance)
         self.import_balance(holdersBalances, new_contract_instance)
-        self.import_deposits(clientFiles, new_contract_instance)
+        self.import_deposits(clientFiles, holderContract, new_contract_instance)
         self.import_payouts(clientFileHosts, new_contract_instance)
 
 
 migration_version = 1000
 previous_version = ''
-contract_address = '0x124D1f206646Fe9C26693981459471b893be286c'     # deploy new if empty
+contract_address = ''     # deploy new if empty
 
 migration = Migrate(previous_version)
 migration.transfer_db(migration_version, contract_address)

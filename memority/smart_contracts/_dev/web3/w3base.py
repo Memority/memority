@@ -157,8 +157,13 @@ class W3Base:
 
     def set_token_db(self, address):
         self.prepare_contract('Token')
-        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
+        #self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
         result = self.contract_instance.setDbAddress(address, transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
+        return format(result)
+
+    def set_db_token_address(self, address):
+        self.prepare_contract('MemoDB')
+        result = self.contract_instance.changeToken(address, transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
         return format(result)
 
     def set_client_contract(self, address):
@@ -170,7 +175,8 @@ class W3Base:
     def status(self):
         self.prepare_contract('Token')
 
-        result = 'Total supply: ' + format(self.contract_instance.totalSupply()) + \
+        result = 'Token address: ' + format(self.contract_address) + "\n" + \
+                 'Total supply: ' + format(self.contract_instance.totalSupply()) + \
                  'MMR; For Sale: ' + format(self.contract_instance.tokenForSale()) + " MMR\n" + \
                  'Token price: ' + format(self.contract_instance.tokenPrice()) + " Eth\n" + \
                  'DB address: ' + format(self.contract_instance.dbAddress()) + "\n" + \
