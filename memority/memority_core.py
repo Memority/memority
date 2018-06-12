@@ -75,7 +75,7 @@ class MemorityCore:
             self.cleanup()
 
     def prepare(self):
-        db_manager.ensure_db_up_to_date()
+        # db_manager.ensure_db_up_to_date()
         if self.password:  # debug only
             settings.unlock(self.password)
             smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, self.password)
