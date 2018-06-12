@@ -116,3 +116,4 @@ _dev.*
 *.exe
 !geth.exe
 celerybeat.pid
+celerybeat-schedule.*
