@@ -20,7 +20,7 @@ elif str(sys.argv[1]) == 'tx':
     print(result)
 
 elif str(sys.argv[1]) == 'set_token_db':
-    result = ether.set_token_db('0x27C823b254C74989201cEc2A9db6eBbBf169eED0')
+    result = ether.set_token_db('0x6Dafc095b8350F4c17fb5765c644F2Af6979219C')
     print(result)
 
 elif str(sys.argv[1]) == 'set_db_token_address':

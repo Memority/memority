@@ -71,13 +71,15 @@ contract MemoDB is owned{
 
         bytes32 unique = keccak256(now, _from, _to);
 
-        transactionsId[_to].push(unique);
-
         transactions[unique].from = _from;
         transactions[unique].to = _to;
         transactions[unique].file = _file;
         transactions[unique].date = now;
         transactions[unique].value = _value;
+
+        if(_to != address(0)){
+            transactionsId[_to].push(unique);
+        }
 
         if(_from != address(0)){
             transactionsId[_from].push(unique);

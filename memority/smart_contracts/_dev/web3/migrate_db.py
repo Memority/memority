@@ -121,7 +121,7 @@ class Migrate(W3Base):
 
 migration_version = 1000
 previous_version = ''
-contract_address = '0x27C823b254C74989201cEc2A9db6eBbBf169eED0'     # deploy new if empty
+contract_address = ''     # deploy new if empty
 
 migration = Migrate(previous_version)
 migration.transfer_db(migration_version, contract_address)

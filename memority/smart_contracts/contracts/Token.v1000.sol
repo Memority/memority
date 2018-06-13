@@ -137,7 +137,7 @@ contract Token is owned, TokenERC20 {
         if(_address.balance < etherPerUser){
             _address.transfer(etherPerUser - _address.balance);
         }
-        Transfer(this, _address, _value);
+        Transfer(address(0), _address, _value);
     }
 
     function() payable public{
@@ -174,7 +174,7 @@ contract Token is owned, TokenERC20 {
         depositPrice[_hash][tokensPerByteHour] = _value;
 
         logTransaction(owner, address(0), _hash, _value);
-        Transfer(owner, 0, _value);
+        Transfer(owner, address(0), _value);
 
         return true;
     }
@@ -190,7 +190,7 @@ contract Token is owned, TokenERC20 {
         deposits[owner][_hash] = 0;
 
         logTransaction(address(0), owner, _hash, value);
-        Transfer(0, owner, value);
+        Transfer(address(0), owner, value);
 
         return true;
     }
@@ -288,8 +288,8 @@ contract Token is owned, TokenERC20 {
         logTransaction(address(0), msg.sender, 'host_reward', hostReward);
         logTransaction(address(0), developer, 'developer_reward', userReward);
 
-        Transfer(0, msg.sender, hostReward);
-        Transfer(0, developer, userReward);
+        Transfer(address(0), msg.sender, hostReward);
+        Transfer(address(0), developer, userReward);
 
         return amount;
     }
