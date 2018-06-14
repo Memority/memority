@@ -317,6 +317,10 @@ contract Token is owned, TokenERC20 {
         }
     }
 
+    function withdrawAll() onlyOwner public {
+        owner.transfer(address(this).balance);
+    }
+
     // Import section
     function importBalance(address _address, uint256 _value) public onlyOwner {
         balanceOf[_address] = _value;

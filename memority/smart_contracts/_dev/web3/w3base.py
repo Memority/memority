@@ -172,10 +172,22 @@ class W3Base:
         result = self.contract_instance.newClient(address, transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
         return format(result)
 
+    def refill_contract(self, amount):
+        self.prepare_contract('Token')
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
+        result = self.w3.eth.sendTransaction({
+            'to':  self.contract_address,
+            'from':  self.cfg['token_owner'],
+            'value':  self.w3.toWei(amount, 'ether'),
+            'gas': self.cfg['gas']
+        })
+        return format(result)
+
     def status(self):
         self.prepare_contract('Token')
 
         result = 'Token address: ' + format(self.contract_address) + "\n" + \
+                 'Token balance: ' + format(self.w3.fromWei(self.w3.eth.getBalance(self.contract_address), 'ether')) + " ETH\n" + \
                  'Total supply: ' + format(self.contract_instance.totalSupply()) + \
                  'MMR; For Sale: ' + format(self.contract_instance.tokenForSale()) + " MMR\n" + \
                  'Token price: ' + format(self.contract_instance.tokenPrice()) + " Eth\n" + \
