@@ -19,6 +19,10 @@ elif str(sys.argv[1]) == 'tx':
     result = ether.tx_detail(str(sys.argv[2]))
     print(result)
 
+elif str(sys.argv[1]) == 'refill_contract':
+    result = ether.refill_contract(1000000)
+    print(result)
+
 elif str(sys.argv[1]) == 'set_token_db':
     result = ether.set_token_db('0x6Dafc095b8350F4c17fb5765c644F2Af6979219C')
     print(result)
