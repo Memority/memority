@@ -43,7 +43,7 @@ class TokenContract(Contract):
 
     async def get_deposit(self, *, owner_address=None, file_hash, ping=False):
         if not owner_address:
-            owner_address = settings.client_contract_address
+            owner_address = settings.address
         deposit = self.contract.deposits(owner_address, file_hash)
         if ping and not deposit:
             for i in range(5):

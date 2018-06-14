@@ -742,7 +742,7 @@ class MainWindow(QMainWindow):
                 "command": "download",
                 "kwargs": {
                     "destination": directory,
-                    "hash": hash_
+                    "file_hash": hash_
                 }
             }
         )
