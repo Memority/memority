@@ -23,6 +23,7 @@ class ClientContract(Contract):
         )
 
     async def deploy(self, overwrite_addr_in_settings=True):
+        w3 = create_w3()
         if self.highest_version > self.highest_local_version:
             raise ContractNeedsUpdate(
                 f'{self.contract_name} '

@@ -1,3 +1,4 @@
+import contextlib
 import logging
 from datetime import datetime
 from web3.exceptions import BadFunctionCallOutput
@@ -54,19 +55,20 @@ class MemoDBContract(Contract):
         if not address:
             return []
         res = []
-        tx_count = self.contract.transactionsCount(address)
-        for i in range(tx_count):
-            from smart_contracts import memo_db_contract
-            tx_id = memo_db_contract.contract.transactionsId(address, i)
-            tx_from, tx_to, file, date, value = memo_db_contract.contract.transactions(tx_id)
-            from smart_contracts import token_contract
-            res.append({
-                "from": tx_from,
-                "to": tx_to,
-                "comment": file.strip('\x00'),
-                "date": datetime.fromtimestamp(date).isoformat(),
-                "value": token_contract.wmmr_to_mmr(value)
-            })
+        with contextlib.suppress(BadFunctionCallOutput):
+            tx_count = self.contract.transactionsCount(address)
+            for i in range(tx_count):
+                from smart_contracts import memo_db_contract
+                tx_id = memo_db_contract.contract.transactionsId(address, i)
+                tx_from, tx_to, file, date, value = memo_db_contract.contract.transactions(tx_id)
+                from smart_contracts import token_contract
+                res.append({
+                    "from": tx_from,
+                    "to": tx_to,
+                    "comment": file.strip('\x00'),
+                    "date": datetime.fromtimestamp(date).isoformat(),
+                    "value": token_contract.wmmr_to_mmr(value)
+                })
         return res
 
     @ensure_latest_contract_version

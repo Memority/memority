@@ -15,6 +15,7 @@ from celery.schedules import crontab
 from datetime import datetime, timedelta
 
 import logger
+from bugtracking import raven_client
 from models import HosterFile
 from settings import settings
 
@@ -26,7 +27,10 @@ logger = logging.getLogger('monitoring')
 
 def run_in_loop(func):
     def wrapper(*args, **kwargs):
-        return asyncio.get_event_loop().run_until_complete(func(*args, **kwargs))
+        try:
+            return asyncio.get_event_loop().run_until_complete(func(*args, **kwargs))
+        except RuntimeError:
+            return asyncio.new_event_loop().run_until_complete(func(*args, **kwargs))
 
     wrapper.__name__ = func.__name__
 

@@ -21,6 +21,7 @@ def rotating_log_file_handler(filename, formatter):
 _aiohttp_logger_config = {
     'handlers': ['stdout', 'aiohttp_log_file', 'sentry'],
     'level': 'INFO',
+    'propagate': True
 }
 
 
@@ -64,14 +65,17 @@ def setup_logging():
                 'memority': {
                     'handlers': ['stdout', 'memority_log_file', 'sentry'],
                     'level': 'INFO',
+                    'propagate': True
                 },
                 'monitoring': {
                     'handlers': ['stdout', 'monitoring_log_file', 'sentry'],
                     'level': 'INFO',
+                    'propagate': True
                 },
                 'celery': {
                     'handlers': ['stdout', 'monitoring_log_file', 'sentry'],
                     'level': 'INFO',
+                    'propagate': True
                 },
             }
         }
