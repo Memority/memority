@@ -60,6 +60,8 @@ def main():
         'pyinstaller',
         os.path.join('memority', 'memority_gui.pyw'),
         '--name',  'Memority',
+        '--hidden-import', 'celery.fixups',
+        '--hidden-import', 'celery.fixups.django',
         '--hidden-import', 'cytoolz.utils',
         '--hidden-import', 'cytoolz._signatures',
         '--hidden-import', 'raven.handlers',
@@ -74,6 +76,7 @@ def main():
     # region Add files to build
     print('-' * 100)
     print('Add files to build')
+    makedirs(os.path.join('dist', 'Memority', 'models'))
     makedirs(os.path.join('dist', 'Memority', 'settings'))
     makedirs(os.path.join('dist', 'Memority', 'smart_contracts'))
     makedirs(os.path.join('dist', 'Memority', 'geth'))
@@ -90,12 +93,15 @@ def main():
     shutil.copyfile(
         os.path.join('memority', 'settings', 'defaults.yml'),
         os.path.join('dist', 'Memority', 'settings', 'defaults.yml'))
-    shutil.copytree(
-        os.path.join('memority', 'smart_contracts', 'binaries'),
-        os.path.join('dist', 'Memority', 'smart_contracts', 'binaries'))
+    shutil.copyfile(
+        os.path.join('memority', 'smart_contracts', 'contracts.json'),
+        os.path.join('dist', 'Memority', 'smart_contracts', 'contracts.json'))
     shutil.copytree(
         os.path.join('memority', 'smart_contracts', 'install'),
         os.path.join('dist', 'Memority', 'smart_contracts', 'install'))
+    shutil.copytree(
+        os.path.join('memority', 'models', 'db_migrations'),
+        os.path.join('dist', 'Memority', 'models', 'db_migrations'))
     shutil.copyfile(
         os.path.join('memority', 'geth', 'Windows', 'geth.exe'),
         os.path.join('dist', 'Memority', 'geth', 'geth.exe'))
