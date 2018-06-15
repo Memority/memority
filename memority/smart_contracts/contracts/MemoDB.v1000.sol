@@ -32,9 +32,11 @@ contract MemoDB is owned{
     mapping (bytes32 => transaction) public transactions;
     mapping (address => host) public hostInfo;
     mapping (address => address) public clientContract;
+//    mapping (address => string) public minerEnode;
     address tokenAddress;
     address[] public hostList;
     address[] public clientList;
+//    address[] public minerList;
     uint256 public version = 1000;
     uint256 public actualDbVersion = 1000;
     uint256 public actualTokenVersion = 1000;

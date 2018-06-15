@@ -179,21 +179,22 @@ contract Token is owned, TokenERC20 {
         return true;
     }
 
-    function deleteDeposit(bytes32 _hash) public returns (bool success) {
-        Client client = Client(msg.sender);
-        address owner = client.owner();
 
-        require(deposits[owner][_hash] > 0);
-
-        uint256 value = deposits[owner][_hash];
-        balanceOf[owner] += value;
-        deposits[owner][_hash] = 0;
-
-        logTransaction(address(0), owner, _hash, value);
-        Transfer(address(0), owner, value);
-
-        return true;
-    }
+//    function deleteDeposit(bytes32 _hash) public returns (bool success) {
+//        Client client = Client(msg.sender);
+//        address owner = client.owner();
+//
+//        require(deposits[owner][_hash] > 0);
+//
+//        uint256 value = deposits[owner][_hash];
+//        balanceOf[owner] += value;
+//        deposits[owner][_hash] = 0;
+//
+//        logTransaction(address(0), owner, _hash, value);
+//        Transfer(address(0), owner, value);
+//
+//        return true;
+//    }
 
     function timeToPay(bytes32 _hash) view public returns (bool success) {
         address _address = msg.sender;

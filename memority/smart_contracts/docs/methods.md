@@ -169,9 +169,14 @@ First register here and get your Install key - http://api.memority.io/register
 **new app installed**   
 curl -v -H "Accept: application/json" -X POST -F "code=install_key" -F "address=0xe8dc39344b33d3aa580de5fd11ab65afa60c00e9" "http://api.memority.io/api/app/new"  
 **response** 
-{'status': 'success|error', 'result': 'tx', 'error': 'error message on error'} 
+{'status': 'success|error', 'result': 'tx', 'error': 'error message on error'}  
 
- 
+**get static enodes**   
+curl -v -H "Accept: application/json" -X GET "http://api.memority.io/api/app/enodes"  
+**response** 
+{'status': 'success|error', 'enodes': ['node_1', 'node_2', ...], 'error': 'error message on error'} 
+
+
 # Work logic  
 ## Hoster 
 *1.* создаем новый хост указав свой ip. также вызываем эту функции при смени ip. 
