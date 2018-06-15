@@ -10,10 +10,22 @@ rm -rf build dist
 
 echo "--------------------------------------------------"
 echo "Build"
-pyinstaller ./memority/memority_gui.pyw --name "Memority" --hidden-import cytoolz.utils --hidden-import cytoolz._signatures --hidden-import raven.handlers --hidden-import raven.handlers.logging --hidden-import sqlalchemy.ext.baked --additional-hooks-dir=pyinstaller-hooks --windowed --icon=img/memority_icon_256.icns
+pyinstaller ./memority/memority_gui.pyw \
+--name "Memority" \
+--hidden-import celery.fixups \
+--hidden-import celery.fixups.django \
+--hidden-import cytoolz.utils \
+--hidden-import cytoolz._signatures \
+--hidden-import raven.handlers \
+--hidden-import raven.handlers.logging \
+--hidden-import sqlalchemy.ext.baked \
+--additional-hooks-dir=pyinstaller-hooks \
+--windowed \
+--icon=img/memority_icon_256.icns
 
 echo "--------------------------------------------------"
 echo "Add files to build"
+mkdir dist/Memority.app/Contents/MacOS/models
 mkdir dist/Memority.app/Contents/MacOS/settings
 mkdir dist/Memority.app/Contents/MacOS/smart_contracts
 mkdir dist/Memority.app/Contents/MacOS/geth
@@ -22,9 +34,10 @@ cp memority/settings/defaults.yml dist/Memority.app/Contents/MacOS/settings
 cp -r memority/ui dist/Memority.app/Contents/MacOS/
 cp memority/icon.ico dist/Memority.app/Contents/MacOS
 cp memority/splashscreen.jpg dist/Memority.app/Contents/MacOS
-cp -r memority/smart_contracts/binaries dist/Memority.app/Contents/MacOS/smart_contracts
+cp memority/smart_contracts/contracts.json dist/Memority.app/Contents/MacOS/smart_contracts
 cp -r memority/smart_contracts/binaries dist/Memority.app/Contents/MacOS/smart_contracts
 cp -r memority/smart_contracts/install dist/Memority.app/Contents/MacOS/smart_contracts
+cp -r memority/models/db_migrations dist/Memority.app/Contents/MacOS/models
 cp memority/geth/darwin/geth dist/Memority.app/Contents/MacOS/geth
 
 rm -rf dist/Memority

@@ -22,6 +22,7 @@ class FileUploader:
 
     async def perform_uploading(self):
         try:
+            client_contract.reload()
             await self.notify_user(f'Started file uploading | path: {self.file_path}')
             await self.open_file()
             self.check_file_not_already_uploaded()
@@ -233,8 +234,7 @@ class FileUploader:
                 )
                 async with session.post(
                         f'http://{hoster.ip}/files/',
-                        json=data,
-                        timeout=10
+                        json=data
                 ) as resp1:
                     if not resp1.status == 201:
                         return hoster, False

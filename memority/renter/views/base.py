@@ -202,7 +202,8 @@ async def request_mmr(request):
                 'https://api.memority.io/api/app/new',
                 json={
                     "code": key,
-                    "address": settings.address
+                    "address": settings.address,
+                    "version": 1000
                 },
                 headers={
                     "Accept": "application/json"

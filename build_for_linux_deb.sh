@@ -13,6 +13,8 @@ echo "--------------------------------------------------"
 echo "Compile"
 pyinstaller ./memority/memority_gui.pyw \
 --name "memority" \
+--hidden-import celery.fixups \
+--hidden-import celery.fixups.django \
 --hidden-import cytoolz.utils \
 --hidden-import cytoolz._signatures \
 --hidden-import raven.handlers \
@@ -29,16 +31,21 @@ mkdir -p dist/dist/memority/DEBIAN
 mkdir -p dist/dist/memority/usr/lib/memority
 mkdir -p dist/dist/memority/usr/share/pixmaps
 mkdir -p dist/dist/memority/usr/share/applications/
+
+mkdir dist/dist/memority/usr/lib/memority/models
 mkdir dist/dist/memority/usr/lib/memority/settings
 mkdir dist/dist/memority/usr/lib/memority/smart_contracts
 mkdir dist/dist/memority/usr/lib/memority/geth
+
 cp memority/settings/defaults.yml dist/dist/memority/usr/lib/memority/settings/
 cp memority/icon.ico dist/dist/memority/usr/lib/memority/
 cp memority/splashscreen.jpg dist/dist/memority/usr/lib/memority/
 cp memority/geth/linux/geth dist/dist/memority/usr/lib/memority/geth/
+cp memority/smart_contracts/contracts.json dist/dist/memority/usr/lib/memority/smart_contracts
+
 cp -r dist/memority/* dist/dist/memority/usr/lib/memority/
 cp -r memority/ui dist/dist/memority/usr/lib/memority/
-cp -r memority/smart_contracts/binaries dist/dist/memority/usr/lib/memority/smart_contracts/
+cp -r memority/models/db_migrations dist/dist/memority/usr/lib/memority/models
 cp -r memority/smart_contracts/install dist/dist/memority/usr/lib/memority/smart_contracts/
 
 echo "Package: memority
