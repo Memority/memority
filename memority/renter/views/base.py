@@ -203,7 +203,7 @@ async def request_mmr(request):
                 json={
                     "code": key,
                     "address": settings.address,
-                    "version": 1000
+                    "version": 1000  # ToDo: mv to config or get from contract
                 },
                 headers={
                     "Accept": "application/json"
