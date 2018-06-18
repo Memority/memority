@@ -20,7 +20,7 @@ async def upload_file_to_new_host(file: HosterFile, new_host, replacing=None):
         "file_hash": file.hash,
         "owner_key": file.owner_key,
         "signature": file.signature,
-        "client_contract_address": file.client_contract_address,
+        "client_address": file.client_address,
         "size": file.size,
         "hosts": [host.address for host in file.hosts],
         "replacing": replacing.host.address if replacing else None,
