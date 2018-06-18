@@ -95,7 +95,7 @@ class ClientContract(Contract):
         lock_account()
         await wait_for_transaction_completion(tx_hash)
 
-    @ensure_latest_contract_version
+    # @ensure_latest_contract_version
     async def vote_offline(self, address_of_offline, file_hash):
         logger.info(f'Vote offline | file: {file_hash} | host: {address_of_offline}')
         from smart_contracts.smart_contract_api import token_contract

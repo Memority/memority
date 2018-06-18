@@ -143,7 +143,7 @@ class TaskView(web.View):
         logger.info(f'Requesting payment for file | file: {file.hash}')
         if token_contract.time_to_pay(file.hash):
             logger.info(f'Requesting payment for file | file: {file.hash}')
-            amount = await token_contract.request_payout(file.client_contract_address, file.hash)
+            amount = await token_contract.request_payout(file.client_address, file.hash)
             logger.info(f'Successfully requested payment for file | file: {file.hash} | amount: {amount}')
             return f'Successfully requested payment for file | file: {file.hash} | amount: {amount}'
         return 'Not time_to_pay'
