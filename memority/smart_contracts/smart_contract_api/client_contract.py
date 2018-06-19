@@ -157,13 +157,6 @@ class ClientContract(Contract):
         try:
             return self.contract.getFileHosts(file_hash)
         except BadFunctionCallOutput:
-            raven_client.captureException(extra={
-                "client_contract": self.address,
-                "file": file_hash,
-                "host": settings.address,
-                "sync_status": str(create_w3().eth.syncing),
-                "client_files": str(self.get_files())
-            })
             return []
 
     @ensure_latest_contract_version

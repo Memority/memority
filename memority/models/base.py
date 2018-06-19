@@ -122,17 +122,17 @@ class Host(Base, ManagedMixin):
         return session.query(cls).filter(cls.address != settings.address).order_by(func.random()).limit(n)
 
     @classmethod
-    def get_one_for_uploading_file(cls, file):
+    def get_queryset_for_uploading_file(cls, file):
         res = session.query(Host) \
             .filter(~cls.address.in_([h.address for h in file.hosts])) \
-            .order_by(func.random()) \
-            .first()
+            .order_by(func.random())\
+            .all()
         if not res:
             cls.refresh_from_contract()
             res = session.query(Host) \
                 .filter(~cls.address.in_([h.address for h in file.hosts])) \
-                .order_by(func.random()) \
-                .first()
+                .order_by(func.random())\
+                .all()
         return res
 
 

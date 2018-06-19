@@ -1,9 +1,11 @@
 import aiohttp
 import asyncio
+import contextlib
 import logging
 import random
 from aiohttp import web
 
+from bugtracking import raven_client
 from models import HosterFile, Host, HosterFileM2M
 from settings import settings
 from smart_contracts import memo_db_contract, token_contract
@@ -11,6 +13,20 @@ from utils import get_ip, check_if_white_ip
 from .base import upload_to_hoster
 
 logger = logging.getLogger('monitoring')
+
+
+async def get_new_host_for_file(file):
+    for hoster in Host.get_queryset_for_uploading_file(file):
+        with contextlib.suppress(aiohttp.ClientConnectorError, asyncio.TimeoutError):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f'http://{hoster.ip}/free-space/', timeout=1) as resp:
+                    if resp.status == 200:
+                        resp_data = await resp.json()
+                        space = resp_data.get('data').get('result')
+                        if space >= file.size:
+                            return hoster
+    else:
+        return None
 
 
 async def upload_file_to_new_host(file: HosterFile, new_host, replacing=None):
@@ -170,7 +186,16 @@ class TaskView(web.View):
             logger.info(f'Deleting file (i am not in file host list from contract) | file: {file.hash} '
                         f'| {file.client_contract.get_file_hosts(file.hash)} '
                         f'| {settings.address}')
-            # file.delete()
+            try:
+                1 / 0  # debug; just for sending error message with context
+            except ZeroDivisionError:
+                raven_client.captureException(extra={
+                    "client_contract": file.client_contract.address,
+                    "file": file.hash,
+                    "host": settings.address,
+                    "client_files": str(file.client_contract.get_files())
+                })
+            file.delete()
             return f'Deleting file (i am not in file host list from contract) | file: {file.hash} ' \
                    f'| {file.client_contract.get_file_hosts(file.hash)} ' \
                    f'| {settings.address}'
@@ -190,7 +215,7 @@ class TaskView(web.View):
 
         if file.client_contract.need_copy(file.hash):
             logger.info(f'File need copy | file: {file.hash}')
-            host = Host.get_one_for_uploading_file(file)
+            host = await get_new_host_for_file(file)
             if host:
                 await upload_file_to_new_host(
                     new_host=host,
@@ -264,11 +289,21 @@ class TaskView(web.View):
                         file_hash=file.hash
                 ):
                     logger.info(f'Host need replace | file: {file.hash} | host: {file_host.host.address}')
-                    asyncio.ensure_future(
-                        upload_file_to_new_host(
-                            new_host=Host.get_one_for_uploading_file(file),
-                            file=file,
-                            replacing=file_host
+                    host = await get_new_host_for_file(file)
+                    if host:
+                        asyncio.ensure_future(
+                            upload_file_to_new_host(
+                                new_host=host,
+                                file=file,
+                                replacing=file_host
+                            )
                         )
-                    )
+                    else:
+                        logger.error(
+                            f'Can not find host for replacing file! '
+                            f'| file: {file.hash} '
+                            f'| offline host: {file_host.host.address} '
+                            f'| host offline counter: {file_host.offline_counter} '
+                            f'| approved: {offline_counter}'
+                        )
         return 'done.'
