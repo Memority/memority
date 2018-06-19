@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
 
+from bugtracking import raven_client
 from settings import settings
 from smart_contracts import token_contract, client_contract, memo_db_contract, ClientContract
 from utils import compute_hash, InvalidSignature, encrypt, decrypt, sign, DecryptionError
@@ -203,6 +204,7 @@ class HosterFile(Base, ManagedMixin):
                     instance.replacing_host_address = replacing
                 instance.save()
         except IntegrityError:
+            raven_client.captureException()
             session.rollback()
             raise cls.AlreadyExists
         return instance
