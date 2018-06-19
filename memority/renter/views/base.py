@@ -80,8 +80,14 @@ async def upload_to_hoster(hoster, data, file, _logger=None):  # ToDo: mv to hos
                     f'http://{ip}/files/{file.hash}/',
                     data=file.get_filelike()) as resp2:
                 if not resp2.status == 200:
-                    await session.delete(f'http://{ip}/files/{file.hash}/')
-                    return hoster, False
+                    import json
+                    raise Exception(json.dumps({
+                        "status": resp1.status,
+                        "response": await resp1.text(),
+                        "ip": ip,
+                        "hash": file.hash
+                    }))
+                    # return hoster, False
         _logger.info(f'File is uploaded to hoster | file: {file.hash} | hoster ip: {ip}')
         notify_user(f'Uploaded to {hoster.address}')
         return hoster, True
