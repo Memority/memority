@@ -82,8 +82,8 @@ async def upload_to_hoster(hoster, data, file, _logger=None):  # ToDo: mv to hos
                 if not resp2.status == 200:
                     import json
                     raise Exception(json.dumps({
-                        "status": resp1.status,
-                        "response": await resp1.text(),
+                        "status": resp2.status,
+                        "response": await resp2.text(),
                         "ip": ip,
                         "hash": file.hash
                     }))
