@@ -125,13 +125,13 @@ class Host(Base, ManagedMixin):
     @classmethod
     def get_queryset_for_uploading_file(cls, file):
         res = session.query(Host) \
-            .filter(~cls.address.in_([h.address for h in file.hosts])) \
+            .filter(~func.lower(cls.address).in_([h.address.lower() for h in file.hosts])) \
             .order_by(func.random())\
             .all()
         if not res:
             cls.refresh_from_contract()
             res = session.query(Host) \
-                .filter(~cls.address.in_([h.address for h in file.hosts])) \
+                .filter(~func.lower(cls.address).in_([h.address.lower() for h in file.hosts])) \
                 .order_by(func.random())\
                 .all()
         return res
