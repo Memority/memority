@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 import logger
 from bugtracking import raven_client
-from raven.contrib.celery import register_signal
+# from raven.contrib.celery import register_signal
 from models import HosterFile
 from settings import settings
 
@@ -24,7 +24,7 @@ app = Celery('tasks', broker=f'sqla+sqlite:///{settings.db_path}')
 
 logger.setup_logging()
 logger = logging.getLogger('monitoring')
-register_signal(raven_client)
+# register_signal(raven_client)
 
 
 def run_in_loop(func):
