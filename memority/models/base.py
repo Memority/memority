@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError, InvalidRequestError
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
 
+from bugtracking import raven_client
 from settings import settings
 from smart_contracts import token_contract, client_contract, memo_db_contract, ClientContract
 from utils import compute_hash, InvalidSignature, encrypt, decrypt, sign, DecryptionError
@@ -122,17 +123,17 @@ class Host(Base, ManagedMixin):
         return session.query(cls).filter(cls.address != settings.address).order_by(func.random()).limit(n)
 
     @classmethod
-    def get_one_for_uploading_file(cls, file):
+    def get_queryset_for_uploading_file(cls, file):
         res = session.query(Host) \
-            .filter(~cls.address.in_([h.address for h in file.hosts])) \
-            .order_by(func.random()) \
-            .first()
+            .filter(~func.lower(cls.address).in_([h.address.lower() for h in file.hosts])) \
+            .order_by(func.random())\
+            .all()
         if not res:
             cls.refresh_from_contract()
             res = session.query(Host) \
-                .filter(~cls.address.in_([h.address for h in file.hosts])) \
-                .order_by(func.random()) \
-                .first()
+                .filter(~func.lower(cls.address).in_([h.address.lower() for h in file.hosts])) \
+                .order_by(func.random())\
+                .all()
         return res
 
 
@@ -203,6 +204,7 @@ class HosterFile(Base, ManagedMixin):
                     instance.replacing_host_address = replacing
                 instance.save()
         except IntegrityError:
+            raven_client.captureException()
             session.rollback()
             raise cls.AlreadyExists
         return instance

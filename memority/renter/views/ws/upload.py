@@ -6,7 +6,7 @@ from aiohttp import web, ClientConnectorError
 from bugtracking import raven_client
 from models import RenterFile, Host
 from settings import settings
-from smart_contracts import client_contract, token_contract
+from smart_contracts import client_contract, token_contract, memo_db_contract
 
 
 class FileUploader:
@@ -23,6 +23,8 @@ class FileUploader:
     async def perform_uploading(self):
         try:
             client_contract.reload()
+            token_contract.reload()
+            memo_db_contract.reload()
             await self.notify_user(f'Started file uploading | path: {self.file_path}')
             await self.open_file()
             self.check_file_not_already_uploaded()

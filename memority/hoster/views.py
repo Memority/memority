@@ -120,7 +120,7 @@ async def load_body(request: web.Request):
                 "hash": instance.hash
             }
         }
-    })
+    }, status=200)
 
 
 async def proof(request):

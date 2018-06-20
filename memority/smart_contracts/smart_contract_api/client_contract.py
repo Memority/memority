@@ -78,7 +78,7 @@ class ClientContract(Contract):
         await wait_for_transaction_completion(tx_hash)
         lock_account()
 
-    @ensure_latest_contract_version
+    # @ensure_latest_contract_version
     async def add_host_to_file(self, file_hash):
         """
         Called on new host
@@ -95,7 +95,7 @@ class ClientContract(Contract):
         lock_account()
         await wait_for_transaction_completion(tx_hash)
 
-    @ensure_latest_contract_version
+    # @ensure_latest_contract_version
     async def vote_offline(self, address_of_offline, file_hash):
         logger.info(f'Vote offline | file: {file_hash} | host: {address_of_offline}')
         from smart_contracts.smart_contract_api import token_contract
@@ -157,16 +157,9 @@ class ClientContract(Contract):
         try:
             return self.contract.getFileHosts(file_hash)
         except BadFunctionCallOutput:
-            raven_client.captureException(extra={
-                "client_contract": self.address,
-                "file": file_hash,
-                "host": settings.address,
-                "sync_status": str(create_w3().eth.syncing),
-                "client_files": str(self.get_files())
-            })
             return []
 
-    @ensure_latest_contract_version
+    # @ensure_latest_contract_version
     async def replace_host(self, file_hash, old_host_address, from_address=None):
         if not from_address:
             from_address = settings.address

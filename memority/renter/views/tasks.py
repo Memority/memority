@@ -1,9 +1,11 @@
 import aiohttp
 import asyncio
+import contextlib
 import logging
 import random
 from aiohttp import web
 
+from bugtracking import raven_client
 from models import HosterFile, Host, HosterFileM2M
 from settings import settings
 from smart_contracts import memo_db_contract, token_contract
@@ -13,6 +15,20 @@ from .base import upload_to_hoster
 logger = logging.getLogger('monitoring')
 
 
+async def get_new_host_for_file(file):
+    for hoster in Host.get_queryset_for_uploading_file(file):
+        with contextlib.suppress(aiohttp.ClientConnectorError, asyncio.TimeoutError):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f'http://{hoster.ip}/free-space/', timeout=1) as resp:
+                    if resp.status == 200:
+                        resp_data = await resp.json()
+                        space = resp_data.get('data').get('result')
+                        if space >= file.size:
+                            return hoster
+    else:
+        return None
+
+
 async def upload_file_to_new_host(file: HosterFile, new_host, replacing=None):
     ip = new_host.ip
     logger.info(f'Uploading file to new host | file: {file.hash} | hoster ip: {ip}')
@@ -20,7 +36,7 @@ async def upload_file_to_new_host(file: HosterFile, new_host, replacing=None):
         "file_hash": file.hash,
         "owner_key": file.owner_key,
         "signature": file.signature,
-        "client_contract_address": file.client_contract_address,
+        "client_address": file.client_address,
         "size": file.size,
         "hosts": [host.address for host in file.hosts],
         "replacing": replacing.host.address if replacing else None,
@@ -143,7 +159,7 @@ class TaskView(web.View):
         logger.info(f'Requesting payment for file | file: {file.hash}')
         if token_contract.time_to_pay(file.hash):
             logger.info(f'Requesting payment for file | file: {file.hash}')
-            amount = await token_contract.request_payout(file.client_contract_address, file.hash)
+            amount = await token_contract.request_payout(file.client_address, file.hash)
             logger.info(f'Successfully requested payment for file | file: {file.hash} | amount: {amount}')
             return f'Successfully requested payment for file | file: {file.hash} | amount: {amount}'
         return 'Not time_to_pay'
@@ -170,8 +186,19 @@ class TaskView(web.View):
             logger.info(f'Deleting file (i am not in file host list from contract) | file: {file.hash} '
                         f'| {file.client_contract.get_file_hosts(file.hash)} '
                         f'| {settings.address}')
-            # file.delete()
-            # return
+            try:
+                1 / 0  # debug; just for sending error message with context
+            except ZeroDivisionError:
+                raven_client.captureException(extra={
+                    "client_contract": file.client_contract.address,
+                    "file": file.hash,
+                    "host": settings.address,
+                    "client_files": str(file.client_contract.get_files())
+                })
+            file.delete()
+            return f'Deleting file (i am not in file host list from contract) | file: {file.hash} ' \
+                   f'| {file.client_contract.get_file_hosts(file.hash)} ' \
+                   f'| {settings.address}'
 
         if not await file.check_deposit():
             logger.info(f'No deposit for file | file: {file.hash}')
@@ -188,7 +215,7 @@ class TaskView(web.View):
 
         if file.client_contract.need_copy(file.hash):
             logger.info(f'File need copy | file: {file.hash}')
-            host = Host.get_one_for_uploading_file(file)
+            host = await get_new_host_for_file(file)
             if host:
                 await upload_file_to_new_host(
                     new_host=host,
@@ -262,11 +289,21 @@ class TaskView(web.View):
                         file_hash=file.hash
                 ):
                     logger.info(f'Host need replace | file: {file.hash} | host: {file_host.host.address}')
-                    asyncio.ensure_future(
-                        upload_file_to_new_host(
-                            new_host=Host.get_one_for_uploading_file(file),
-                            file=file,
-                            replacing=file_host
+                    host = await get_new_host_for_file(file)
+                    if host:
+                        asyncio.ensure_future(
+                            upload_file_to_new_host(
+                                new_host=host,
+                                file=file,
+                                replacing=file_host
+                            )
                         )
-                    )
+                    else:
+                        logger.error(
+                            f'Can not find host for replacing file! '
+                            f'| file: {file.hash} '
+                            f'| offline host: {file_host.host.address} '
+                            f'| host offline counter: {file_host.offline_counter} '
+                            f'| approved: {offline_counter}'
+                        )
         return 'done.'
