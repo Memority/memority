@@ -24,7 +24,7 @@ elif str(sys.argv[1]) == 'refill_contract':
     print(result)
 
 elif str(sys.argv[1]) == 'set_token_db':
-    result = ether.set_token_db('0x32A80926b41E804C69A3a1E76c21b5f3B1ACE937')
+    result = ether.set_token_db('0x7eb9116cd194f4B03959dfb358F846F20127615C')
     print(result)
 
 elif str(sys.argv[1]) == 'set_db_token_address':
@@ -33,5 +33,9 @@ elif str(sys.argv[1]) == 'set_db_token_address':
 
 elif str(sys.argv[1]) == 'set_client_contract':
     result = ether.set_client_contract('0xBf5a83294Ca896Ef70F666C4826f46317Df33233')
+    print(result)
+
+elif str(sys.argv[1]) == 'change_client_token_address':
+    result = ether.change_client_token_address('0xBf5a83294Ca896Ef70F666C4826f46317Df33233')
     print(result)
 

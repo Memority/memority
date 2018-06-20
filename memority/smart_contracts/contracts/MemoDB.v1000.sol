@@ -1,4 +1,4 @@
-pragma solidity ^0.4.16;
+pragma solidity 0.4.24;
 
 contract Client {
     address public owner;
@@ -33,7 +33,7 @@ contract MemoDB is owned{
     mapping (address => host) public hostInfo;
     mapping (address => address) public clientContract;
 //    mapping (address => string) public minerEnode;
-    address tokenAddress;
+    address public tokenAddress;
     address[] public hostList;
     address[] public clientList;
 //    address[] public minerList;
@@ -41,6 +41,7 @@ contract MemoDB is owned{
     uint256 public actualDbVersion = 1000;
     uint256 public actualTokenVersion = 1000;
     uint256 public actualClientVersion = 1000;
+    address public actualDbAddress = address(0);
 
     event HostAdded(address from);
 
@@ -57,14 +58,18 @@ contract MemoDB is owned{
         tokenAddress = _token;
     }
 
+    function setActualDb(address _address) onlyOwner public {
+        actualDbAddress = _address;
+    }
+
     function setVersions(uint256 db_version, uint256 token_version, uint256 client_version) onlyOwner public {
-        if(actualDbVersion != db_version){
+        if(actualDbVersion < db_version){
             actualDbVersion = db_version;
         }
-        if(actualTokenVersion != token_version){
+        if(actualTokenVersion < token_version){
             actualTokenVersion = token_version;
         }
-        if(actualClientVersion != client_version){
+        if(actualClientVersion < client_version){
             actualClientVersion = client_version;
         }
     }

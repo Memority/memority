@@ -90,7 +90,7 @@ class W3Base:
 
     def tx_detail(self, tx):
         self.prepare_contract('Token')
-        return format(self.w3.eth.getTransactionReceipt(tx))
+        return format(self.w3.eth.getTransactionReceipt(tx)) + "\n\n" + format(self.w3.eth.getTransaction(tx))
 
     def get_address_by_tx(self, tx):
         tx_receipt = self.w3.eth.getTransactionReceipt(tx)
@@ -170,6 +170,12 @@ class W3Base:
         self.prepare_contract('MemoDB')
         self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
         result = self.contract_instance.newClient(address, transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
+        return format(result)
+
+    def change_client_token_address(self, address):
+        self.prepare_contract('Client')
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
+        result = self.contract_instance.changeTokenAddress(address, transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
         return format(result)
 
     def refill_contract(self, amount):

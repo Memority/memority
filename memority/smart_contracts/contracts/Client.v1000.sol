@@ -1,4 +1,4 @@
-pragma solidity ^0.4.16; //We have to specify what version of the compiler this code will use
+pragma solidity 0.4.24; //We have to specify what version of the compiler this code will use
 
 contract Token {
     address public dbAddress;
@@ -10,7 +10,8 @@ contract Token {
 }
 
 contract MemoDB {
-    address tokenAddress;
+    address public tokenAddress;
+    address public actualDbAddress;
     modifier onlyToken {require(msg.sender == tokenAddress);_;}
     function logTransaction(address _from, address _to, bytes32 _file, uint256 _value) external onlyToken {}
     function updateHost(bytes32 ip) public {}
@@ -60,6 +61,29 @@ contract Client is owned {
 
     function changeTokenAddress(address _address) external onlyOwner {
         token_address = _address;
+    }
+
+    function getActualDbAddress() internal returns (address) {
+        MemoDB db = MemoDB(dbAddress);
+        address actualDbAddress = db.actualDbAddress();
+        if(actualDbAddress != address(0) && actualDbAddress != dbAddress){
+            return actualDbAddress;
+        }
+
+        return address(0);
+    }
+
+    function getActualTokenAddress() internal returns (address) {
+        address actualDbAddress = getActualDbAddress();
+        if(actualDbAddress != address(0)){
+            MemoDB db = MemoDB(actualDbAddress);
+            address actualTokenAddress = db.tokenAddress();
+            if(actualTokenAddress != address(0) && actualTokenAddress != token_address){
+                return actualTokenAddress;
+            }
+        }
+
+        return address(0);
     }
 
     function makeDeposit(uint256 _value, bytes32 _hash) external onlyOwner returns (bool success) {
@@ -114,6 +138,13 @@ contract Client is owned {
 
         Token token = Token(token_address);
         token.preparePayout(msg.sender, _hash);
+
+        // todo: keep compatibility
+        address actualTokenAddress = getActualTokenAddress();
+        if(actualTokenAddress != address(0)){
+            Token token_actual = Token(actualTokenAddress);
+            token_actual.preparePayout(msg.sender, _hash);
+        }
     }
 
     function replaceHost(bytes32 _hash, address _oldHost) external {
@@ -141,6 +172,13 @@ contract Client is owned {
         bool status = token.replacePayout(_oldHost, msg.sender, _hash, offlineHosts[_hash][_oldHost]);
         if(status){
             delete offlineHosts[_hash][_oldHost];
+        }
+
+        // todo: keep compatibility
+        address actualTokenAddress = getActualTokenAddress();
+        if(actualTokenAddress != address(0)){
+            Token token_actual = Token(actualTokenAddress);
+            token_actual.replacePayout(_oldHost, msg.sender, _hash, offlineHosts[_hash][_oldHost]);
         }
     }
 

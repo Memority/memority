@@ -120,7 +120,7 @@ class Migrate(W3Base):
 
 
 migration_version = 1000
-previous_version = ''
+previous_version = 1000
 contract_address = ''     # deploy new if empty
 
 migration = Migrate(previous_version)
