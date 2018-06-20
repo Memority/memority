@@ -78,7 +78,7 @@ class ClientContract(Contract):
         await wait_for_transaction_completion(tx_hash)
         lock_account()
 
-    @ensure_latest_contract_version
+    # @ensure_latest_contract_version
     async def add_host_to_file(self, file_hash):
         """
         Called on new host
@@ -159,7 +159,7 @@ class ClientContract(Contract):
         except BadFunctionCallOutput:
             return []
 
-    @ensure_latest_contract_version
+    # @ensure_latest_contract_version
     async def replace_host(self, file_hash, old_host_address, from_address=None):
         if not from_address:
             from_address = settings.address
