@@ -15,8 +15,6 @@ from solc import compile_source
 from web3 import Web3, HTTPProvider
 from web3.contract import ConciseContract
 import bitcoin as b
-from ethereum import utils
-import binascii
 import codecs
 import sha3
 
@@ -247,8 +245,9 @@ class W3Base:
 
         recovered_addr = b.ecdsa_raw_recover(full_hash, (v, r, s))
         pub = b.encode_pubkey(recovered_addr, 'bin')
-        address = binascii.hexlify(utils.sha3(pub[1:]))[24:64]
-        return '0x' + address.decode('utf-8')
+        # address = binascii.hexlify(utils.sha3(pub[1:]))[24:64]
+        address = self.sha3(hexstr=pub[1:].hex())[24:64]
+        return '0x' + address
 
     def check_sign_contract(self, message, signature):
         self.prepare_contract('Utils')

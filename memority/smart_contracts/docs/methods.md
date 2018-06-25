@@ -176,7 +176,37 @@ curl -v -H "Accept: application/json" -X GET "http://api.memority.io/api/app/eno
 **response** 
 {'status': 'success|error', 'enodes': ['node_1', 'node_2', ...], 'error': 'error message on error'} 
 
+**Miner request**   
+POST https://api.memority.io/api/app/miner/request    
+{   
+address: "0x4b197f0b43ac90674f1ce88e68c9c559930e4485",  
+sig_data: "0x4b197f0b43ac90674f1ce88e68c9c559930e4485",  
+sig: "0x0a08ecc2e703eba9eb4563ab28a..."  
+}  
+RESPONSE:   
+{  
+"status":"success",   
+"request_status": [active | pending | sent]   
+}   
+ERROR:  
+{"status": "error", "error": "message", "code": "error_code"}  
+   
+**Add enode address**  
+POST https://api.memority.io/api/api/app/enode  
+{  
+address: "0x4b197f0b43ac90674f1ce88e68c9c559930e4485",  
+sig_data: "enode://3cdb768ba962763ced5e511048176d4556...@127.0.0.1:50301",  
+sig: "0x6f2d936e7d4a9c5f4b05be1ce..."  
+}  
+RESPONSE:  
+{  
+"status":"success",  
+}  
+ERROR:  
+{"status": "error", "error": "message", "code": "error_code"}  
 
+  			
+			
 # Work logic  
 ## Hoster 
 *1.* создаем новый хост указав свой ip. также вызываем эту функции при смени ip. 
