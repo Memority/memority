@@ -39,3 +39,11 @@ elif str(sys.argv[1]) == 'change_client_token_address':
     result = ether.change_client_token_address('0xBf5a83294Ca896Ef70F666C4826f46317Df33233')
     print(result)
 
+elif str(sys.argv[1]) == 'sign_message':
+    result = ether.sign_message(str(sys.argv[2]))
+    print(result)
+
+elif str(sys.argv[1]) == 'check_sign':
+    result = ether.check_sign(str(sys.argv[2]), str(sys.argv[3]))
+    print(result)
+

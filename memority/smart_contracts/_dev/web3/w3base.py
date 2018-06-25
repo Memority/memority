@@ -14,7 +14,10 @@ from time import sleep
 from solc import compile_source
 from web3 import Web3, HTTPProvider
 from web3.contract import ConciseContract
-
+import bitcoin as b
+from ethereum import utils
+import binascii
+import codecs
 
 class W3Base:
 
@@ -66,7 +69,8 @@ class W3Base:
         addresses = {
             'Token': self.get_conf('token_address'),
             'MemoDB': self.get_conf('db_address'),
-            'Client': self.get_conf('client')
+            'Client': self.get_conf('client'),
+            'Utils': self.get_conf('utils')
         }
 
         if not contract_address:
@@ -121,6 +125,7 @@ class W3Base:
             'MemoDB': [self.cfg['version_' + str(self.migrate_version)]['token_address']],
             'Token': [1500000000, 1, 'Memority Token', 'MMR'],
             'Client': [self.cfg['version_' + str(self.migrate_version)]['token_address']],
+            'Utils': [],
         }
 
         full_name = contract_name + ('.v' + str(contract_version) if contract_version else '')
@@ -134,6 +139,10 @@ class W3Base:
     def compile(self, name):
         bin_name = name+'.v'+str(self.version)+'.bin' if self.version else name+'.bin'
         contract_bin_file = os.path.join(self.__location__, self.contract_path + 'bin/' + bin_name)
+
+        if not os.path.exists(contract_bin_file):
+            contract_bin_file = os.path.join(self.__location__, self.contract_path + 'bin/' + name+'.v'+str(self.migrate_version)+'.bin')
+
         with open(contract_bin_file, 'rb') as f:
             self.contract_interface = pickle.load(f)
 
@@ -141,7 +150,9 @@ class W3Base:
 
     def get_contract(self):
         if self.contract_address == '':
-            self.error('no contract_address')
+            self.log('no contract_address')
+            return
+            # self.error('no contract_address')
 
         self.contract_instance = self.w3.eth.contract(
             self.contract_interface['abi'],
@@ -187,6 +198,61 @@ class W3Base:
             'value':  self.w3.toWei(amount, 'ether'),
             'gas': self.cfg['gas']
         })
+        return format(result)
+
+    def sign_message(self, message):
+        self.prepare_contract('Token')
+        sha = self.w3.sha3(text=message)
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
+        signature = self.w3.eth.sign(self.cfg['token_owner'], hexstr=sha)
+
+        return format(signature)
+
+    def check_sign_py(self, message, signature):
+        # todo: find correct way
+        print("owner address: " + self.cfg['token_owner'])
+        self.prepare_contract('Utils')
+        msghash = self.w3.sha3(text=message)[2:]
+        print("w.sha3: " + str(msghash))
+
+        prefix = '\x19Ethereum Signed Message:\n32'
+        msg2 = prefix + msghash
+        msghash2 = self.w3.sha3(text=msg2)[2:]
+        print("hash2: "+ str(msghash2))
+
+        msghash = bytearray.fromhex(self.w3.sha3(text=message)[2:])
+        result = self.contract_instance.keccak(msghash)
+        print("keckack: "+ str(result))
+
+        r = int(signature[0:66], 16)
+        s = int('0x'+signature[66:130], 16)
+        v = int('0x'+signature[130:132], 16)
+        if not v == 27 and not v == 28:
+            v += 27
+
+        # msghash = codecs.decode(msghash, "hex")
+        msghash = result.encode().hex()
+        # print(msghash)
+
+        recovered_addr = b.ecdsa_raw_recover(msghash, (v, r, s))
+        pub = b.encode_pubkey(recovered_addr, 'bin')
+        address = binascii.hexlify(utils.sha3(pub[1:]))[24:64]
+        return format(address.decode('utf-8'))
+
+    def check_sign(self, message, signature):
+        print("owner address: " + self.cfg['token_owner'])
+        self.prepare_contract('Utils')
+
+        msghash = self.w3.sha3(text=message)[2:]
+        r = bytearray.fromhex(signature[2:66])
+        s = bytearray.fromhex(signature[66:130])
+        v = int('0x'+signature[130:132], 16)
+
+        if not v == 27 and not v == 28:
+            v += 27
+
+        msghash = bytearray.fromhex(msghash)
+        result = self.contract_instance.verify(r, s, v, msghash)
         return format(result)
 
     def status(self):

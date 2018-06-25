@@ -117,6 +117,7 @@ class Migrate(W3Base):
         self.import_hosts(hostList, new_contract_instance)
         self.import_clients(clientContract, new_contract_instance)
         self.import_transactions(transactions, new_contract_instance)
+        #todo: setActualDb(...)
 
 
 migration_version = 1000
