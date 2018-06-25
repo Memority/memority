@@ -18,6 +18,7 @@ import bitcoin as b
 from ethereum import utils
 import binascii
 import codecs
+import sha3
 
 class W3Base:
 
@@ -217,21 +218,26 @@ class W3Base:
 
         return format(signature)
 
-    def check_sign_py(self, message, signature):
-        # todo: find correct way
-        print("owner address: " + self.cfg['token_owner'])
-        self.prepare_contract('Utils')
-        msghash = self.w3.sha3(text=message)[2:]
-        print("w.sha3: " + str(msghash))
+    def bytes_to_hex(self, string):
+        hex_str = ''
+        for let in string:
+            hex_str += format(ord(let), "02x")
+        return hex_str
 
+    def sha3(self, text=None, hexstr=None):
+        k = sha3.keccak_256()
+        if text is not None:
+            k.update(text.encode('utf-8'))
+        elif hexstr is not None:
+            k.update(codecs.decode(hexstr, 'hex'))
+
+        return k.hexdigest()
+
+    def check_sign(self, message, signature):
         prefix = '\x19Ethereum Signed Message:\n32'
-        msg2 = prefix + msghash
-        msghash2 = self.w3.sha3(text=msg2)[2:]
-        print("hash2: "+ str(msghash2))
-
-        msghash = bytearray.fromhex(self.w3.sha3(text=message)[2:])
-        result = self.contract_instance.keccak(msghash)
-        print("keckack: "+ str(result))
+        msghash = self.sha3(text=message)
+        full_message = self.bytes_to_hex(prefix) + msghash
+        full_hash = self.sha3(hexstr=full_message)
 
         r = int(signature[0:66], 16)
         s = int('0x'+signature[66:130], 16)
@@ -239,19 +245,13 @@ class W3Base:
         if not v == 27 and not v == 28:
             v += 27
 
-        # msghash = codecs.decode(msghash, "hex")
-        msghash = result.encode().hex()
-        # print(msghash)
-
-        recovered_addr = b.ecdsa_raw_recover(msghash, (v, r, s))
+        recovered_addr = b.ecdsa_raw_recover(full_hash, (v, r, s))
         pub = b.encode_pubkey(recovered_addr, 'bin')
         address = binascii.hexlify(utils.sha3(pub[1:]))[24:64]
-        return format(address.decode('utf-8'))
+        return '0x' + address.decode('utf-8')
 
-    def check_sign(self, message, signature):
-        print("owner address: " + self.cfg['token_owner'])
+    def check_sign_contract(self, message, signature):
         self.prepare_contract('Utils')
-
         msghash = self.w3.sha3(text=message)[2:]
         r = bytearray.fromhex(signature[2:66])
         s = bytearray.fromhex(signature[66:130])

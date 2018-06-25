@@ -44,6 +44,7 @@ elif str(sys.argv[1]) == 'sign_message':
     print(result)
 
 elif str(sys.argv[1]) == 'check_sign':
+    # result = ether.check_sign(str(sys.argv[2]), str(sys.argv[3]))
     result = ether.check_sign(str(sys.argv[2]), str(sys.argv[3]))
     print(result)
 

@@ -41,4 +41,13 @@ contract Utils is owned{
 
         return prefixedHash;
     }
+
+    function hash(bytes32 hash) returns(bytes32) {
+        return hash;
+    }
+
+    function prefix() returns(bytes) {
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        return prefix;
+    }
 }
