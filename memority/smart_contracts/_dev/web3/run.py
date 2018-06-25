@@ -47,3 +47,7 @@ elif str(sys.argv[1]) == 'check_sign':
     result = ether.check_sign(str(sys.argv[2]), str(sys.argv[3]))
     print(result)
 
+elif str(sys.argv[1]) == 'node_info':
+    result = ether.get_enode()
+    print(result)
+

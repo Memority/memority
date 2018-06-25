@@ -2,6 +2,7 @@ gas: 4000000
 token_decimals: 18
 #w3_url: http://localhost:8577
 w3_url: http://localhost:18501
+w3_ipc: /home/memority/mmr_chain_v1/node1/geth.ipc
 
 token_json: '../contracts/bin/Token.json'
 

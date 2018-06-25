@@ -78,7 +78,8 @@ class W3Base:
 
         self.contract_address = contract_address
 
-        self.w3 = Web3(HTTPProvider(self.cfg['w3_url']))
+        # self.w3 = Web3(HTTPProvider(self.cfg['w3_url']))
+        self.w3 = Web3(Web3.IPCProvider(self.cfg['w3_ipc']))
         self.compile(contract_name)
         self.get_contract()
 
@@ -199,6 +200,14 @@ class W3Base:
             'gas': self.cfg['gas']
         })
         return format(result)
+
+    def get_enode(self):
+        self.prepare_contract('Token')
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
+        node = self.w3.admin.nodeInfo
+        remote_ip = '127.0.0.1'
+        enode = "enode://" + node['id'] + "@" + remote_ip + ':' + str(node['ports']['listener'])
+        return enode
 
     def sign_message(self, message):
         self.prepare_contract('Token')
