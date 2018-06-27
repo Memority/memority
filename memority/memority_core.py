@@ -28,10 +28,16 @@ from utils import ask_for_password
 locale.setlocale(locale.LC_ALL, '')
 
 
+SYNC_STARTED = False
+
+
 def process_line(line):
     if isinstance(line, bytes):
         line = line.decode('utf-8')
     if line:
+        if 'Block synchronisation started' in line:
+            global SYNC_STARTED
+            SYNC_STARTED = True
         print(line.strip())
 
 

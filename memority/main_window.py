@@ -50,6 +50,7 @@ def parse_date_from_string(d_: str):
 class MainWindow(QMainWindow):
     daemon_started = pyqtSignal()
     unlocked = pyqtSignal()
+    synced = pyqtSignal()
     request_pool = []
 
     def __init__(self, event_loop, *args, **kwargs):
@@ -98,6 +99,7 @@ class MainWindow(QMainWindow):
         self.ui.import_account_btn.clicked.connect(self.import_account)
         self.ui.export_account_btn.clicked.connect(self.export_account)
         self.ui.become_hoster_btn.clicked.connect(self.become_a_hoster)
+        self.ui.become_miner_btn.clicked.connect(self.become_a_miner)
         self.ui.directory_change_btn.clicked.connect(self.change_directory)
         self.ui.settings_apply_btn.clicked.connect(self.apply_settings)
         self.ui.settings_reset_btn.clicked.connect(self.reset_settings)
@@ -131,6 +133,7 @@ class MainWindow(QMainWindow):
         self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
         self.daemon_started.connect(self.on_daemon_started)
         self.unlocked.connect(self.on_unlocked)
+        self.synced.connect(self.on_synced)
         self.ping_daemon_timer.timeout.connect(self.ping_daemon)
         self.sync_status_timer.timeout.connect(self.update_sync_status)
 
@@ -170,10 +173,14 @@ class MainWindow(QMainWindow):
         @pyqtSlot()
         def got_sync_status(syncing: bool, percent: int):
             if syncing:
+                self.ui.setDisabled(True)
                 self.ui.sync_display_widget.show()
                 self.ui.sync_progressbar.setValue(percent)
             else:
+                self.sync_status_timer.stop()
+                self.ui.setEnabled(True)
                 self.ui.sync_display_widget.hide()
+                self.synced.emit()
 
         r = GetSyncStatusRequest()
         self.request_pool.append(r)
@@ -227,9 +234,12 @@ class MainWindow(QMainWindow):
     def on_unlocked(self):
         self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}/ws/'))
         self.ui.show()
-        self.refresh()
         self.check_app_updates()
+
+    @pyqtSlot()
+    def on_synced(self):
         self.check_contract_updates()
+        self.refresh()
 
     def check_contract_updates(self):
         @del_from_pool
@@ -834,7 +844,7 @@ class MainWindow(QMainWindow):
         # noinspection PyUnresolvedReferences
         @del_from_pool
         @pyqtSlot()
-        def got_file_list(files):
+        def got_file_list(ok: bool, error: str, files: list):
             @pyqtSlot(QDate)
             def upd_value(date: QDate):
                 deposit_end_ = date.toPyDate()
@@ -862,6 +872,10 @@ class MainWindow(QMainWindow):
                         color.setAlpha(128)
                         painter.fillRect(rect, color)
                         painter.drawText(rect.bottomLeft(), f['name'])
+
+            if not ok:
+                self.error(error)
+                return
 
             if not files:
                 self.error('You don`t have files to prolong deposit.')

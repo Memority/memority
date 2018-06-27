@@ -35,21 +35,28 @@ def _error_response(msg):
 
 
 async def sync_status_handler(request):
-    w3 = smart_contracts.smart_contract_api.utils.create_w3()
-    status = w3.eth.syncing
-    if status:
-        current = status.get('currentBlock')
-        highest = status.get('highestBlock')
-        percent = int(current / highest * 100)
+    import memority_core
+    if not memority_core.SYNC_STARTED:
         data = {
             "syncing": True,
-            "percent": percent
+            "percent": -1
         }
     else:
-        data = {
-            "syncing": False,
-            "percent": 100
-        }
+        w3 = smart_contracts.smart_contract_api.utils.create_w3()
+        status = w3.eth.syncing
+        if status:
+            current = status.get('currentBlock')
+            highest = status.get('highestBlock')
+            percent = int(current / highest * 100)
+            data = {
+                "syncing": True,
+                "percent": percent
+            }
+        else:
+            data = {
+                "syncing": False,
+                "percent": 100
+            }
     return web.json_response({
         "status": "success",
         "data": data

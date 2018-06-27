@@ -8,6 +8,7 @@ from web3.contract import ConciseContract
 
 from bugtracking import raven_client
 from settings import settings
+from utils import get_ip
 
 __all__ = [
     'ask_for_password',
