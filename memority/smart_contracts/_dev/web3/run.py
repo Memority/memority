@@ -52,3 +52,7 @@ elif str(sys.argv[1]) == 'node_info':
     result = ether.get_enode()
     print(result)
 
+elif str(sys.argv[1]) == 'vote_for_host':
+    result = ether.vote_for_host(str(sys.argv[2]))
+    print(result)
+

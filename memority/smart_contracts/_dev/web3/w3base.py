@@ -263,6 +263,12 @@ class W3Base:
         result = self.contract_instance.verify(r, s, v, msghash)
         return format(result)
 
+    def vote_for_host(self, address, status=True):
+        self.prepare_contract('Token')
+        self.w3.manager.request_blocking("clique_propose", [address, status])
+        result = self.w3.manager.request_blocking("clique_getSigners", [])
+        return result
+
     def status(self):
         self.prepare_contract('Token')
 

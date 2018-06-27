@@ -205,6 +205,16 @@ RESPONSE:
 ERROR:  
 {"status": "error", "error": "message", "code": "error_code"}  
 
+**get miners list**   
+curl -v -H "Accept: application/json" -X GET "http://api.memority.io/api/app/miners"  
+**response** 
+{   
+'status': 'success|error',   
+'miners': {
+"0x4b197f0b43ac...": true,   
+"0x4b196f0b43ac...": false   
+}   
+} 
   			
 			
 # Work logic  
