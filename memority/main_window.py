@@ -349,13 +349,13 @@ class MainWindow(QMainWindow):
     def refresh(self):
         @del_from_pool
         @pyqtSlot()
-        def done(role: str):
+        def done(roles: list):
             self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.My_files))
             self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.Hosting_statistics))
             self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.Settings))
-            if role in ['client', 'both']:
+            if 'client' in roles:
                 self.ui.tabWidget.addTab(self.ui.My_files, "My files")
-            if role in ['hoster', 'both']:
+            if 'hoster' in roles:
                 self.ui.tabWidget.addTab(self.ui.Hosting_statistics, "Hosting statistics")
             self.ui.tabWidget.addTab(self.ui.Settings, "Settings")
             self.refresh_wallet_tab()
@@ -499,22 +499,25 @@ class MainWindow(QMainWindow):
     def refresh_settings_tab(self):
         @del_from_pool
         @pyqtSlot()
-        def got_user_role(role: str):
+        def got_user_role(roles: list):
             for element in [
                 self.ui.create_account_btn,
                 self.ui.import_account_btn,
                 self.ui.export_account_btn,
                 self.ui.become_hoster_btn,
+                self.ui.become_miner_btn,
                 self.ui.hosting_settings_widget
             ]:
                 element.hide()
             self.ui.import_account_btn.show()
-            if role:
+            if roles:
                 self.ui.export_account_btn.show()
-                if role in ['hoster', 'both']:
+                if 'hoster' in roles:
                     self.ui.hosting_settings_widget.show()
-                elif role == 'client':
+                else:
                     self.ui.become_hoster_btn.show()
+                if 'miner' not in roles:
+                    self.ui.become_miner_btn.show()
             else:
                 self.ui.create_account_btn.show()
 
@@ -718,6 +721,24 @@ class MainWindow(QMainWindow):
         r = CreateAccountRequest(role='host')
         self.request_pool.append(r)
         r.finished.connect(partial(got_create_host_result, self.request_pool, r))
+        r.send()
+
+    @pyqtSlot()
+    def become_a_miner(self):
+        @del_from_pool
+        @pyqtSlot()
+        def got_response(ok: bool, result: str):
+            if ok:
+                self.log(f'The request was successfully sent. Request status: {result}.')
+            else:
+                self.error(result)
+            self.refresh()
+
+        self.log('Sending request for adding you to miner list...')
+
+        r = MinerStatusRequest()
+        self.request_pool.append(r)
+        r.finished.connect(partial(got_response, self.request_pool, r))
         r.send()
 
     @pyqtSlot()

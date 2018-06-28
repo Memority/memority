@@ -23,6 +23,8 @@ __all__ = [
     'unlock_account',
     'wait_for_transaction_completion',
     'w3',
+    'get_enode',
+    'sign_message',
 ]
 
 logger = logging.getLogger('memority')
@@ -140,3 +142,20 @@ def get_contract_instance(contract_name, address=None, client_latest_version=Fal
         address if address else get_contract_address(contract_name),
         ContractFactoryClass=ConciseContract
     )
+
+
+async def get_enode():
+    await unlock_account()
+    node = w3.admin.nodeInfo
+    remote_ip = await get_ip()
+    enode = "enode://" + node['id'] + "@" + remote_ip + ':' + str(node['ports']['listener'])
+    return enode
+
+
+async def sign_message(message, address=None):
+    if not address:
+        address = settings.address
+    sha = w3.sha3(text=message)
+    await unlock_account()
+    signature = w3.eth.sign(address, hexstr=sha)
+    return signature

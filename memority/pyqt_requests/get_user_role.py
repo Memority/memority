@@ -4,7 +4,7 @@ from .base import AbstractGetRequest
 
 
 class GetUserRoleRequest(AbstractGetRequest):
-    finished = pyqtSignal(str)
+    finished = pyqtSignal(list)
 
     def __init__(self):
         super().__init__('/user/role/')

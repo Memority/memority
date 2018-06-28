@@ -51,17 +51,20 @@ class UserView(web.View):
 
     @staticmethod
     def get_role():
-        client, host, res = None, None, None
+        res = []
         if memo_db_contract.get_host_ip(settings.address):
-            host = True
+            res.append('host')
         if settings.client_contract_address:
-            client = True
-        if client and host:
-            res = 'both'
-        elif client:
-            res = 'client'
-        elif host:
-            res = 'host'
+            res.append('client')
+        mining_status = {
+            'active': 'miner',
+            'pending': 'pending_miner',
+            'sent': 'pending_miner'
+        }.get(
+            settings.mining_status
+        )
+        if mining_status:
+            res.append(mining_status)
         return res
 
     async def generate_address(self):

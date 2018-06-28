@@ -23,6 +23,7 @@ def create_renter_app():
         web.post('/disk_space/', set_disk_space_for_hosting),
         web.post('/files/{file_hash}/deposit/', update_file_deposit),
         web.post('/request_mmr/', request_mmr),
+        web.post('/miner_request/', miner_request),
         web.post('/unlock/', unlock),
 
         web.view('/user/{attr}/', UserView),

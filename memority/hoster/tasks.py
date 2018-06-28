@@ -86,6 +86,23 @@ async def perform_monitoring_for_file(file_id):
 
 
 @app.task
+@run_in_loop
+async def check_miner_status():
+    if not settings.mining_status or settings.mining_status == 'active':
+        return
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'http://{settings.daemon_address}/tasks/check_miner_status/',
+                json={}
+        ) as response:
+            data = await response.json()
+            if data.get('status') == 'success':
+                logger.info(f'check_miner_status result: {data.get("data").get("result")}')
+            else:
+                logger.warning(f'check_miner_status result: {data.get("message")}')
+
+
+@app.task
 def request_payment_for_all_files():
     for file in HosterFile.objects.all():
         request_payment_for_file.delay(file.id)

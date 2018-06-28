@@ -10,14 +10,15 @@ from functools import partial
 import smart_contracts
 from bugtracking import raven_client
 from models import RenterFile, HosterFile
+from renter.views.utils import send_miner_request
 from settings import settings
-from smart_contracts import client_contract, token_contract, memo_db_contract, import_private_key_to_eth
-from smart_contracts.smart_contract_api import wait_for_transaction_completion
+from smart_contracts import client_contract, token_contract, memo_db_contract, import_private_key_to_eth, \
+    wait_for_transaction_completion
 from utils import ask_for_password, check_first_run
 
 __all__ = ['list_files', 'view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'unlock', 'request_mmr',
            'change_box_dir', 'file_info', 'update_file_deposit', 'list_transactions', 'sync_status_handler',
-           'check_first_run_handler', 'get_contract_updates']
+           'check_first_run_handler', 'get_contract_updates', 'miner_request']
 
 logger = logging.getLogger('memority')
 
@@ -221,7 +222,7 @@ async def request_mmr(request):
                 json={
                     "code": key,
                     "address": settings.address,
-                    "version": 1000  # ToDo: mv to config or get from contract
+                    "version": token_contract.current_version
                 },
                 headers={
                     "Accept": "application/json"
@@ -239,6 +240,21 @@ async def request_mmr(request):
                 )
             else:
                 return web.json_response(_error_response(data.get('error')))
+
+
+async def miner_request(request):
+    data = await send_miner_request()
+    if data.get('status') == 'success':
+        request_status = data.get('request_status')
+        settings.mining_status = request_status
+        return web.json_response(
+            {
+                "status": "success",
+                "request_status": request_status
+            }
+        )
+    else:
+        return web.json_response(_error_response(data.get('error')))
 
 
 async def set_disk_space_for_hosting(request: web.Request):

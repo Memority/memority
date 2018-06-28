@@ -1,7 +1,8 @@
 from .client_contract import ClientContract
 from .memo_db_contract import MemoDBContract
 from .token_contract import TokenContract
-from .utils import import_private_key_to_eth, ask_for_password, wait_for_transaction_completion, w3, unlock_account
+from .utils import import_private_key_to_eth, ask_for_password, wait_for_transaction_completion, w3, unlock_account, \
+    get_enode, sign_message
 
 __all__ = [
     'token_contract',
@@ -13,6 +14,8 @@ __all__ = [
     'ClientContract',
     'w3',
     'unlock_account',
+    'get_enode',
+    'sign_message',
 ]
 
 global client_contract

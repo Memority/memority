@@ -24,6 +24,7 @@ from .generate_address import GenerateAddressRequest
 from .import_account import ImportAccountRequest
 from .prolong_deposit_for_file import ProlongDepositForFileRequest
 from .request_mmr import RequestMMRRequest
+from .send_miner_request import MinerStatusRequest
 from .set_disk_space_for_hosting import SetDiskSpaceForHostingRequest
 from .unlock_account import UnlockRequest
 # endregion

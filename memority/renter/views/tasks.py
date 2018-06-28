@@ -1,14 +1,19 @@
 import aiohttp
 import asyncio
 import contextlib
+import json
 import logging
+import os
 import random
 from aiohttp import web
 
 from bugtracking import raven_client
 from models import HosterFile, Host, HosterFileM2M
+from renter.views.utils import send_miner_request, send_get_enodes_request, send_add_enode_request, \
+    send_get_miners_request
 from settings import settings
-from smart_contracts import memo_db_contract, token_contract
+from smart_contracts import memo_db_contract, token_contract, unlock_account
+from smart_contracts.smart_contract_api.utils import create_w3
 from utils import get_ip, check_if_white_ip
 from .base import upload_to_hoster
 
@@ -104,6 +109,10 @@ async def get_file_proof_from_hoster(file_host: HosterFileM2M, from_, to_):
 
 
 class TaskView(web.View):
+
+    def __init__(self, request):
+        super().__init__(request)
+        self.w3 = create_w3()
 
     async def post(self):
         task = self.request.match_info.get('task')
@@ -307,3 +316,69 @@ class TaskView(web.View):
                             f'| approved: {offline_counter}'
                         )
         return 'done.'
+
+    async def update_signers(self):
+        await unlock_account()
+        data = await send_get_miners_request()
+        if data.get('status') == 'error':
+            logger.error(f'Updating signers failed: {data.get("error")}')
+            return
+        miners = data.get('miners')
+        miner_set = set(miners.keys())
+        local_active_miners = set(self.w3.manager.request_blocking("clique_getSigners", []))
+
+        vote_for_miners = {
+            miner
+            for miner in miner_set.difference(local_active_miners)
+            if miners[miner]
+        }
+        for miner in vote_for_miners:
+            self.w3.manager.request_blocking("clique_propose", [miner, True])
+
+        vote_off_miners = {
+            miner
+            for miner in local_active_miners.difference(miner_set)
+            if not miners[miner]
+        }
+        for miner in vote_off_miners:
+            self.w3.manager.request_blocking("clique_propose", [miner, False])
+
+    async def update_enodes(self):
+        data = await send_get_enodes_request()
+        if data.get('status') == 'error':
+            logger.error(f'Updating enodes failed: {data.get("error")}')
+            return
+        enodes = set(data.get('enodes'))
+        local_enodes_file = os.path.join(settings.blockchain_dir, 'geth', 'static-nodes.json')
+        with open(local_enodes_file, 'r') as f:
+            local_enodes = set(json.load(f))
+
+        new_enodes = enodes.difference(local_enodes)
+
+        with open(local_enodes_file, 'r') as f:
+            json.dump(enodes, f)
+
+        for enode in new_enodes:
+            self.w3.admin.addPeer(enode)
+
+    async def check_miner_status(self):
+        data = await send_miner_request()
+        if data.get('status') == 'error':
+            logger.error(data.get('error'))
+            return f'error: {data.get("error")}'
+
+        if data.get('request_status') != 'active':
+            return 'error: not active'
+
+        await self.update_signers()
+
+        if settings.address not in self.w3.manager.request_blocking("clique_getSigners", []):
+            return 'error: not in signers'
+
+        resp_data = await send_add_enode_request()
+        if resp_data.get('status') == 'error':
+            logger.error(resp_data.get('error'))
+            return f'error: {data.get("error")}'
+
+        # ToDo: start mining
+        return 'ok'
