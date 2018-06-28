@@ -82,18 +82,19 @@ class MemorityCore:
 
     def prepare(self):
         db_manager.ensure_db_up_to_date()
-        if self.password:  # debug only
-            settings.unlock(self.password)
-            smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, self.password)
-            # if settings.address:
-            #     if settings.address.lower() not in [a.lower() for a in w3.eth.accounts]:
-            #         import_private_key_to_eth(password=self.password)
 
         if self.run_geth:
             print('Starting geth...')
             if not os.path.isdir(settings.blockchain_dir):  # geth not initialized
                 self.init_geth()
             self.start_geth_subprocess_handling_in_thread()
+
+        if self.password:  # debug only
+            settings.unlock(self.password)
+            smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, self.password)
+            if settings.address:
+                if settings.address.lower() not in [a.lower() for a in w3.eth.accounts]:
+                    import_private_key_to_eth(password=self.password)
 
         setup_logging()
         self.configure_apps()
