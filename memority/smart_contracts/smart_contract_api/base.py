@@ -2,6 +2,7 @@ import json
 import logging
 from web3.exceptions import BadFunctionCallOutput
 
+from bugtracking import raven_client
 from settings import settings
 from .utils import *
 
@@ -40,6 +41,7 @@ class Contract:
         try:
             return self.contract.version()
         except BadFunctionCallOutput:
+            raven_client.captureException()
             return 0  # old contract; version not specified
 
     @property
