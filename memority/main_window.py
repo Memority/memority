@@ -15,10 +15,11 @@ from PyQt5.QtWidgets import *
 from datetime import datetime, timedelta
 from functools import partial
 
+import utils
 from bugtracking import raven_client
 from memority_core import MemorityCore
 from pyqt_requests import *
-from settings import settings as daemon_settings
+from settings import settings as daemon_settings, Settings
 from ui_settings import ui_settings
 
 
@@ -49,8 +50,8 @@ def parse_date_from_string(d_: str):
 
 # noinspection PyArgumentList
 class MainWindow(QMainWindow):
+    memority_core = None
     daemon_started = pyqtSignal()
-    unlocked = pyqtSignal()
     synced = pyqtSignal()
     request_pool = []
 
@@ -62,8 +63,6 @@ class MainWindow(QMainWindow):
         self.tray_icon.show()
         self.ensure_addr_not_in_use()
         self.event_loop = event_loop
-        self.memority_core = MemorityCore(event_loop=event_loop)
-        self.memority_core.prepare()
         self.ws_client = QWebSocket()
         self.ping_daemon_timer = QTimer(self)
         self.ping_daemon_timer.setInterval(1000)
@@ -77,6 +76,27 @@ class MainWindow(QMainWindow):
             int((sg.width() - widget.width()) / 4),
             int((sg.height() - widget.height()) / 3)
         )
+        self.start_memority_core()
+
+    def start_memority_core(self):
+        self.memority_core = MemorityCore(event_loop=self.event_loop)
+        if utils.check_first_run():
+            self.memority_core.prepare()
+            return
+        while True:
+            try:
+                password_dialog: QDialog = uic.loadUi(ui_settings.ui_enter_password)
+                password_dialog.password_input.setFocus()
+                if not password_dialog.exec_():
+                    self.shutdown()
+                    return
+                password = password_dialog.password_input.text()
+                self.memority_core.set_password(password)
+                break
+            except Settings.InvalidPassword:
+                self.error('Invalid password!')
+                continue
+        self.memority_core.prepare()
 
     def setup_ui(self):
         self.ui.closeEvent = self.closeEvent
@@ -134,7 +154,6 @@ class MainWindow(QMainWindow):
         self.ws_client.error.connect(self.ws_error)
         self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
         self.daemon_started.connect(self.on_daemon_started)
-        self.unlocked.connect(self.on_unlocked)
         self.synced.connect(self.on_synced)
         self.ping_daemon_timer.timeout.connect(self.ping_daemon)
         self.sync_status_timer.timeout.connect(self.update_sync_status)
@@ -193,47 +212,7 @@ class MainWindow(QMainWindow):
     def on_daemon_started(self):
         self.ping_daemon_timer.stop()
         self.sync_status_timer.start()
-        self.unlock_account()
-
-    def unlock_account(self):
-        @del_from_pool
-        @pyqtSlot()
-        def done_unlock(success: bool):
-            if success:
-                self.unlocked.emit()
-            else:
-                self.error('Invalid password!')
-                nonlocal _unlock_account
-                _unlock_account()
-
-        def _unlock_account():
-            password_dialog: QDialog = uic.loadUi(ui_settings.ui_enter_password)
-            password_dialog.password_input.setFocus()
-            if not password_dialog.exec_():
-                self.shutdown()
-                return
-            password = password_dialog.password_input.text()
-            r = UnlockRequest(password=password)
-            self.request_pool.append(r)
-            r.finished.connect(partial(done_unlock, self.request_pool, r))
-            r.send()
-
-        @del_from_pool
-        @pyqtSlot()
-        def done_check_first_run(first_run: bool):
-            if first_run:
-                self.unlocked.emit()
-            else:
-                nonlocal _unlock_account
-                _unlock_account()
-
-        r = CheckFirstRunRequest()
-        self.request_pool.append(r)
-        r.finished.connect(partial(done_check_first_run, self.request_pool, r))
-        r.send()
-
-    @pyqtSlot()
-    def on_unlocked(self):
+        self.refresh_wallet_tab()
         self.ws_client.open(QUrl(f'ws://{daemon_settings.daemon_address}/ws/'))
         self.ui.show()
         self.check_app_updates()
@@ -677,7 +656,7 @@ class MainWindow(QMainWindow):
         def got_importing_result(ok: bool, result: str):
             if ok:
                 self.log('Account successfully imported!')
-                self.unlock_account()
+                self.unlock_account()  # ToDo: fix
             else:
                 self.error(result)
 

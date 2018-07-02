@@ -3,14 +3,15 @@ import sys
 
 import asyncio
 import contextlib
+import getpass
 import locale
 import os
 import platform
 import subprocess
 import traceback
-from functools import partial
 from queue import Queue
 from shutil import copyfile
+from tempfile import NamedTemporaryFile
 from threading import Thread
 
 import smart_contracts
@@ -20,10 +21,9 @@ from logger import setup_logging
 from models import db_manager
 from renter.server import create_renter_app
 from settings import settings
-from smart_contracts.smart_contract_api import w3, import_private_key_to_eth, token_contract, client_contract, \
+from smart_contracts.smart_contract_api import token_contract, client_contract, \
     memo_db_contract
 from tasks import create_celery_processes
-from utils import ask_for_password
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -51,6 +51,8 @@ class MemorityCore:
     hoster_app_handler = None
     hoster_server = None
     p = None
+    password = None
+    password_file = None
     q = None
     renter_app = None
     renter_app_handler = None
@@ -58,13 +60,16 @@ class MemorityCore:
     t = None
     celery_processes = []
 
-    def __init__(self, *, event_loop=None, _password=None, _run_geth=True) -> None:
+    def __init__(self, *, event_loop=None, _run_geth=True) -> None:
         if not event_loop:
             event_loop = asyncio.new_event_loop()
         self.event_loop = event_loop
-        self.password = _password
 
         self.run_geth = _run_geth
+
+    def set_password(self, password):
+        self.password = password
+        settings.unlock(password)
 
     def run(self):
         # noinspection PyBroadException
@@ -87,13 +92,6 @@ class MemorityCore:
             if not os.path.isdir(settings.blockchain_dir):  # geth not initialized
                 self.init_geth()
             self.start_geth_subprocess_handling_in_thread()
-
-        if self.password:  # debug only
-            settings.unlock(self.password)
-            smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, self.password)
-            if settings.address:
-                if settings.address.lower() not in [a.lower() for a in w3.eth.accounts]:
-                    import_private_key_to_eth(password=self.password)
 
         setup_logging()
         self.configure_apps()
@@ -146,14 +144,17 @@ class MemorityCore:
         ]
 
         if settings.mining_status == 'active':
-            password_file = '$NODE_DIR/password.txt'  # ToDo: NamedTemporaryFile
-            if os.path.isfile(password_file):
-                args = [
-                    *args,
-                    '--unlock', settings.address,
-                    '--password', password_file,
-                    '--mine'
-                ]
+            if not self.password:
+                raise Exception('Please specify password to start mining.')
+            self.password_file = NamedTemporaryFile(delete=False)
+            self.password_file.write(bytes(self.password))
+            self.password_file.close()
+            args = [
+                *args,
+                '--unlock', settings.address,
+                '--password', self.password_file.name,
+                '--mine'
+            ]
 
         self.p = subprocess.Popen(
             args,
@@ -225,6 +226,9 @@ class MemorityCore:
             asyncio.ensure_future(self.renter_app_handler.shutdown(60.0))
             asyncio.ensure_future(self.renter_app.cleanup())
         print('Servers closed.')
+        if self.password_file:
+            print('Password file...')
+            os.unlink(self.password_file.name)
         if self.p:
             print('Geth...')
             self.p.terminate()
@@ -246,15 +250,18 @@ platform_name = platform.system()
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
 
-    password, run_geth = None, False
+    _password, run_geth = None, False
     if '--docker' in sys.argv:
-        password = next(sys.stdin).strip()  # dev
+        _password = next(sys.stdin).strip()  # dev
     if '--no-geth-subprocess' not in sys.argv:
         run_geth = True
 
+    if not _password:
+        _password = getpass.getpass()
+
     memority_core = MemorityCore(
         event_loop=loop,
-        _password=password,
         _run_geth=run_geth
     )
+    memority_core.set_password(_password)
     memority_core.run()

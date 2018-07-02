@@ -11,7 +11,7 @@ import ecdsa
 import sha3
 import yaml
 
-__all__ = ['settings']
+__all__ = ['settings', 'Settings']
 
 
 def get_app_data_dir():
