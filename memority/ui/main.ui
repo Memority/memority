@@ -895,6 +895,25 @@ padding: 10px 20px;
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="check_miner_request_status_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: rgb(0, 170, 234);
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Check miner request status</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <spacer name="horizontalSpacer_10">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>

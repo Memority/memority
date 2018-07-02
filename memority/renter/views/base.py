@@ -14,6 +14,7 @@ from renter.views.utils import send_miner_request
 from settings import settings
 from smart_contracts import client_contract, token_contract, memo_db_contract, import_private_key_to_eth, \
     wait_for_transaction_completion
+from tasks import check_miner_status
 from utils import ask_for_password, check_first_run
 
 __all__ = ['list_files', 'view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'unlock', 'request_mmr',
@@ -247,6 +248,8 @@ async def miner_request(request):
     if data.get('status') == 'success':
         request_status = data.get('request_status')
         settings.mining_status = request_status
+        if request_status == 'active':
+            check_miner_status.delay()
         return web.json_response(
             {
                 "status": "success",

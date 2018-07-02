@@ -16,17 +16,16 @@ from threading import Thread
 import smart_contracts
 from bugtracking import raven_client
 from hoster.server import create_hoster_app
-from hoster.tasks import create_celery_processes
 from logger import setup_logging
 from models import db_manager
 from renter.server import create_renter_app
 from settings import settings
 from smart_contracts.smart_contract_api import w3, import_private_key_to_eth, token_contract, client_contract, \
     memo_db_contract
+from tasks import create_celery_processes
 from utils import ask_for_password
 
 locale.setlocale(locale.LC_ALL, '')
-
 
 SYNC_STARTED = False
 
@@ -136,13 +135,28 @@ class MemorityCore:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+
+        args = [
+            settings.geth_executable,
+            '--datadir', settings.blockchain_dir,
+            '--port', '30320',
+            '--networkid', '232019',
+            '--identity', 'mmr_chain_v1',
+            '--nodiscover'
+        ]
+
+        if settings.mining_status == 'active':
+            password_file = '$NODE_DIR/password.txt'  # ToDo: NamedTemporaryFile
+            if os.path.isfile(password_file):
+                args = [
+                    *args,
+                    '--unlock', settings.address,
+                    '--password', password_file,
+                    '--mine'
+                ]
+
         self.p = subprocess.Popen(
-            [settings.geth_executable,
-             '--datadir', settings.blockchain_dir,
-             '--port', '30320',
-             '--networkid', '232019',
-             '--identity', 'mmr_chain_v1',
-             '--nodiscover'],
+            args,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             bufsize=1,

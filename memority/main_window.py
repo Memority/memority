@@ -4,6 +4,7 @@ import sys
 import asyncio
 import json
 import os
+import re
 import socket
 from PyQt5 import uic
 from PyQt5.QtCore import *
@@ -100,6 +101,7 @@ class MainWindow(QMainWindow):
         self.ui.export_account_btn.clicked.connect(self.export_account)
         self.ui.become_hoster_btn.clicked.connect(self.become_a_hoster)
         self.ui.become_miner_btn.clicked.connect(self.become_a_miner)
+        self.ui.check_miner_request_status_btn.clicked.connect(self.check_miner_request_status)
         self.ui.directory_change_btn.clicked.connect(self.change_directory)
         self.ui.settings_apply_btn.clicked.connect(self.apply_settings)
         self.ui.settings_reset_btn.clicked.connect(self.reset_settings)
@@ -292,11 +294,19 @@ class MainWindow(QMainWindow):
 
     def error(self, msg: str):
         self.log(msg)
+
         msg = msg.replace('\n', '<br/>')
+
+        for url in re.findall('(?:(?:https?|ftp)://)?[\w/\-?=%.]+\.[\w/\-?=%.]+', msg):
+            msg = msg.replace(
+                url,
+                f'<a href="{url}" style="font-weight: bold; color: #fff">{url}</a>'
+            )
+
+        msg = f'<html><body>{msg}</html></body>'
+
         dialog: QDialog = uic.loadUi(ui_settings.ui_error_msg)
-        dialog.msg.setText(
-            f'<html><body>{msg}</html></body>'
-        )
+        dialog.msg.setText(msg)
         dialog.adjustSize()
         dialog.exec_()
 
@@ -506,6 +516,7 @@ class MainWindow(QMainWindow):
                 self.ui.export_account_btn,
                 self.ui.become_hoster_btn,
                 self.ui.become_miner_btn,
+                self.ui.check_miner_request_status_btn,
                 self.ui.hosting_settings_widget
             ]:
                 element.hide()
@@ -517,7 +528,10 @@ class MainWindow(QMainWindow):
                 else:
                     self.ui.become_hoster_btn.show()
                 if 'miner' not in roles:
-                    self.ui.become_miner_btn.show()
+                    if 'pending_miner' in roles:
+                        self.ui.check_miner_request_status_btn.show()
+                    else:
+                        self.ui.become_miner_btn.show()
             else:
                 self.ui.create_account_btn.show()
 
@@ -735,6 +749,26 @@ class MainWindow(QMainWindow):
             self.refresh()
 
         self.log('Sending request for adding you to miner list...')
+
+        r = MinerStatusRequest()
+        self.request_pool.append(r)
+        r.finished.connect(partial(got_response, self.request_pool, r))
+        r.send()
+
+    @pyqtSlot()
+    def check_miner_request_status(self):
+        @del_from_pool
+        @pyqtSlot()
+        def got_response(ok: bool, result: str):
+            if ok:
+                self.log(f'Request status: {result}.')
+                if result == 'active':
+                    self.notify('Please restart the application to start mining.')
+            else:
+                self.error(result)
+            self.refresh()
+
+        self.log('Sending request for miner request status...')
 
         r = MinerStatusRequest()
         self.request_pool.append(r)

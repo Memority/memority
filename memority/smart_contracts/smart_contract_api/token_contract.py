@@ -64,7 +64,7 @@ class TokenContract(Contract):
             file_hash,
             transact={'from': settings.address, 'gas': 1_000_000}
         )
-        lock_account()
+        # lock_account()
         # ToDo: payout history to db
         return amount
 
@@ -84,4 +84,4 @@ class TokenContract(Contract):
             await unlock_account()
             tx_hash = self.contract.refill(transact={'from': settings.address, 'gas': 200_000})
             await wait_for_transaction_completion(tx_hash)
-            lock_account()
+            # lock_account()

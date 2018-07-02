@@ -122,15 +122,15 @@ def schedule_monitoring():
 
 app.conf.beat_schedule = {
     'check-ip-every-hour': {
-        'task': 'hoster.tasks.check_ip',
+        'task': 'tasks.check_ip',
         'schedule': crontab(hour='*', minute=0)
     },
     'request-payment-every-week': {
-        'task': 'hoster.tasks.request_payment_for_all_files',
+        'task': 'tasks.request_payment_for_all_files',
         'schedule': crontab(day_of_week=0, hour=0, minute=0)
     },
     'schedule-monitoring-every-8-hours': {
-        'task': 'hoster.tasks.schedule_monitoring',
+        'task': 'tasks.schedule_monitoring',
         'schedule': crontab(hour='*/8', minute=0)
     }
 }
@@ -146,10 +146,10 @@ def create_celery_processes():
     return [
         mp.Process(  # start beat
             target=main_,
-            args=[['_', '-A', 'hoster.tasks', 'beat', '--loglevel=info']]
+            args=[['_', '-A', 'tasks', 'beat', '--loglevel=info']]
         ),
         mp.Process(  # start worker
             target=main_,
-            args=[['_', '-A', 'hoster.tasks', 'worker', '--loglevel=info', '--pool=solo', '-E']]
+            args=[['_', '-A', 'tasks', 'worker', '--loglevel=info', '--pool=solo', '-E']]
         )
     ]

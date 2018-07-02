@@ -41,7 +41,12 @@ class Contract:
         try:
             return self.contract.version()
         except BadFunctionCallOutput:
-            raven_client.captureException()
+            raven_client.captureException(
+                extra={
+                    "contract_name": self.contract_name,
+                    "contract_address": self.address
+                }
+            )
             return 0  # old contract; version not specified
 
     @property

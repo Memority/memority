@@ -1,7 +1,6 @@
 import logging
 from web3.exceptions import BadFunctionCallOutput
 
-from bugtracking import raven_client
 from settings import settings
 from .base import Contract
 from .decorators import ensure_latest_contract_version
@@ -42,7 +41,7 @@ class ClientContract(Contract):
             args=self.deploy_args
         )
         await wait_for_transaction_completion(tx_hash)
-        lock_account()
+        # lock_account()
 
         address = get_contract_address_by_tx(tx_hash)
         self.contract = get_contract_instance(self.contract_name, address, client_latest_version=True)
@@ -76,7 +75,7 @@ class ClientContract(Contract):
         except Exception:
             raise
         await wait_for_transaction_completion(tx_hash)
-        lock_account()
+        # lock_account()
 
     # @ensure_latest_contract_version
     async def add_host_to_file(self, file_hash):
@@ -92,7 +91,7 @@ class ClientContract(Contract):
             file_hash,
             transact={'from': settings.address, 'gas': 1_000_000}
         )
-        lock_account()
+        # lock_account()
         await wait_for_transaction_completion(tx_hash)
 
     # @ensure_latest_contract_version
@@ -106,7 +105,7 @@ class ClientContract(Contract):
             file_hash,
             transact={'from': settings.address, 'gas': 1_000_000}
         )
-        lock_account()
+        # lock_account()
 
     def need_copy(self, file_hash) -> bool:
         return self.contract.needCopy(file_hash)
@@ -173,5 +172,5 @@ class ClientContract(Contract):
             old_host_address,
             transact={'from': from_address, 'gas': 1_000_000}
         )
-        lock_account()
+        # lock_account()
         await wait_for_transaction_completion(tx_hash)

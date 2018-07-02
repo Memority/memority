@@ -19,7 +19,7 @@ __all__ = [
     'get_contract_bin',
     'get_contract_instance',
     'import_private_key_to_eth',
-    'lock_account',
+    # 'lock_account',
     'unlock_account',
     'wait_for_transaction_completion',
     'w3',
@@ -100,8 +100,8 @@ async def unlock_account():
         raise
 
 
-def lock_account():
-    w3.personal.lockAccount(settings.address)
+# def lock_account():
+#     w3.personal.lockAccount(settings.address)
 
 
 def get_contract_address(contract_name):

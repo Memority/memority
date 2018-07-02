@@ -367,7 +367,11 @@ class TaskView(web.View):
             logger.error(data.get('error'))
             return f'error: {data.get("error")}'
 
-        if data.get('request_status') != 'active':
+        request_status = data.get('request_status')
+
+        settings.mining_status = request_status
+
+        if request_status != 'active':
             return 'error: not active'
 
         await self.update_signers()
@@ -380,5 +384,4 @@ class TaskView(web.View):
             logger.error(resp_data.get('error'))
             return f'error: {data.get("error")}'
 
-        # ToDo: start mining
         return 'ok'
