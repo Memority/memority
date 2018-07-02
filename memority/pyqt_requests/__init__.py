@@ -1,6 +1,5 @@
 # region GET requests
 from .check_client_contract_updates_request import CheckClientContractUpdatesRequest
-from .check_first_run import CheckFirstRunRequest
 from .get_box_dir import GetBoxDirRequest
 from .get_latest_version import GetLatestVersionRequest
 from .get_space_for_hosting import GetDiskSpaceForHostingRequest

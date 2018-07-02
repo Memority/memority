@@ -317,7 +317,7 @@ class TaskView(web.View):
                         )
         return 'done.'
 
-    async def update_signers(self):
+    async def update_miner_list(self):
         await unlock_account()
         data = await send_get_miners_request()
         if data.get('status') == 'error':
@@ -343,6 +343,8 @@ class TaskView(web.View):
         for miner in vote_off_miners:
             self.w3.manager.request_blocking("clique_propose", [miner, False])
 
+        return 'ok'
+
     async def update_enodes(self):
         data = await send_get_enodes_request()
         if data.get('status') == 'error':
@@ -355,11 +357,13 @@ class TaskView(web.View):
 
         new_enodes = enodes.difference(local_enodes)
 
-        with open(local_enodes_file, 'r') as f:
-            json.dump(enodes, f)
+        with open(local_enodes_file, 'w') as f:
+            json.dump(list(enodes), f)
 
         for enode in new_enodes:
             self.w3.admin.addPeer(enode)
+
+        return 'ok'
 
     async def check_miner_status(self):
         data = await send_miner_request()
@@ -374,7 +378,7 @@ class TaskView(web.View):
         if request_status != 'active':
             return 'error: not active'
 
-        await self.update_signers()
+        await self.update_miner_list()
 
         if settings.address not in self.w3.manager.request_blocking("clique_getSigners", []):
             return 'error: not in signers'

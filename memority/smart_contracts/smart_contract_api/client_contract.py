@@ -36,6 +36,8 @@ class ClientContract(Contract):
             abi=get_contract_abi(self.contract_name, client_latest_version=True),
             bytecode=get_contract_bin(self.contract_name)
         )
+        from smart_contracts.smart_contract_api import token_contract
+        await token_contract.refill()
         tx_hash = contract.deploy(
             transaction={'from': settings.address, 'gas': self.gas},
             args=self.deploy_args

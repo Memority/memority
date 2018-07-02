@@ -88,7 +88,11 @@ async def perform_monitoring_for_file(file_id):
 @app.task
 @run_in_loop
 async def check_miner_status():
-    if not settings.mining_status or settings.mining_status == 'active':
+    if settings.mining_status == 'active':
+        logger.info('check_miner_status: already mining')
+        return
+    if not settings.mining_status:
+        logger.info('check_miner_status: no mining request status')
         return
     async with aiohttp.ClientSession() as session:
         async with session.post(
@@ -100,6 +104,39 @@ async def check_miner_status():
                 logger.info(f'check_miner_status result: {data.get("data").get("result")}')
             else:
                 logger.warning(f'check_miner_status result: {data.get("message")}')
+
+
+@app.task
+@run_in_loop
+async def update_enodes():
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'http://{settings.daemon_address}/tasks/update_enodes/',
+                json={}
+        ) as response:
+            data = await response.json()
+            if data.get('status') == 'success':
+                logger.info(f'update_enodes result: {data.get("data").get("result")}')
+            else:
+                logger.warning(f'update_enodes result: {data.get("message")}')
+
+
+@app.task
+@run_in_loop
+async def update_miner_list():
+    if settings.mining_status != 'active':
+        logger.info('update_miner_list: not a miner')
+        return
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'http://{settings.daemon_address}/tasks/update_miner_list/',
+                json={}
+        ) as response:
+            data = await response.json()
+            if data.get('status') == 'success':
+                logger.info(f'update_miner_list result: {data.get("data").get("result")}')
+            else:
+                logger.warning(f'update_miner_list result: {data.get("message")}')
 
 
 @app.task
@@ -132,7 +169,19 @@ app.conf.beat_schedule = {
     'schedule-monitoring-every-8-hours': {
         'task': 'tasks.schedule_monitoring',
         'schedule': crontab(hour='*/8', minute=0)
-    }
+    },
+    'update-enodes-every-midnight': {
+        'task': 'tasks.update_enodes',
+        'schedule': crontab(hour=0, minute=0)
+    },
+    'update-miner-list-every-midnight': {
+        'task': 'tasks.schedule_monitoring',
+        'schedule': crontab(hour=0, minute=0)
+    },
+    'check-miner-status-every-midnight': {
+        'task': 'tasks.check_miner_status',
+        'schedule': crontab(hour=0, minute=0)
+    },
 }
 
 app.conf.timezone = 'UTC'

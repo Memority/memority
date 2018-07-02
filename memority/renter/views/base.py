@@ -19,7 +19,7 @@ from utils import ask_for_password, check_first_run
 
 __all__ = ['list_files', 'view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'unlock', 'request_mmr',
            'change_box_dir', 'file_info', 'update_file_deposit', 'list_transactions', 'sync_status_handler',
-           'check_first_run_handler', 'get_contract_updates', 'miner_request']
+           'get_contract_updates', 'miner_request']
 
 logger = logging.getLogger('memority')
 
@@ -285,16 +285,6 @@ async def list_transactions(request):
         "status": "success",
         "data": memo_db_contract.get_transactions()
     })
-
-
-async def check_first_run_handler(request):
-    return web.json_response(
-        {
-            "status": "success",
-            "result": check_first_run()
-        },
-        status=200
-    )
 
 
 async def get_contract_updates(request):

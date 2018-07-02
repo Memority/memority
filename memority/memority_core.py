@@ -23,7 +23,7 @@ from renter.server import create_renter_app
 from settings import settings
 from smart_contracts.smart_contract_api import token_contract, client_contract, \
     memo_db_contract
-from tasks import create_celery_processes
+from tasks import create_celery_processes, check_miner_status, update_miner_list, update_enodes
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -100,6 +100,10 @@ class MemorityCore:
 
         for p in self.celery_processes:
             p.start()
+
+        check_miner_status.apply_async(countdown=10)
+        update_miner_list.apply_async(countdown=10)
+        update_enodes.apply_async(countdown=10)
 
     @staticmethod
     def init_geth():

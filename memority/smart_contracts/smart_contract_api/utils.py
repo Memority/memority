@@ -80,7 +80,7 @@ def get_contract_address_by_tx(tx_hash):
     return contract_address
 
 
-async def ask_for_password():
+async def ask_for_password():  # ToDo: del
     try:
         return settings.password
     except AttributeError:

@@ -9,7 +9,6 @@ def create_renter_app():
 
     app.add_routes([
         web.get('/ws/', websocket_handler),
-        web.get('/check_first_run/', check_first_run_handler),
         web.get('/files/', list_files),
         web.get('/files/{file_hash}/', file_info),
         web.get('/info/', view_config),
@@ -24,7 +23,7 @@ def create_renter_app():
         web.post('/files/{file_hash}/deposit/', update_file_deposit),
         web.post('/request_mmr/', request_mmr),
         web.post('/miner_request/', miner_request),
-        web.post('/unlock/', unlock),
+        web.post('/unlock/', unlock),  # ToDo: del if not required
 
         web.view('/user/{attr}/', UserView),
 
