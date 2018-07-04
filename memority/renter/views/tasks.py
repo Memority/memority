@@ -12,9 +12,9 @@ from models import HosterFile, Host, HosterFileM2M
 from renter.views.utils import send_miner_request, send_get_enodes_request, send_add_enode_request, \
     send_get_miners_request
 from settings import settings
-from smart_contracts import memo_db_contract, token_contract, unlock_account
+from smart_contracts import memo_db_contract, token_contract, unlock_account, get_enode
 from smart_contracts.smart_contract_api.utils import create_w3
-from utils import get_ip, check_if_white_ip
+from utils import get_ip, check_if_accessible
 from .base import upload_to_hoster
 
 logger = logging.getLogger('monitoring')
@@ -141,17 +141,16 @@ class TaskView(web.View):
         if not ip_from_contract:
             return 'Not in hoster list.'
 
-        ok = await check_if_white_ip(ip_from_contract)
+        ok, err = check_if_accessible(*ip_from_contract.split(':'))
         if ok:
             return f'Your IP {ip_from_contract} is OK.'
 
-        logger.warning('Your computer is not accessible by IP from contract!')
+        logger.warning(f'Your computer is not accessible by IP from contract! {err}')
         my_ip = await get_ip()
-        my_ip = f'{my_ip}:{settings.hoster_app_port}'
-        ok = await check_if_white_ip(my_ip)
+        ok, err = check_if_accessible(my_ip, settings.hoster_app_port)
         if not ok:
-            logger.warning('Your computer is not accessible by IP!')
-            return 'Your computer is not accessible by IP!'
+            logger.warning(f'Your computer is not accessible by IP! {err}')
+            return f'Your computer is not accessible by IP! {err}'
 
         if ip_from_contract != my_ip:
             logger.warning(
@@ -321,27 +320,19 @@ class TaskView(web.View):
         await unlock_account()
         data = await send_get_miners_request()
         if data.get('status') == 'error':
-            logger.error(f'Updating signers failed: {data.get("error")}')
-            return
+            logger.error(f'Updating miners failed: {data.get("error")}')
+            return f'Updating miners failed: {data.get("error")}'
+
         miners = data.get('miners')
-        miner_set = set(miners.keys())
-        local_active_miners = set(self.w3.manager.request_blocking("clique_getSigners", []))
+        local_active_miners = self.w3.manager.request_blocking("clique_getSigners", [])
 
-        vote_for_miners = {
-            miner
-            for miner in miner_set.difference(local_active_miners)
-            if miners[miner]
-        }
-        for miner in vote_for_miners:
-            self.w3.manager.request_blocking("clique_propose", [miner, True])
-
-        vote_off_miners = {
-            miner
-            for miner in local_active_miners.difference(miner_set)
-            if not miners[miner]
-        }
-        for miner in vote_off_miners:
-            self.w3.manager.request_blocking("clique_propose", [miner, False])
+        for miner, vote in miners.items():
+            if vote:
+                if miner not in local_active_miners:
+                    self.w3.manager.request_blocking("clique_propose", [miner, True])
+            else:
+                if miner in local_active_miners:
+                    self.w3.manager.request_blocking("clique_propose", [miner, False])
 
         return 'ok'
 
@@ -349,7 +340,7 @@ class TaskView(web.View):
         data = await send_get_enodes_request()
         if data.get('status') == 'error':
             logger.error(f'Updating enodes failed: {data.get("error")}')
-            return
+            return f'Updating enodes failed: {data.get("error")}'
         enodes = set(data.get('enodes'))
         local_enodes_file = os.path.join(settings.blockchain_dir, 'geth', 'static-nodes.json')
         with open(local_enodes_file, 'r') as f:
@@ -387,5 +378,21 @@ class TaskView(web.View):
         if resp_data.get('status') == 'error':
             logger.error(resp_data.get('error'))
             return f'error: {data.get("error")}'
+
+        return 'ok'
+
+    @staticmethod
+    async def check_enode():
+        enode = await get_enode()
+        data = await send_get_enodes_request()
+
+        if data.get('status') == 'error':
+            logger.error(f'Updating enodes failed: {data.get("error")}')
+            return f'Updating enodes failed: {data.get("error")}'
+
+        enodes = set(data.get('enodes'))
+        if enode not in enodes:
+            await send_add_enode_request()
+            return 'updated.'
 
         return 'ok'

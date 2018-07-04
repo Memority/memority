@@ -5,6 +5,7 @@ import asyncio
 import contextlib
 import getpass
 import locale
+import logging
 import os
 import platform
 import subprocess
@@ -14,7 +15,6 @@ from shutil import copyfile
 from tempfile import NamedTemporaryFile
 from threading import Thread
 
-import smart_contracts
 from bugtracking import raven_client
 from hoster.server import create_hoster_app
 from logger import setup_logging
@@ -23,11 +23,13 @@ from renter.server import create_renter_app
 from settings import settings
 from smart_contracts.smart_contract_api import token_contract, client_contract, \
     memo_db_contract
+from smart_contracts.smart_contract_api.utils import create_w3
 from tasks import create_celery_processes, check_miner_status, update_miner_list, update_enodes
 
 locale.setlocale(locale.LC_ALL, '')
 
 SYNC_STARTED = False
+logger = logging.getLogger('memority')
 
 
 def process_line(line):
@@ -101,6 +103,9 @@ class MemorityCore:
         for p in self.celery_processes:
             p.start()
 
+        if settings.mining_status == 'active':
+            self.start_mining()
+
         check_miner_status.apply_async(countdown=10)
         update_miner_list.apply_async(countdown=10)
         update_enodes.apply_async(countdown=10)
@@ -147,17 +152,13 @@ class MemorityCore:
             '--nodiscover'
         ]
 
-        if settings.mining_status == 'active':
-            if not self.password:
-                raise Exception('Please specify password to start mining.')
+        if self.password:
             self.password_file = NamedTemporaryFile(delete=False)
-            self.password_file.write(bytes(self.password))
+            self.password_file.write(bytes(self.password, encoding='utf-8'))
             self.password_file.close()
-            args = [
-                *args,
+            args += [
                 '--unlock', settings.address,
                 '--password', self.password_file.name,
-                '--mine'
             ]
 
         self.p = subprocess.Popen(
@@ -182,7 +183,6 @@ class MemorityCore:
                 geth_ipc_path = geth_ipc_path.replace('"', '')
                 geth_ipc_path = geth_ipc_path.replace("'", '')
                 settings.w3_url = geth_ipc_path
-                smart_contracts.smart_contract_api.utils.w3 = smart_contracts.smart_contract_api.utils.create_w3()
                 token_contract.reload()
                 client_contract.reload()
                 memo_db_contract.reload()
@@ -245,6 +245,13 @@ class MemorityCore:
             p.join()
 
         print('Done.')
+
+    @staticmethod
+    def start_mining():
+        logger.info('Starting mining...')
+        w3 = create_w3()
+        w3.miner.start(1)
+        logger.info('Mining started.')
 
 
 ON_POSIX = 'posix' in sys.builtin_module_names

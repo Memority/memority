@@ -140,6 +140,24 @@ async def update_miner_list():
 
 
 @app.task
+@run_in_loop
+async def check_enode():
+    if settings.mining_status != 'active':
+        logger.info('check_enode: not a miner')
+        return
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'http://{settings.daemon_address}/tasks/check_enode/',
+                json={}
+        ) as response:
+            data = await response.json()
+            if data.get('status') == 'success':
+                logger.info(f'check_enode result: {data.get("data").get("result")}')
+            else:
+                logger.warning(f'check_enode result: {data.get("message")}')
+
+
+@app.task
 def request_payment_for_all_files():
     for file in HosterFile.objects.all():
         request_payment_for_file.delay(file.id)
@@ -180,6 +198,10 @@ app.conf.beat_schedule = {
     },
     'check-miner-status-every-midnight': {
         'task': 'tasks.check_miner_status',
+        'schedule': crontab(hour=0, minute=0)
+    },
+    'check-enode-every-midnight': {
+        'task': 'tasks.check_enode',
         'schedule': crontab(hour=0, minute=0)
     },
 }

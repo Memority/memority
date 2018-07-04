@@ -11,7 +11,6 @@ from settings import settings
 from utils import get_ip
 
 __all__ = [
-    'ask_for_password',
     'create_w3',
     'get_contract_abi',
     'get_contract_address',
@@ -19,10 +18,8 @@ __all__ = [
     'get_contract_bin',
     'get_contract_instance',
     'import_private_key_to_eth',
-    # 'lock_account',
     'unlock_account',
     'wait_for_transaction_completion',
-    'w3',
     'get_enode',
     'sign_message',
 ]
@@ -43,10 +40,8 @@ def create_w3():
     return _w3
 
 
-w3 = create_w3()
-
-
 async def wait_for_transaction_completion(tx_hash, max_tries=75):
+    w3 = create_w3()
     while max_tries:
         try:
             tx_receipt = w3.eth.getTransactionReceipt(tx_hash)
@@ -69,39 +64,29 @@ async def wait_for_transaction_completion(tx_hash, max_tries=75):
 
 
 def import_private_key_to_eth(password, key=None):
+    w3 = create_w3()
     if not key:
         key = settings.private_key
     w3.personal.importRawKey(key, password)
 
 
 def get_contract_address_by_tx(tx_hash):
+    w3 = create_w3()
     tx_receipt = w3.eth.getTransactionReceipt(tx_hash)
     contract_address = tx_receipt['contractAddress']
     return contract_address
 
 
-async def ask_for_password():  # ToDo: del
-    try:
-        return settings.password
-    except AttributeError:
-        raise NotImplementedError
-
-
 async def unlock_account():
+    w3 = create_w3()
     try:
         logger.info(f'Unlocking account | address: {settings.address}')
-        password = await ask_for_password()
-        address = settings.address
-        w3.personal.unlockAccount(address, password)
+        w3.personal.unlockAccount(settings.address, settings.password)
     except Exception as err:
         raven_client.captureException()
         logger.error(f'Account unlocking failed | address: {settings.address} '
                      f'| exception: {err.__class__.__name__} | message: {str(err)}')
         raise
-
-
-# def lock_account():
-#     w3.personal.lockAccount(settings.address)
 
 
 def get_contract_address(contract_name):
@@ -137,6 +122,7 @@ def get_contract_bin(contract_name='Client'):
 
 
 def get_contract_instance(contract_name, address=None, client_latest_version=False):
+    w3 = create_w3()
     return w3.eth.contract(
         get_contract_abi(contract_name, client_latest_version=client_latest_version),
         address if address else get_contract_address(contract_name),
@@ -145,6 +131,7 @@ def get_contract_instance(contract_name, address=None, client_latest_version=Fal
 
 
 async def get_enode():
+    w3 = create_w3()
     await unlock_account()
     node = w3.admin.nodeInfo
     remote_ip = await get_ip()
@@ -153,6 +140,7 @@ async def get_enode():
 
 
 async def sign_message(message, address=None):
+    w3 = create_w3()
     if not address:
         address = settings.address
     sha = w3.sha3(text=message)

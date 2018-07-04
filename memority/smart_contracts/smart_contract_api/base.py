@@ -7,7 +7,6 @@ from settings import settings
 from .utils import *
 
 logger = logging.getLogger('memority')
-w3 = create_w3()
 
 
 class Contract:

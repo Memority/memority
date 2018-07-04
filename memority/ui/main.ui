@@ -521,8 +521,8 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1101</width>
-            <height>284</height>
+            <width>345</width>
+            <height>135</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_21">
@@ -602,8 +602,8 @@ border: 	1px solid  rgba(255,255,255, 30);</string>
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>1087</width>
-                <height>222</height>
+                <width>349</width>
+                <height>75</height>
                </rect>
               </property>
               <property name="styleSheet">
@@ -783,8 +783,8 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>1101</width>
-            <height>284</height>
+            <width>947</width>
+            <height>238</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1207,7 +1207,7 @@ background: qlineargradient(x1: 0, y1: 0.5, x2: 1, y2: 0.5, stop: 0 rgb(50, 80, 
       <item>
        <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>Synchronizing blockchain...</string>
+         <string>Synchronizing blockchain, please wait...</string>
         </property>
        </widget>
       </item>
