@@ -1,2 +1,2 @@
-from .base import Stats, HosterFile, Host, RenterFile, RenterFileM2M, HosterFileM2M
+from .models import *
 from .manage import db_manager
