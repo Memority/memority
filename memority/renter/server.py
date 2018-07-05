@@ -23,10 +23,9 @@ def create_renter_app():
         web.post('/files/{file_hash}/deposit/', update_file_deposit),
         web.post('/request_mmr/', request_mmr),
         web.post('/miner_request/', miner_request),
+        web.post('/tasks/{task}/', task),
 
         web.view('/user/{attr}/', UserView),
-
-        web.view('/tasks/{task}/', TaskView)
     ])
 
     return app

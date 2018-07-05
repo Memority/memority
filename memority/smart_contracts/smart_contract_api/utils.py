@@ -32,7 +32,6 @@ platform_name = platform.system()
 def create_w3():
     if settings.w3_provider == 'ipc':
         _w3 = Web3(IPCProvider(settings.w3_url))
-        logger.info(f'Connected to w3 | provider: {settings.w3_provider} | location: {settings.w3_url}')
     elif settings.w3_provider == 'http':
         _w3 = Web3(HTTPProvider(settings.w3_url))
     else:
