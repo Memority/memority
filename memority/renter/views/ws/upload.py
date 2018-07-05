@@ -238,7 +238,8 @@ class FileUploader:
                         f'http://{hoster.ip}/files/',
                         json=data
                 ) as resp1:
-                    if not resp1.status == 201:
+                    resp_data: dict = await resp1.json()
+                    if resp_data.get('status') == 'success':
                         return hoster, False
 
                 self.logger.info(
@@ -250,7 +251,8 @@ class FileUploader:
                         f'http://{hoster.ip}/files/{self.file.hash}/',
                         data=self.file.get_filelike()
                 ) as resp2:
-                    if not resp2.status == 200:
+                    resp_data: dict = await resp2.json()
+                    if resp_data.get('status') == 'success':
                         return hoster, False
 
             await self.notify_user(

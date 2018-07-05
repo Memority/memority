@@ -73,14 +73,13 @@ async def upload_to_hoster(hoster, data, file, _logger=None):  # ToDo: mv to hos
                     f'http://{ip}/files/',
                     json=data,
                     timeout=10) as resp1:
-                # ToDo: handle 402
-                if not resp1.status == 201:
-                    import json
-                    raise Exception(json.dumps({
-                        "status": resp1.status,
-                        "response": await resp1.text()
-                    }))
-                    # return hoster, False
+
+                resp_data: dict = await resp1.json()
+                if resp_data.get('status') != 'success':
+                    raise Exception(
+                        f'Uploading metadata failed: {resp_data.get("message")}'
+                    )
+
             _logger.info(f'Uploading file body to hoster... | file: {file.hash} | hoster ip: {ip}')
             async with session.put(
                     f'http://{ip}/files/{file.hash}/',

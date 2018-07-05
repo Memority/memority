@@ -57,6 +57,7 @@ class FileDownloader:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(f'http://{hoster.ip}/files/{self.file_hash}/') as response:
                         assert response.status == 200
+                        # ToDo: handle error message
                         file_body = await response.read()
             except Exception as err:
                 self.logger.warning(
