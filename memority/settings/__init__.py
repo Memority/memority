@@ -74,6 +74,7 @@ class Settings:
             data = self.read_encrypted()
         elif item in [
             'version',
+            'min_balance_for_mining'
         ]:
             data = self.load_defaults()
         else:
