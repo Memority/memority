@@ -138,6 +138,7 @@ async def get_enode():
     if not ip:
         ip = await get_ip()
     enode = "enode://" + node['id'] + "@" + ip + ':' + str(node['ports']['listener'])
+    print(enode, '*'*1000)
     return enode
 
 
