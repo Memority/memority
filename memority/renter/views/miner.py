@@ -34,7 +34,9 @@ async def get_miner_ip():
 def check_balance():
     balance = token_contract.get_mmr_balance()
     if balance < settings.min_balance_for_mining:
-        raise MinerError('Your balance is too low for mining.')
+        raise MinerError(
+            f'Your balance is too low for mining. Your balance: {balance}, required: {settings.min_balance_for_mining}'
+        )
 
 
 async def check_ip():
