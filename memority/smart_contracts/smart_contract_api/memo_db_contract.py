@@ -31,7 +31,6 @@ class MemoDBContract(Contract):
         await token_contract.refill()
         await unlock_account()
         tx_hash = self.contract.updateHost(ip, transact={'from': address, 'gas': 1_000_000})
-        # lock_account()
         if wait:
             await wait_for_transaction_completion(tx_hash)
         logger.info(f'Successfully added host to Token contract | ip: {ip} | address: {address}')
@@ -79,7 +78,6 @@ class MemoDBContract(Contract):
             transact={'from': settings.address, 'gas': 200_000}
         )
         await wait_for_transaction_completion(tx_hash)
-        # lock_account()
 
     def get_current_version(self, contract_name):
         try:
