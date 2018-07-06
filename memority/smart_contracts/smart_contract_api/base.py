@@ -19,7 +19,7 @@ class Contract:
         try:
             self.contract = get_contract_instance(contract_name, address)
             self.address = address if address else get_contract_address(self.contract_name)
-        except settings.Locked:
+        except (settings.Locked, settings.InvalidPassword):
             self.contract = None
             self.address = None
 
@@ -27,7 +27,7 @@ class Contract:
         try:
             self.address = get_contract_address(self.contract_name)
             self.contract = get_contract_instance(self.contract_name, self.address)
-        except settings.Locked:
+        except (settings.Locked, settings.InvalidPassword):
             self.address = None
             self.contract = None
 

@@ -20,7 +20,7 @@ from hoster.server import create_hoster_app
 from logger import setup_logging
 from models import db_manager
 from renter.server import create_renter_app
-from settings import settings
+from settings import settings, Settings
 from smart_contracts.smart_contract_api import token_contract, client_contract, \
     memo_db_contract
 from smart_contracts.smart_contract_api.utils import create_w3
@@ -268,11 +268,18 @@ if __name__ == '__main__':
         run_geth = True
 
     if not _password:
+        _password = settings.load_locals().get('password')
+
+    if not _password:
         _password = getpass.getpass()
 
     memority_core = MemorityCore(
         event_loop=loop,
         _run_geth=run_geth
     )
-    memority_core.set_password(_password)
-    memority_core.run()
+    try:
+        memority_core.set_password(_password)
+    except Settings.InvalidPassword:
+        print('Invalid password.')
+    else:
+        memority_core.run()

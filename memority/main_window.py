@@ -19,7 +19,7 @@ import utils
 from bugtracking import raven_client
 from memority_core import MemorityCore
 from pyqt_requests import *
-from settings import settings as daemon_settings, Settings
+from settings import settings as daemon_settings, Settings, settings
 from ui_settings import ui_settings
 
 
@@ -83,6 +83,15 @@ class MainWindow(QMainWindow):
         if utils.check_first_run():
             self.memority_core.prepare()
             return
+
+        password = settings.load_locals().get('password')
+        if password:
+            try:
+                self.memority_core.set_password(password)
+                self.memority_core.prepare()
+                return
+            except Settings.InvalidPassword:
+                self.error('Invalid password in settings file!')
         while True:
             try:
                 password_dialog: QDialog = uic.loadUi(ui_settings.ui_enter_password)
