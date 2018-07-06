@@ -4,4 +4,5 @@ from .download_file import download_file
 from .get_address import get_address
 from .get_balance import get_balance
 from .list_files import list_files
+from .miner_request import miner_request
 from .upload_file import upload_file

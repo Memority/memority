@@ -35,6 +35,9 @@ def parse_args():
     parser_download.add_argument('destination', help='Destination')
     parser_download.set_defaults(func=download_file)
 
+    parser_list = subparsers.add_parser('miner_request', help='Send request for adding to a miner list')
+    parser_list.set_defaults(func=miner_request)
+
     return parser.parse_args()
 
 
