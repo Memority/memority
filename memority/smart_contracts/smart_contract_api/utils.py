@@ -133,8 +133,11 @@ async def get_enode():
     w3 = create_w3()
     await unlock_account()
     node = w3.admin.nodeInfo
-    remote_ip = await get_ip()
-    enode = "enode://" + node['id'] + "@" + remote_ip + ':' + str(node['ports']['listener'])
+    from smart_contracts import memo_db_contract
+    ip = memo_db_contract.get_host_ip(settings.address).split(':')[0]
+    if not ip:
+        ip = await get_ip()
+    enode = "enode://" + node['id'] + "@" + ip + ':' + str(node['ports']['listener'])
     return enode
 
 
