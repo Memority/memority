@@ -9,7 +9,8 @@ async def miner_request(args):
         json={}
     )
     data = r.json()
-    if data.get("status") == 'error':
+    if data.get("status") == 'success':
+        print(f'The request was successfully sent. Request status: {data.get("request_status")}.')
+    else:
         print(f'Error sending request: {data.get("message")}')
 
-    print(f'The request was successfully sent. Request status: {data.get("request_status")}.')
