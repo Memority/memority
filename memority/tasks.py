@@ -60,7 +60,7 @@ async def request_payment_for_file(file_id):
 @run_in_loop
 async def check_ip():
     async with aiohttp.ClientSession() as session:
-        async with session.post(f'http://{settings.daemon_address}/tasks/check_ip/') as response:
+        async with session.post(f'http://{settings.daemon_address}/tasks/check_ip/', json={}) as response:
             data = await response.json()
             if data.get('status') == 'success':
                 logger.info(f'check_ip result: {data.get("data").get("result")}')
