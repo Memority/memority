@@ -65,7 +65,7 @@ class MemoDBContract(Contract):
                     "from": tx_from,
                     "to": tx_to,
                     "comment": file.strip('\x00'),
-                    "date": datetime.fromtimestamp(date).isoformat(),
+                    "date": str(datetime.fromtimestamp(date)),
                     "value": token_contract.wmmr_to_mmr(value)
                 })
         return res

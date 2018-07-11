@@ -53,7 +53,7 @@ class UserView(web.View):
         if memo_db_contract.get_host_ip(settings.address):
             res.append('host')
         if settings.client_contract_address:
-            res.append('client')
+            res.append('renter')
         mining_status = {
             'active': 'miner',
             'pending': 'pending_miner',
@@ -80,7 +80,7 @@ class UserView(web.View):
     async def create_account(self):
         data = await self.request.json()
         role = data.get('role')
-        if role == 'client':
+        if role == 'renter':
             return await self.create_client_account()
         elif role == 'host':
             return await self.create_host_account()

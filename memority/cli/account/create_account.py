@@ -2,7 +2,7 @@ import contextlib
 import getpass
 import requests
 
-from .base import get_url
+from ..base import get_url
 
 
 class Exit(Exception):
@@ -58,7 +58,7 @@ def create_account_(args):
         raise Exit()
 
     role = {
-        1: 'client',
+        1: 'renter',
         2: 'host',
         3: 'both'
     }.get(int(role_n), None)
@@ -70,12 +70,12 @@ def create_account_(args):
     print(f'Creating account for role "{role}"...\n'
           f'This can take some time, as transaction is being written in blockchain.')
 
-    if role in ['client', 'both']:
-        print('Creating client account...')
+    if role in ['renter', 'both']:
+        print('Creating renter account...')
         resp = requests.post(
             get_url('/user/create/', port=args.memority_core_port),
             json={
-                "role": 'client'
+                "role": 'renter'
             }
         )
         data = resp.json()

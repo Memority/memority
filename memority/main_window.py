@@ -32,17 +32,6 @@ def del_from_pool(func):
     return wrapper
 
 
-def file_size_human_readable(size):
-    if size < 1024:
-        size = f'{size} B'
-    elif size < 1024 ** 2:
-        size = f'{size / 1024:.2f} KB'
-    elif size < 1024 ** 3:
-        size = f'{size / 1024 ** 2:.2f} MB'
-    else:
-        size = f'{size / 1024 ** 3:.2f} GB'
-    return size
-
 
 def parse_date_from_string(d_: str):
     return datetime.strptime(d_[:-4], '%Y-%m-%d %H:%M').date()
@@ -351,7 +340,7 @@ class MainWindow(QMainWindow):
             self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.My_files))
             self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.Hosting_statistics))
             self.ui.tabWidget.removeTab(self.ui.tabWidget.indexOf(self.ui.Settings))
-            if 'client' in roles:
+            if 'renter' in roles:
                 self.ui.tabWidget.addTab(self.ui.My_files, "My files")
             if 'hoster' in roles:
                 self.ui.tabWidget.addTab(self.ui.Hosting_statistics, "Hosting statistics")
@@ -445,7 +434,7 @@ class MainWindow(QMainWindow):
                 file_list_item.uploaded_on_display.setText(file.get('timestamp'))
                 file_list_item.name_display.setText(file.get('name'))
                 file_list_item.hash_display.setText(file.get('hash'))
-                file_list_item.size_display.setText(file_size_human_readable(file.get('size')))
+                file_list_item.size_display.setText(utils.file_size_human_readable(file.get('size')))
                 file_list_item.deposit_end_display.setText(file.get('deposit_ends_on'))
                 file_list_item.download_btn.clicked.connect(partial(self.download_file, file.get('hash')))
                 file_list_item.prolong_deposit_btn.clicked.connect(partial(self.prolong_deposit, file.get('hash')))
@@ -580,16 +569,16 @@ class MainWindow(QMainWindow):
             if not create_account_dialog.exec_():
                 return
             role = {
-                0: 'client',
+                0: 'renter',
                 1: 'host',
                 2: 'both'
             }.get(create_account_dialog.role_input.currentIndex())
 
             self.log(f'Creating account for role "{role}"...\n'
                      f'This can take some time, as transaction is being written in blockchain.')
-            if role in ['client', 'both']:
+            if role in ['renter', 'both']:
                 self.log('Creating client account. When finished, the "My Files" tab appears.')
-                r = CreateAccountRequest(role='client')
+                r = CreateAccountRequest(role='renter')
                 self.request_pool.append(r)
                 r.finished.connect(partial(got_create_client_result, self.request_pool, r))
                 r.send()
@@ -853,7 +842,7 @@ class MainWindow(QMainWindow):
             dialog.calendarWidget.paintCell = paint_cell
             dialog.calendarWidget.updateCells()
 
-            size = file_size_human_readable(size)
+            size = utils.file_size_human_readable(size)
             dialog.file_size_display.setText(size)
             dialog.calendarWidget.clicked[QDate].connect(upd_value)
             dialog.deposit_size_input.valueChanged.connect(upd_date)
@@ -1002,7 +991,7 @@ class MainWindow(QMainWindow):
             value = hours * price_per_hour
             dialog.deposit_size_input.setValue(value)
 
-        size = file_size_human_readable(size)
+        size = utils.file_size_human_readable(size)
         dialog.file_size_display.setText(size)
         dialog.deposit_size_input.setValue(price_per_hour * 24 * 14)
         dialog.calendarWidget.clicked[QDate].connect(upd_value)

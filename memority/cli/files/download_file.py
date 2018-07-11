@@ -1,4 +1,4 @@
-from .base import send_ws
+from ..base import send_ws
 
 
 async def download_file(args):
