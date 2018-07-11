@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import argparse
 import asyncio
@@ -14,17 +14,17 @@ def parse_args():
     parser_list = subparsers.add_parser('list_files', help='List files')
     parser_list.set_defaults(func=list_files)
 
-    parser_list = subparsers.add_parser('create_account', help='Create account')
-    parser_list.set_defaults(func=create_account)
+    parser_create = subparsers.add_parser('create_account', help='Create account')
+    parser_create.set_defaults(func=create_account)
 
-    parser_list = subparsers.add_parser('become_a_hoster', help='Become a hoster')
-    parser_list.set_defaults(func=become_a_hoster)
+    parser_become_hoster = subparsers.add_parser('become_a_hoster', help='Become a hoster')
+    parser_become_hoster.set_defaults(func=become_a_hoster)
 
-    parser_list = subparsers.add_parser('get_address', help='Get address')
-    parser_list.set_defaults(func=get_address)
+    parser_get_address = subparsers.add_parser('get_address', help='Get address')
+    parser_get_address.set_defaults(func=get_address)
 
-    parser_list = subparsers.add_parser('get_balance', help='Get balance')
-    parser_list.set_defaults(func=get_balance)
+    parser_get_balance = subparsers.add_parser('get_balance', help='Get balance')
+    parser_get_balance.set_defaults(func=get_balance)
 
     parser_upload = subparsers.add_parser('upload', help='Upload file')
     parser_upload.add_argument('path', help='Path to file')
@@ -35,8 +35,8 @@ def parse_args():
     parser_download.add_argument('destination', help='Destination')
     parser_download.set_defaults(func=download_file)
 
-    parser_list = subparsers.add_parser('miner_request', help='Send request for adding to a miner list')
-    parser_list.set_defaults(func=miner_request)
+    parser_become_miner = subparsers.add_parser('miner_request', help='Send request for adding to a miner list')
+    parser_become_miner.set_defaults(func=miner_request)
 
     return parser.parse_args()
 

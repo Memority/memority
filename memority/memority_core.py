@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import sys
 
 import asyncio
@@ -153,7 +153,7 @@ class MemorityCore:
         ]
 
         if self.password:
-            self.password_file = NamedTemporaryFile(delete=False)
+            self.password_file = NamedTemporaryFile(delete=False)  # tempfile.mkstemp?
             self.password_file.write(bytes(self.password, encoding='utf-8'))
             self.password_file.close()
             args += [
@@ -258,7 +258,8 @@ ON_POSIX = 'posix' in sys.builtin_module_names
 
 platform_name = platform.system()
 
-if __name__ == '__main__':
+
+def run():
     loop = asyncio.get_event_loop()
 
     _password, run_geth = None, False
@@ -283,3 +284,7 @@ if __name__ == '__main__':
         print('Invalid password.')
     else:
         memority_core.run()
+
+
+if __name__ == '__main__':
+    run()
