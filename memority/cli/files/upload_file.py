@@ -1,6 +1,6 @@
 import os
 
-from ..base import send_ws
+from ..ws import send_ws
 
 
 async def upload_file(args):

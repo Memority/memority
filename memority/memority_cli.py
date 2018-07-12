@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import os
 
 import argparse
 import asyncio
@@ -14,10 +15,6 @@ def import_account(args):
 
 
 def export_account(args):
-    print('Not implemented.')  # ToDo: implement
-
-
-def prolong_deposit(args):
     print('Not implemented.')  # ToDo: implement
 
 
@@ -52,7 +49,7 @@ def get_miner_ip(args):
 # endregion
 
 
-ParserArgument = collections.namedtuple('ParserArgument', ['name', 'help'])
+ParserArgument = collections.namedtuple('ParserArgument', ['name', 'help', 'default'])
 
 
 def add_parser_with_func(root, name, func, help_):
@@ -64,7 +61,10 @@ def add_parser_with_func(root, name, func, help_):
 def add_parser_with_args(root, name, func, help_, args: List[ParserArgument]):
     parser = add_parser_with_func(root, name, func, help_)
     for arg in args:
-        parser.add_argument(arg.name, help=arg.help)
+        if arg.default is not None:
+            parser.add_argument(arg.name, help=arg.help, const=arg.default, nargs='?')
+        else:
+            parser.add_argument(arg.name, help=arg.help)
 
 
 def create_account_sp(root):
@@ -89,21 +89,21 @@ def create_files_sp(root):
     )
     add_parser_with_args(
         files_sps, 'upload', upload_file, 'Upload file',
-        [ParserArgument('path', 'Path to a file')]
+        [ParserArgument('path', 'Path to a file', None)]
     )
     add_parser_with_args(
         files_sps, 'download', download_file, 'Download file',
-        [ParserArgument('hash', 'Hash of a file'),
-         ParserArgument('destination', 'Destination')]
+        [ParserArgument('hash', 'Hash of a file', None),
+         ParserArgument('destination', 'Destination', os.getcwd())]
     )
     add_parser_with_args(
         files_sps, 'info', get_file_info, 'Get file info',
-        [ParserArgument('hash', 'Hash of a file')]
+        [ParserArgument('hash', 'Hash of a file', None)]
     )
     add_parser_with_args(
         files_sps, 'prolong_deposit', prolong_deposit, 'Prolong deposit for a file',
-        [ParserArgument('hash', 'Hash of a file'),
-         ParserArgument('value', 'Deposit value (in MMR)')]
+        [ParserArgument('hash', 'Hash of a file', None),
+         ParserArgument('value', 'Deposit value (in MMR)', 0)]
     )
 
 
@@ -140,11 +140,11 @@ def create_host_sp(root):
     )
     add_parser_with_args(
         storage_sps, 'resize', resize_storage, 'Resize storage',
-        [ParserArgument('value', 'Value, GB')]
+        [ParserArgument('value', 'Value, GB', None)]
     )
     add_parser_with_args(
         storage_sps, 'set_path', set_box_dir, 'Set storage directory',
-        [ParserArgument('path', 'New path to storage directory')]
+        [ParserArgument('path', 'New path to storage directory', None)]
     )
 
 

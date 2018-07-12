@@ -6,7 +6,7 @@ from .get_ip import get_ip, check_if_accessible
 
 __all__ = ['check_first_run',
            'compute_hash', 'verify_signature', 'encrypt', 'decrypt', 'sign', 'InvalidSignature', 'DecryptionError',
-           'get_ip', 'check_if_accessible']
+           'get_ip', 'check_if_accessible', 'file_size_human_readable']
 
 
 def check_first_run():

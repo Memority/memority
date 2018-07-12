@@ -1,6 +1,6 @@
 import requests
 
-from ..base import get_url
+from ..utils import get_url
 
 
 async def become_a_hoster(args):

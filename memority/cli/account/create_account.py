@@ -1,29 +1,22 @@
-import contextlib
 import getpass
 import requests
 
-from ..base import get_url
-
-
-class Exit(Exception):
-    pass
+from ..utils import get_url, Exit
 
 
 def generate_address(args):
     password1 = getpass.getpass('Set password for your wallet: ')
     password2 = getpass.getpass('Confirm: ')
     if password1 != password2:
-        print('Passwords don`t match!')
-        raise Exit()
+        raise Exit('Passwords don`t match!')
     print('Generating address...')
     r = requests.post(get_url('/user/create/', port=args.memority_core_port), json={"password": password1})
     data = r.json()
     if data.get('status') == 'success':
         print(f'Done! Your address: {data.get("address")}')
     else:
-        print(f'Generating address failed.\n'
-              f'{data.get("message")}')
-        raise Exit()
+        raise Exit(f'Generating address failed.\n'
+                   f'{data.get("message")}')
 
 
 def request_mmr(args):
@@ -43,8 +36,7 @@ def request_mmr(args):
         print(f'Tokens received. Your balance: {data.get("balance")}')
     else:
         msg = data.get('message')
-        print(f'Requesting MMR failed.\n{msg}\nPlease ensure if the key was entered correctly.')
-        raise Exit()
+        raise Exit(f'Requesting MMR failed.\n{msg}\nPlease ensure if the key was entered correctly.')
 
 
 def create_account_(args):
@@ -54,8 +46,7 @@ def create_account_(args):
                    "3. Both\n"
                    ">> ")
     if not role_n.isdigit():
-        print(f'Invalid choice: {role_n}. Input must be digit.')
-        raise Exit()
+        raise Exit(f'Invalid choice: {role_n}. Input must be digit.')
 
     role = {
         1: 'renter',
@@ -64,8 +55,7 @@ def create_account_(args):
     }.get(int(role_n), None)
 
     if not role:
-        print(f'Invalid choice: {role_n}')
-        raise Exit()
+        raise Exit(f'Invalid choice: {role_n}')
 
     print(f'Creating account for role "{role}"...\n'
           f'This can take some time, as transaction is being written in blockchain.')
@@ -83,8 +73,7 @@ def create_account_(args):
             print('Client account successfully created!')
         else:
             msg = data.get('message')
-            print(f'Account creation failed.\n{msg}')
-            raise Exit()
+            raise Exit(f'Account creation failed.\n{msg}')
     if role in ['host', 'both']:
         print('Creating hoster account...')
         resp = requests.post(
@@ -98,12 +87,10 @@ def create_account_(args):
             print('Hoster account successfully created!')
         else:
             msg = data.get('message')
-            print(f'Account creation failed.\n{msg}')
-            raise Exit()
+            raise Exit(f'Account creation failed.\n{msg}')
 
 
 async def create_account(args):
-    with contextlib.suppress(Exit):
-        generate_address(args)
-        request_mmr(args)
-        create_account_(args)
+    generate_address(args)
+    request_mmr(args)
+    create_account_(args)

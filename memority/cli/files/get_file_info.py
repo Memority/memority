@@ -1,7 +1,7 @@
 import requests
 
-import utils
-from ..base import get_url
+from utils import file_size_human_readable
+from ..utils import get_url
 
 
 async def get_file_info(args):
@@ -20,7 +20,7 @@ async def get_file_info(args):
 
     print_('Hash', file_data['hash'])
     print_('Name', file_data['name'])
-    print_('Size', utils.file_size_human_readable(file_data['size']))
+    print_('Size', file_size_human_readable(file_data['size']))
     print_('Status', file_data['status'])
     print_('Uploaded on', file_data['timestamp'])
     print_('Deposit ends on on', file_data['deposit_ends_on'])

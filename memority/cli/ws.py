@@ -2,13 +2,9 @@ import aiohttp
 import json
 from aiohttp import ClientConnectorError
 
+from .utils import Exit, get_url
 
-class Exit(Exception):
-    pass
-
-
-def get_url(path, port):
-    return f'http://127.0.0.1:{port}{path}'
+__all__ = ['send_ws']
 
 
 async def handle_info(data, _):
@@ -17,24 +13,19 @@ async def handle_info(data, _):
 
 async def handle_success(data, _):
     if data.get('details') == 'uploaded':
-        print('File successfully uploaded!')
-        raise Exit()
+        raise Exit('File successfully uploaded!')
 
     elif data.get('details') == 'downloaded':
-        print('File successfully downloaded!')
-        raise Exit()
+        raise Exit('File successfully downloaded!')
 
 
 async def handle_error(data, _):
-    print('Error:')
-    print(data.get('message'))
-    raise Exit()
+    raise Exit(f'Error: {data.get("message")}')
 
 
 async def handle_action(data, ws):
     if data.get('details') == 'ask_for_password':
-        print('Unlock account first.')
-        raise Exit()
+        raise Exit('Unlock account first.')
 
     elif data.get('details') == 'tokens_to_deposit':
         print(f'Enter the token amount for deposit.\n'
@@ -71,8 +62,5 @@ async def send_ws(data_to_send: dict, port: int):
                 async for msg in ws:
                     await process_ws_message(msg, ws)
 
-        except Exit:
-            pass
-
         except ClientConnectorError:
-            print('No response from the daemon')
+            raise Exit('No response from the daemon')
