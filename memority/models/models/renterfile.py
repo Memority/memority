@@ -18,7 +18,8 @@ from ..db import Base, session
 
 
 class RenterFile(Base, ManagedMixin):
-    PREPARING, UPLOADING, UPLOADED = 'preparing', 'uploading', 'uploaded'
+    PREPARING, METADATA_CREATED, DEPOSIT_CREATED, UPLOADED = \
+        'preparing', 'metadata_created', 'deposit_created', 'uploaded'
 
     __tablename__ = 'renter_files'
 

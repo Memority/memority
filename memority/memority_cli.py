@@ -93,7 +93,8 @@ def create_files_sp(root):
     )
     add_parser_with_args(
         files_sps, 'download', download_file, 'Download file',
-        [ParserArgument('hash', 'Hash of a file')]
+        [ParserArgument('hash', 'Hash of a file'),
+         ParserArgument('destination', 'Destination')]
     )
     add_parser_with_args(
         files_sps, 'info', get_file_info, 'Get file info',
