@@ -1,5 +1,7 @@
 key_len: 32
 
+vendor_address: '0x4d03fc8f5147205c07be57b24b2df6f2e605edc0'
+
 min_balance_for_mining: 0  # ToDo: set
 
 hosters_per_file: 10

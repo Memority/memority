@@ -112,13 +112,8 @@ class ClientContract(Contract):
         return self.contract.needReplace(old_host_address, file_hash)
 
     @ensure_latest_contract_version
-    async def new_file(self, file_hash, file_name, file_size, hosts, signature,
-                       vendor=None, from_address=None):
-        if not vendor:
-            vendor = settings.address
-        if not from_address:
-            from_address = settings.address
-        logger.info(f'Adding file hosts to Client contract | file: {file_hash} | address: {from_address}')
+    async def new_file(self, file_hash, file_name, file_size, hosts):
+        logger.info(f'Adding file hosts to Client contract | file: {file_hash}')
         from smart_contracts.smart_contract_api import token_contract
         await token_contract.refill()
         await unlock_account()
@@ -126,12 +121,12 @@ class ClientContract(Contract):
             file_hash,
             file_name,
             file_size,
-            vendor,
+            settings.vendor_address,
             hosts,
             '/',  # path
-            transact={'from': from_address, 'gas': 1_000_000}
+            transact={'from': settings.address, 'gas': 1_000_000}
         )
-        logger.info(f'Added file hosts to Client contract | file: {file_hash} | address: {from_address}')
+        logger.info(f'Added file hosts to Client contract | file: {file_hash}')
         await wait_for_transaction_completion(tx_hash)
 
     def get_files(self):

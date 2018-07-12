@@ -112,7 +112,6 @@ class FileUploader:
         file_metadata_for_contract = {
             "file_name": self.file.name,
             "file_size": self.file.size,
-            "signature": self.file.signature,
             "file_hash": self.file.hash,
             "hosts": [hoster.address for hoster in self.hosters]
         }
