@@ -25,6 +25,7 @@ from smart_contracts.smart_contract_api import token_contract, client_contract, 
     memo_db_contract
 from smart_contracts.smart_contract_api.utils import create_w3
 from tasks import create_celery_processes, check_miner_status, update_miner_list, update_enodes
+from utils import check_first_run
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -271,7 +272,7 @@ def run():
     if not _password:
         _password = settings.load_locals().get('password')
 
-    if not _password:
+    if not _password and not check_first_run():
         _password = getpass.getpass()
 
     memority_core = MemorityCore(

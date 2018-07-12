@@ -273,7 +273,7 @@ class Settings:
     def contracts_json(self):
         return os.path.join(_base_dir, 'smart_contracts', 'contracts.json')
 
-    def import_account(self, filename):
+    def import_account(self, filename, password):
         # region Backup current account
         if os.path.isfile(self.local_settings_secrets_path):
             local_settings_backup_path = f'{self.local_settings_secrets_path}.bak'
@@ -296,6 +296,9 @@ class Settings:
             os.path.join(self.local_settings_secrets_path)
         )
         # endregion
+        self.unlock(password)
+        from smart_contracts import import_private_key_to_eth
+        import_private_key_to_eth(password, self.private_key)
 
     def export_account(self, filename):
         shutil.copyfile(

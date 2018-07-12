@@ -10,7 +10,7 @@ def generate_address(args):
     if password1 != password2:
         raise Exit('Passwords don`t match!')
     print('Generating address...')
-    r = requests.post(get_url('/user/create/', port=args.memority_core_port), json={"password": password1})
+    r = requests.post(get_url('/user/generate_address/', port=args.memority_core_port), json={"password": password1})
     data = r.json()
     if data.get('status') == 'success':
         print(f'Done! Your address: {data.get("address")}')

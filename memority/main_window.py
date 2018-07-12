@@ -654,7 +654,8 @@ class MainWindow(QMainWindow):
         def got_importing_result(ok: bool, result: str):
             if ok:
                 self.log('Account successfully imported!')
-                self.unlock_account()  # ToDo: fix
+                self.notify('In order to work correctly with the new account, the application needs to be restarted.')
+                self.shutdown()
             else:
                 self.error(result)
 
@@ -662,11 +663,16 @@ class MainWindow(QMainWindow):
             None,
             "Select account file",
             os.path.join(os.getenv('HOME', None) or os.getenv('HOMEPATH', None), 'memority_account.bin'),
-            "*.bin"
         )
         if filename:
+            password_dialog: QDialog = uic.loadUi(ui_settings.ui_enter_password)
+            password_dialog.password_input.setFocus()
+            if not password_dialog.exec_():
+                self.shutdown()
+                return
+            password = password_dialog.password_input.text()
             self.log('Importing account...')
-            r = ImportAccountRequest(filename=filename)
+            r = ImportAccountRequest(filename=filename, password=password)
             self.request_pool.append(r)
             r.finished.connect(partial(got_importing_result, self.request_pool, r))
             r.send()

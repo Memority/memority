@@ -6,10 +6,13 @@ from .base import AbstractPostRequest
 class ImportAccountRequest(AbstractPostRequest):
     finished = pyqtSignal(bool, str)
 
-    def __init__(self, filename):
+    def __init__(self, filename, password):
         super().__init__(
             '/user/import/',
-            {"filename": filename}
+            {
+                "filename": filename,
+                "password": password
+            }
         )
 
     def process_response_data(self, data: dict):

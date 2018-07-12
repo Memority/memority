@@ -10,14 +10,6 @@ from cli import *
 
 
 # region To implement
-def import_account(args):
-    print('Not implemented.')  # ToDo: implement
-
-
-def get_host_ip(args):
-    print('Not implemented.')  # ToDo: implement
-
-
 def get_miner_status(args):
     print('Not implemented.')  # ToDo: implement
 
@@ -53,8 +45,9 @@ def create_account_sp(root):
     add_parser_with_func(
         account_sps, 'create', create_account, 'Create account'
     )
-    add_parser_with_func(
-        account_sps, 'import', import_account, 'Import account'
+    add_parser_with_args(
+        account_sps, 'import', import_account, 'Import account',
+        [ParserArgument('file', 'File', None)]
     )
     add_parser_with_args(
         account_sps, 'export', export_account, 'Export account',

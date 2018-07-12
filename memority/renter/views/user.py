@@ -113,7 +113,8 @@ class UserView(web.View):
     async def import_account(self):
         data = await self.request.json()
         filename = data.get('filename')
-        settings.import_account(filename)
+        password = data.get('password')
+        settings.import_account(filename, password)
         return None, 200
 
     async def export_account(self):

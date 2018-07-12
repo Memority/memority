@@ -1,5 +1,6 @@
 import aiofiles
 import contextlib
+import logging
 import os
 import tzlocal
 from datetime import datetime, timedelta
@@ -15,6 +16,8 @@ from utils import compute_hash, encrypt, decrypt, sign, DecryptionError
 from .host import Host
 from .utils import ManagedMixin
 from ..db import Base, session
+
+logger = logging.getLogger('memority')
 
 
 class RenterFile(Base, ManagedMixin):
@@ -149,6 +152,7 @@ class RenterFile(Base, ManagedMixin):
 
     @classmethod
     def refresh_from_contract(cls):
+        logger.info('Refreshing renter files from contract')
         with contextlib.suppress(AttributeError):
             files = client_contract.get_files()
             for file_hash in files:
