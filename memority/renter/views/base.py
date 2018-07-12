@@ -226,7 +226,8 @@ async def request_mmr(request):
 async def set_disk_space_for_hosting(request: web.Request):
     data = await request.json()
     disk_space = data.get('disk_space')
-    settings.disk_space_for_hosting = disk_space
+    # ToDo: check if not lower than space used
+    settings.disk_space_for_hosting = float(disk_space)
     return web.json_response({"status": "success"})
 
 

@@ -18,14 +18,6 @@ def get_host_ip(args):
     print('Not implemented.')  # ToDo: implement
 
 
-def get_storage_info(args):
-    print('Not implemented.')  # ToDo: implement
-
-
-def resize_storage(args):
-    print('Not implemented.')  # ToDo: implement
-
-
 def set_box_dir(args):
     print('Not implemented.')  # ToDo: implement
 
