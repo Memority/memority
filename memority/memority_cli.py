@@ -14,10 +14,6 @@ def import_account(args):
     print('Not implemented.')  # ToDo: implement
 
 
-def export_account(args):
-    print('Not implemented.')  # ToDo: implement
-
-
 def get_host_status(args):
     print('Not implemented.')  # ToDo: implement
 
@@ -76,8 +72,9 @@ def create_account_sp(root):
     add_parser_with_func(
         account_sps, 'import', import_account, 'Import account'
     )
-    add_parser_with_func(
-        account_sps, 'export', export_account, 'Export account'
+    add_parser_with_args(
+        account_sps, 'export', export_account, 'Export account',
+        [ParserArgument('destination', 'Destination file', None)]
     )
 
 
