@@ -42,8 +42,3 @@ async def get_host_status(args):
     print(f'Free: {file_size_human_readable(free)}')
     print()
     print(f'Total reward for hosting: {rewards:.18f} MMR')
-    """
-    ip
-    storage
-    mmr collected
-    """

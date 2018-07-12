@@ -27,6 +27,7 @@ def create_renter_app():
 
         web.view('/user/{attr}/', UserView),
         web.view('/host/{attr}/', HostView),
+        web.view('/miner/{attr}/', MinerView),
     ])
 
     return app

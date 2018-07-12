@@ -9,18 +9,6 @@ from typing import List
 from cli import *
 
 
-# region To implement
-def get_miner_status(args):
-    print('Not implemented.')  # ToDo: implement
-
-
-def get_miner_ip(args):
-    print('Not implemented.')  # ToDo: implement
-
-
-# endregion
-
-
 ParserArgument = collections.namedtuple('ParserArgument', ['name', 'help', 'default'])
 
 
@@ -124,9 +112,6 @@ def create_miner_sp(root):
     miner_sps = miner_sp.add_subparsers()
     add_parser_with_func(
         miner_sps, 'status', get_miner_status, 'Get miner status'
-    )
-    add_parser_with_func(
-        miner_sps, 'ip', get_miner_ip, 'Get miner ip'
     )
     add_parser_with_func(
         miner_sps, 'request', miner_request, 'Send request for adding to a miner list'

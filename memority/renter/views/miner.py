@@ -6,6 +6,7 @@ from settings import settings
 from smart_contracts import memo_db_contract, token_contract
 from smart_contracts.smart_contract_api.utils import create_w3
 from utils import get_ip, check_if_accessible
+from .utils import error_response
 
 logger = logging.getLogger('memority')
 
@@ -107,3 +108,35 @@ async def miner_request(request):
     except MinerError as err:
         logger.warning(str(err))
         return _error_response(str(err))
+
+
+class MinerView(web.View):
+    async def get(self):
+        if settings.mining_status != 'active':
+            return error_response('Not a miner.')
+
+        check_if_signer()
+
+        attr = self.request.match_info.get('attr')
+        handler = getattr(self, f'get_{attr}')
+        if handler:
+            return web.json_response({
+                "status": "success",
+                "data": {
+                    "result": await handler()
+                }
+            })
+        else:
+            return error_response(f'Unknown attribute: {attr}')
+
+    @staticmethod
+    async def get_ip():
+        return await get_miner_ip()
+
+    @staticmethod
+    async def get_rewards():
+        return sum([
+            tx['value']
+            for tx in memo_db_contract.get_transactions()
+            if tx['comment'] == 'miner_reward'
+        ])
