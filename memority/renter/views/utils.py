@@ -1,7 +1,18 @@
 import aiohttp
+from aiohttp import web
 
 from settings import settings
 from smart_contracts import sign_message, get_enode
+
+
+def error_response(msg, code=200):
+    return web.json_response(
+        {
+            "status": "error",
+            "message": msg
+        },
+        status=code
+    )
 
 
 async def send_miner_request():

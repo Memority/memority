@@ -14,10 +14,6 @@ def import_account(args):
     print('Not implemented.')  # ToDo: implement
 
 
-def get_host_status(args):
-    print('Not implemented.')  # ToDo: implement
-
-
 def get_host_ip(args):
     print('Not implemented.')  # ToDo: implement
 
@@ -128,13 +124,10 @@ def create_host_sp(root):
         host_sps, 'status', get_host_status, 'Get host status'
     )
     add_parser_with_func(
-        host_sps, 'ip', get_host_ip, 'Get host status'
+        host_sps, 'start', become_a_hoster, 'Become a hoster'
     )
     storage_sp = host_sps.add_parser('storage', help='Storage info and actions')
     storage_sps = storage_sp.add_subparsers()
-    add_parser_with_func(
-        storage_sps, 'status', get_storage_info, 'Get storage info'
-    )
     add_parser_with_args(
         storage_sps, 'resize', resize_storage, 'Resize storage',
         [ParserArgument('value', 'Value, GB', None)]

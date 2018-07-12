@@ -97,7 +97,8 @@ class UserView(web.View):
         ip = await get_ip()
         ok, err = check_if_accessible(ip, settings.hoster_app_port)
         if ok:
-            await memo_db_contract.add_or_update_host(ip=ip)
+            ip_with_port = f'{ip}:{settings.hoster_app_port}'
+            await memo_db_contract.add_or_update_host(ip=ip_with_port)
         else:
             return (
                 "Your computer is not accessible by IP.\n"

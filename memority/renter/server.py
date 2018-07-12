@@ -26,6 +26,7 @@ def create_renter_app():
         web.post('/tasks/{task}/', task),
 
         web.view('/user/{attr}/', UserView),
+        web.view('/host/{attr}/', HostView),
     ])
 
     return app
