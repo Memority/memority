@@ -8,6 +8,7 @@ from aiohttp import web, ClientConnectorError
 
 from bugtracking import raven_client
 from models import RenterFile, HosterFile
+from .utils import error_response
 from settings import settings
 from smart_contracts import client_contract, token_contract, memo_db_contract, import_private_key_to_eth, \
     wait_for_transaction_completion
@@ -234,6 +235,8 @@ async def set_disk_space_for_hosting(request: web.Request):
 async def change_box_dir(request: web.Request):
     data = await request.json()
     box_dir = os.path.normpath(data.get('box_dir'))
+    if not os.path.isdir(box_dir):
+        return error_response(f"Not a directory: {box_dir}")
     if box_dir == os.path.normpath(settings.boxes_dir):
         return web.json_response({"status": "success"})
     from_dir = settings.boxes_dir

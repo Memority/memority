@@ -18,10 +18,6 @@ def get_host_ip(args):
     print('Not implemented.')  # ToDo: implement
 
 
-def set_box_dir(args):
-    print('Not implemented.')  # ToDo: implement
-
-
 def get_miner_status(args):
     print('Not implemented.')  # ToDo: implement
 
