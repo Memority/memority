@@ -37,10 +37,10 @@ contract MemoDB is owned{
     address[] public hostList;
     address[] public clientList;
 //    address[] public minerList;
-    uint256 public version = 1000;
-    uint256 public actualDbVersion = 1000;
-    uint256 public actualTokenVersion = 1000;
-    uint256 public actualClientVersion = 1000;
+    uint256 public version = 1010;
+    uint256 public actualDbVersion = 1010;
+    uint256 public actualTokenVersion = 1010;
+    uint256 public actualClientVersion = 1010;
     address public actualDbAddress = address(0);
 
     event HostAdded(address from);

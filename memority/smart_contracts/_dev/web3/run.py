@@ -28,7 +28,7 @@ elif str(sys.argv[1]) == 'refill_address':
     print(result)
 
 elif str(sys.argv[1]) == 'set_token_db':
-    result = ether.set_token_db('0x2c775049c32F8166666502C057BF7512eE007583')
+    result = ether.set_token_db('0x639f6D513e0020a46e0551E31dc242b6bf7a207A')
     print(result)
 
 elif str(sys.argv[1]) == 'set_db_token_address':

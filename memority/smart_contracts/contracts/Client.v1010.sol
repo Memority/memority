@@ -45,7 +45,7 @@ contract Client is owned {
     bytes32[] public files;
     uint file_copies = 10;
     address public dbAddress;
-    uint256 public version = 1000;
+    uint256 public version = 1010;
 
     function Client(address _token_address) public {
         token_address = _token_address;
