@@ -14,6 +14,12 @@ echo "Compile"
 pyinstaller ./memority/memority_gui.pyw \
 --name "memority" \
 --hidden-import celery.fixups \
+--hidden-import celery.backends \
+--hidden-import celery.backends.base \
+--hidden-import celery.loaders.app \
+--hidden-import celery.app.amqp \
+--hidden-import celery.app.events \
+--hidden-import kombu.transport.sqlalchemy \
 --hidden-import celery.fixups.django \
 --hidden-import cytoolz.utils \
 --hidden-import cytoolz._signatures \
