@@ -183,31 +183,24 @@ class Settings:
     @staticmethod
     def load_defaults():
         with open(_default_settings_path, 'r') as defaults_file:
-            default_s = yaml.load(defaults_file)
+            default_s = yaml.safe_load(defaults_file)
         return default_s
 
     @staticmethod
     def load_locals():
         if os.path.isfile(_local_settings_path):
             with open(_local_settings_path, 'r') as locals_file:
-                local_s = yaml.load(locals_file)
+                local_s = yaml.safe_load(locals_file)
         else:
             local_s = {}
         return local_s
 
     @classmethod
     def load(cls):
-        try:
-            return {
-                **cls.load_defaults(),
-                **cls.load_locals()  # overwrite defaults if different
-            }
-        except:
-            from bugtracking import raven_client
-            raven_client.captureException(extra={
-                "defaults": cls.load_defaults(),
-                "locals": cls.load_locals(),
-            })
+        return {
+            **cls.load_defaults(),
+            **cls.load_locals()  # overwrite defaults if different
+        }
 
     @property
     def daemon_address(self):
