@@ -1061,8 +1061,13 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         dialog: QDialog = uic.loadUi(ui_settings.ui_submit_exit)
         if dialog.exec_():  # submitted
-            self.shutdown()
-            event.accept()
+            dialog.minimize_to_tray_cb: QCheckBox
+            if dialog.minimize_to_tray_cb.isChecked():
+                self.ui.hide()
+                event.ignore()
+            else:
+                self.shutdown()
+                event.accept()
         else:
             event.ignore()
 
