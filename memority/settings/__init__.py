@@ -11,6 +11,8 @@ import ecdsa
 import sha3
 import yaml
 
+from bugtracking import raven_client
+
 __all__ = ['settings', 'Settings']
 
 
@@ -197,10 +199,16 @@ class Settings:
 
     @classmethod
     def load(cls):
-        return {
-            **cls.load_defaults(),
-            **cls.load_locals()  # overwrite defaults if different
-        }
+        try:
+            return {
+                **cls.load_defaults(),
+                **cls.load_locals()  # overwrite defaults if different
+            }
+        except:
+            raven_client.captureException(extra={
+                "defaults": cls.load_defaults(),
+                "locals": cls.load_locals(),
+            })
 
     @property
     def daemon_address(self):
