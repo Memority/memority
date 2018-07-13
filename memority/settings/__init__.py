@@ -197,9 +197,11 @@ class Settings:
 
     @classmethod
     def load(cls):
+        defaults = cls.load_defaults()
+        locals = cls.load_locals()
         return {
-            **cls.load_defaults(),
-            **cls.load_locals()  # overwrite defaults if different
+            **defaults,
+            **locals  # overwrite defaults if different
         }
 
     @property
