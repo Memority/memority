@@ -36,7 +36,9 @@ def process_line(line):
     if isinstance(line, bytes):
         line = line.decode('utf-8')
     if line:
-        if 'Block synchronisation started' in line:
+        if any([l in line for l in
+                ['Block synchronisation started',
+                 'Imported new chain segment']]):
             settings.SYNC_STARTED = True
         print(line.strip())
 

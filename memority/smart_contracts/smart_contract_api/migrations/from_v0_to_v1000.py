@@ -15,7 +15,7 @@ class Migration0to1000:
         print('Deploying new smart contract...')
         address = await self.new_contract.deploy(overwrite_addr_in_settings=False)
         version = self.new_contract.current_version
-        print('Done.')
+        print('Done.', address, version)
 
         print('Importing files...')
         await self.import_files(client_files)

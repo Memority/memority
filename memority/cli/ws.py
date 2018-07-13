@@ -18,6 +18,12 @@ async def handle_success(data, _):
     elif data.get('details') == 'downloaded':
         raise Exit('File successfully downloaded!')
 
+    elif data.get('details') == 'client_contract_updated':
+        raise Exit(
+            'Your data successfully transferred to new Smart Contract!'
+            'In order to work correctly with the new contract, Memority Core needs to be restarted.'
+        )
+
 
 async def handle_error(data, _):
     raise Exit(f'Error: {data.get("message")}')

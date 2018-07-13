@@ -56,8 +56,8 @@ def main():
     res['Token'][1000]["address"] = '0xD3E30d3E597ff08Db992c9209d55Eb2711B08Ad8'
     res['MemoDB'][1000]["address"] = '0x7eb9116cd194f4B03959dfb358F846F20127615C'
 
-    res['Token'][1010]["address"] = '0xAaaE113aE309f80A25395A5a6f3Cfd0690e15CA5'
-    res['MemoDB'][1010]["address"] = '0x2c775049c32F8166666502C057BF7512eE007583'
+    res['Token'][1010]["address"] = '0x0e025b7C766C3f5C72376Af5Bb8e068b4cB2063f'
+    res['MemoDB'][1010]["address"] = '0x639f6D513e0020a46e0551E31dc242b6bf7a207A'
 
     with open(settings.contracts_json, 'w') as f:
         json.dump(res, f, sort_keys=True)
