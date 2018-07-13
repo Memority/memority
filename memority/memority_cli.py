@@ -41,6 +41,9 @@ def create_account_sp(root):
         account_sps, 'export', export_account, 'Export account',
         [ParserArgument('destination', 'Destination file', None)]
     )
+    add_parser_with_func(
+        account_sps, 'update_contract', update_client_contract, 'Update client contract'
+    )
 
 
 def create_files_sp(root):

@@ -42,7 +42,7 @@ def check_contract_updates(port):
     if update_available:
         raise Exit(
             'Smart Contract needs update.\n'
-            'Please it by calling "memority_cli user update_contract"'
+            'Please update it by calling "memority_cli account update_contract"'
         )
 
 
