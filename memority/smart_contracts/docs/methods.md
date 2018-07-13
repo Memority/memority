@@ -167,47 +167,64 @@ _address должен быть в списке хостов файла.
 First register here and get your Install key - http://api.memority.io/register  
    
 **new app installed**   
-curl -v -H "Accept: application/json" -X POST -F "code=install_key" -F "address=0xe8dc39344b33d3aa580de5fd11ab65afa60c00e9" "http://api.memority.io/api/app/new"  
+`curl -v -H "Accept: application/json" -X POST -F "code=install_key" -F "address=0xe8dc39344b33d3aa580de5fd11ab65afa60c00e9" "http://api.memority.io/api/app/new"`  
 **response** 
+```json  
 {'status': 'success|error', 'result': 'tx', 'error': 'error message on error'}  
+```
 
 **get static enodes**   
-curl -v -H "Accept: application/json" -X GET "http://api.memority.io/api/app/enodes"  
-**response** 
+`curl -v -H "Accept: application/json" -X GET "http://api.memority.io/api/app/enodes"`  
+**response**
+```json   
 {'status': 'success|error', 'enodes': ['node_1', 'node_2', ...], 'error': 'error message on error'} 
+```
 
 **Miner request**   
-POST https://api.memority.io/api/app/miner/request    
+`POST https://api.memority.io/api/app/miner/request`  
+```json  
 {   
 address: "0x4b197f0b43ac90674f1ce88e68c9c559930e4485",  
 sig_data: "0x4b197f0b43ac90674f1ce88e68c9c559930e4485",  
 sig: "0x0a08ecc2e703eba9eb4563ab28a..."  
-}  
+}
+```
 RESPONSE:   
+```json  
 {  
 "status":"success",   
 "request_status": [active | pending | sent]   
 }   
+```
 ERROR:  
+```json  
 {"status": "error", "error": "message", "code": "error_code"}  
+```
    
 **Add enode address**  
-POST https://api.memority.io/api/api/app/enode  
+`POST https://api.memority.io/api/api/app/enode`
+```json    
 {  
 address: "0x4b197f0b43ac90674f1ce88e68c9c559930e4485",  
 sig_data: "enode://3cdb768ba962763ced5e511048176d4556...@127.0.0.1:50301",  
 sig: "0x6f2d936e7d4a9c5f4b05be1ce..."  
 }  
-RESPONSE:  
+```
+RESPONSE:
+```json    
 {  
 "status":"success",  
 }  
-ERROR:  
+```
+ERROR:
+```json    
 {"status": "error", "error": "message", "code": "error_code"}  
+```
 
 **get miners list**   
 curl -v -H "Accept: application/json" -X GET "http://api.memority.io/api/app/miners"  
 **response** 
+```json   
 {   
 'status': 'success|error',   
 'miners': {
@@ -215,6 +232,7 @@ curl -v -H "Accept: application/json" -X GET "http://api.memority.io/api/app/min
 "0x4b196f0b43ac...": false   
 }   
 } 
+```
   			
 			
 # Work logic  

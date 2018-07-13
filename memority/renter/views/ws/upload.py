@@ -9,6 +9,8 @@ from settings import settings
 from smart_contracts import client_contract, token_contract, memo_db_contract
 
 
+# ToDo: upload if metadata in contract but not in hosts
+
 class FileUploader:
     class UploadingError(Exception):
         ...
@@ -17,7 +19,7 @@ class FileUploader:
         self._websocket = websocket
         self.logger = logging.getLogger('memority')
         self.file_path = path
-        self.file = None
+        self.file: RenterFile = None
         self.hosters = set()
 
     async def perform_uploading(self):
@@ -32,9 +34,16 @@ class FileUploader:
             await self.notify_user('Search for hosters...')
             await self.find_hosters()
             await self.create_file_metadata()
+            self.file.status = RenterFile.METADATA_CREATED
+            self.file.save()
             await self.create_deposit()
+            self.file.status = RenterFile.DEPOSIT_CREATED
+            self.file.save()
             await self.notify_user(f'Uploading file to {len(self.hosters)} hosters')
             await self.upload_to_hosters()
+            # ToDo: check if uploaded to hosters
+            self.file.status = RenterFile.UPLOADED
+            self.file.save()
             await self.notify_user(
                 f'Finished file uploading '
                 f'| path: {self.file_path} '
@@ -103,7 +112,6 @@ class FileUploader:
         file_metadata_for_contract = {
             "file_name": self.file.name,
             "file_size": self.file.size,
-            "signature": self.file.signature,
             "file_hash": self.file.hash,
             "hosts": [hoster.address for hoster in self.hosters]
         }
@@ -141,7 +149,7 @@ class FileUploader:
                 )
 
             await self.notify_user(
-                f'Creating deposit for file {self.file.hash}, value: {tokens_to_deposit} MMR...'
+                f'Creating deposit for file {self.file.hash}, value: {tokens_to_deposit} MMR... '
                 f'This can take some time, as transaction is being written in blockchain.'
             )
 
@@ -238,7 +246,8 @@ class FileUploader:
                         f'http://{hoster.ip}/files/',
                         json=data
                 ) as resp1:
-                    if not resp1.status == 201:
+                    resp_data: dict = await resp1.json()
+                    if resp_data.get('status') != 'success':
                         return hoster, False
 
                 self.logger.info(
@@ -250,7 +259,8 @@ class FileUploader:
                         f'http://{hoster.ip}/files/{self.file.hash}/',
                         data=self.file.get_filelike()
                 ) as resp2:
-                    if not resp2.status == 200:
+                    resp_data: dict = await resp2.json()
+                    if resp_data.get('status') != 'success':
                         return hoster, False
 
             await self.notify_user(

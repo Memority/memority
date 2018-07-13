@@ -783,7 +783,7 @@ border: 1px solid rgba(255,255,255, 130);</string>
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>585</width>
+            <width>947</width>
             <height>238</height>
            </rect>
           </property>
@@ -872,6 +872,44 @@ padding: 10px 20px;
                </property>
                <property name="text">
                 <string>Become a hoster</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="become_miner_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: rgb(0, 170, 234);
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Become a miner</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="check_miner_request_status_btn">
+               <property name="styleSheet">
+                <string notr="true">QPushButton{
+background: rgb(0, 170, 234);
+border: none;
+padding: 10px 20px;
+}
+QPushButton:disabled{
+background-color: rgba(67, 10, 149, 200);
+border: none;
+padding: 10px 20px;
+}</string>
+               </property>
+               <property name="text">
+                <string>Check miner request status</string>
                </property>
               </widget>
              </item>
@@ -1169,7 +1207,7 @@ background: qlineargradient(x1: 0, y1: 0.5, x2: 1, y2: 0.5, stop: 0 rgb(50, 80, 
       <item>
        <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>Synchronizing blockchain...</string>
+         <string>Synchronizing blockchain, please wait...</string>
         </property>
        </widget>
       </item>

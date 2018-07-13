@@ -60,7 +60,7 @@ async def request_payment_for_file(file_id):
 @run_in_loop
 async def check_ip():
     async with aiohttp.ClientSession() as session:
-        async with session.post(f'http://{settings.daemon_address}/tasks/check_ip/') as response:
+        async with session.post(f'http://{settings.daemon_address}/tasks/check_ip/', json={}) as response:
             data = await response.json()
             if data.get('status') == 'success':
                 logger.info(f'check_ip result: {data.get("data").get("result")}')
@@ -86,6 +86,78 @@ async def perform_monitoring_for_file(file_id):
 
 
 @app.task
+@run_in_loop
+async def check_miner_status():
+    if settings.mining_status == 'active':
+        logger.info('check_miner_status: already mining')
+        return
+    if not settings.mining_status:
+        logger.info('check_miner_status: no mining request status')
+        return
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'http://{settings.daemon_address}/tasks/check_miner_status/',
+                json={}
+        ) as response:
+            data = await response.json()
+            if data.get('status') == 'success':
+                logger.info(f'check_miner_status result: {data.get("data").get("result")}')
+            else:
+                logger.warning(f'check_miner_status result: {data.get("message")}')
+
+
+@app.task
+@run_in_loop
+async def update_enodes():
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'http://{settings.daemon_address}/tasks/update_enodes/',
+                json={}
+        ) as response:
+            data = await response.json()
+            if data.get('status') == 'success':
+                logger.info(f'update_enodes result: {data.get("data").get("result")}')
+            else:
+                logger.warning(f'update_enodes result: {data.get("message")}')
+
+
+@app.task
+@run_in_loop
+async def update_miner_list():
+    if settings.mining_status != 'active':
+        logger.info('update_miner_list: not a miner')
+        return
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'http://{settings.daemon_address}/tasks/update_miner_list/',
+                json={}
+        ) as response:
+            data = await response.json()
+            if data.get('status') == 'success':
+                logger.info(f'update_miner_list result: {data.get("data").get("result")}')
+            else:
+                logger.warning(f'update_miner_list result: {data.get("message")}')
+
+
+@app.task
+@run_in_loop
+async def check_enode():
+    if settings.mining_status != 'active':
+        logger.info('check_enode: not a miner')
+        return
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+                f'http://{settings.daemon_address}/tasks/check_enode/',
+                json={}
+        ) as response:
+            data = await response.json()
+            if data.get('status') == 'success':
+                logger.info(f'check_enode result: {data.get("data").get("result")}')
+            else:
+                logger.warning(f'check_enode result: {data.get("message")}')
+
+
+@app.task
 def request_payment_for_all_files():
     for file in HosterFile.objects.all():
         request_payment_for_file.delay(file.id)
@@ -105,17 +177,33 @@ def schedule_monitoring():
 
 app.conf.beat_schedule = {
     'check-ip-every-hour': {
-        'task': 'hoster.tasks.check_ip',
+        'task': 'tasks.check_ip',
         'schedule': crontab(hour='*', minute=0)
     },
     'request-payment-every-week': {
-        'task': 'hoster.tasks.request_payment_for_all_files',
+        'task': 'tasks.request_payment_for_all_files',
         'schedule': crontab(day_of_week=0, hour=0, minute=0)
     },
     'schedule-monitoring-every-8-hours': {
-        'task': 'hoster.tasks.schedule_monitoring',
+        'task': 'tasks.schedule_monitoring',
         'schedule': crontab(hour='*/8', minute=0)
-    }
+    },
+    'update-enodes-every-midnight': {
+        'task': 'tasks.update_enodes',
+        'schedule': crontab(hour=0, minute=0)
+    },
+    'update-miner-list-every-midnight': {
+        'task': 'tasks.schedule_monitoring',
+        'schedule': crontab(hour=0, minute=0)
+    },
+    'check-miner-status-every-midnight': {
+        'task': 'tasks.check_miner_status',
+        'schedule': crontab(hour=0, minute=0)
+    },
+    'check-enode-every-midnight': {
+        'task': 'tasks.check_enode',
+        'schedule': crontab(hour=0, minute=0)
+    },
 }
 
 app.conf.timezone = 'UTC'
@@ -129,10 +217,10 @@ def create_celery_processes():
     return [
         mp.Process(  # start beat
             target=main_,
-            args=[['_', '-A', 'hoster.tasks', 'beat', '--loglevel=info']]
+            args=[['_', '-A', 'tasks', 'beat', '--loglevel=info']]
         ),
         mp.Process(  # start worker
             target=main_,
-            args=[['_', '-A', 'hoster.tasks', 'worker', '--loglevel=info', '--pool=solo', '-E']]
+            args=[['_', '-A', 'tasks', 'worker', '--loglevel=info', '--pool=solo', '-E']]
         )
     ]

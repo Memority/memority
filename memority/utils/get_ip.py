@@ -1,9 +1,8 @@
+import aiohttp
 import asyncio
-import contextlib
+import socket
 from collections import namedtuple
 from concurrent.futures import FIRST_COMPLETED
-
-import aiohttp
 
 Service = namedtuple('Service', ('name', 'url', 'ip_attr'))
 
@@ -35,10 +34,17 @@ async def get_ip():
     return done.pop().result()
 
 
-async def check_if_white_ip(ip):
-    with contextlib.suppress(asyncio.TimeoutError, aiohttp.client_exceptions.ClientConnectorError):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f'http://{ip}/', timeout=1) as resp:
-                if resp:
-                    return True
-    return False
+def check_if_accessible(ip, port):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1)
+        s.connect((ip, int(port)))
+        res = True
+        error = None
+    except Exception as err:
+        res = False
+        error = str(err)
+    finally:
+        s.close()
+
+    return res, error

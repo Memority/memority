@@ -1,7 +1,6 @@
 import logging
 from web3.exceptions import BadFunctionCallOutput
 
-from bugtracking import raven_client
 from settings import settings
 from .base import Contract
 from .decorators import ensure_latest_contract_version
@@ -37,12 +36,13 @@ class ClientContract(Contract):
             abi=get_contract_abi(self.contract_name, client_latest_version=True),
             bytecode=get_contract_bin(self.contract_name)
         )
+        from smart_contracts.smart_contract_api import token_contract
+        await token_contract.refill()
         tx_hash = contract.deploy(
             transaction={'from': settings.address, 'gas': self.gas},
             args=self.deploy_args
         )
         await wait_for_transaction_completion(tx_hash)
-        lock_account()
 
         address = get_contract_address_by_tx(tx_hash)
         self.contract = get_contract_instance(self.contract_name, address, client_latest_version=True)
@@ -76,7 +76,6 @@ class ClientContract(Contract):
         except Exception:
             raise
         await wait_for_transaction_completion(tx_hash)
-        lock_account()
 
     # @ensure_latest_contract_version
     async def add_host_to_file(self, file_hash):
@@ -92,7 +91,6 @@ class ClientContract(Contract):
             file_hash,
             transact={'from': settings.address, 'gas': 1_000_000}
         )
-        lock_account()
         await wait_for_transaction_completion(tx_hash)
 
     # @ensure_latest_contract_version
@@ -106,7 +104,6 @@ class ClientContract(Contract):
             file_hash,
             transact={'from': settings.address, 'gas': 1_000_000}
         )
-        lock_account()
 
     def need_copy(self, file_hash) -> bool:
         return self.contract.needCopy(file_hash)
@@ -115,13 +112,8 @@ class ClientContract(Contract):
         return self.contract.needReplace(old_host_address, file_hash)
 
     @ensure_latest_contract_version
-    async def new_file(self, file_hash, file_name, file_size, hosts, signature,
-                       vendor=None, from_address=None):
-        if not vendor:
-            vendor = settings.address
-        if not from_address:
-            from_address = settings.address
-        logger.info(f'Adding file hosts to Client contract | file: {file_hash} | address: {from_address}')
+    async def new_file(self, file_hash, file_name, file_size, hosts):
+        logger.info(f'Adding file hosts to Client contract | file: {file_hash}')
         from smart_contracts.smart_contract_api import token_contract
         await token_contract.refill()
         await unlock_account()
@@ -129,12 +121,12 @@ class ClientContract(Contract):
             file_hash,
             file_name,
             file_size,
-            vendor,
+            settings.vendor_address,
             hosts,
             '/',  # path
-            transact={'from': from_address, 'gas': 1_000_000}
+            transact={'from': settings.address, 'gas': 1_000_000}
         )
-        logger.info(f'Added file hosts to Client contract | file: {file_hash} | address: {from_address}')
+        logger.info(f'Added file hosts to Client contract | file: {file_hash}')
         await wait_for_transaction_completion(tx_hash)
 
     def get_files(self):
@@ -173,5 +165,4 @@ class ClientContract(Contract):
             old_host_address,
             transact={'from': from_address, 'gas': 1_000_000}
         )
-        lock_account()
         await wait_for_transaction_completion(tx_hash)

@@ -2,11 +2,11 @@ import json
 import logging
 from web3.exceptions import BadFunctionCallOutput
 
+from bugtracking import raven_client
 from settings import settings
 from .utils import *
 
 logger = logging.getLogger('memority')
-w3 = create_w3()
 
 
 class Contract:
@@ -19,7 +19,7 @@ class Contract:
         try:
             self.contract = get_contract_instance(contract_name, address)
             self.address = address if address else get_contract_address(self.contract_name)
-        except settings.Locked:
+        except (settings.Locked, settings.InvalidPassword):
             self.contract = None
             self.address = None
 
@@ -27,7 +27,7 @@ class Contract:
         try:
             self.address = get_contract_address(self.contract_name)
             self.contract = get_contract_instance(self.contract_name, self.address)
-        except settings.Locked:
+        except (settings.Locked, settings.InvalidPassword):
             self.address = None
             self.contract = None
 
@@ -39,7 +39,13 @@ class Contract:
     def current_version(self):
         try:
             return self.contract.version()
-        except (BadFunctionCallOutput, ValueError):
+        except BadFunctionCallOutput:
+            raven_client.captureException(
+                extra={
+                    "contract_name": self.contract_name,
+                    "contract_address": self.address
+                }
+            )
             return 0  # old contract; version not specified
 
     @property

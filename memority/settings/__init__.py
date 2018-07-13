@@ -11,7 +11,7 @@ import ecdsa
 import sha3
 import yaml
 
-__all__ = ['settings']
+__all__ = ['settings', 'Settings']
 
 
 def get_app_data_dir():
@@ -74,6 +74,7 @@ class Settings:
             data = self.read_encrypted()
         elif item in [
             'version',
+            'min_balance_for_mining'
         ]:
             data = self.load_defaults()
         else:
@@ -182,14 +183,14 @@ class Settings:
     @staticmethod
     def load_defaults():
         with open(_default_settings_path, 'r') as defaults_file:
-            default_s = yaml.load(defaults_file)
+            default_s = yaml.safe_load(defaults_file)
         return default_s
 
     @staticmethod
     def load_locals():
         if os.path.isfile(_local_settings_path):
             with open(_local_settings_path, 'r') as locals_file:
-                local_s = yaml.load(locals_file)
+                local_s = yaml.safe_load(locals_file)
         else:
             local_s = {}
         return local_s
@@ -272,7 +273,7 @@ class Settings:
     def contracts_json(self):
         return os.path.join(_base_dir, 'smart_contracts', 'contracts.json')
 
-    def import_account(self, filename):
+    def import_account(self, filename, password):
         # region Backup current account
         if os.path.isfile(self.local_settings_secrets_path):
             local_settings_backup_path = f'{self.local_settings_secrets_path}.bak'
@@ -295,6 +296,9 @@ class Settings:
             os.path.join(self.local_settings_secrets_path)
         )
         # endregion
+        self.unlock(password)
+        from smart_contracts import import_private_key_to_eth
+        import_private_key_to_eth(password, self.private_key)
 
     def export_account(self, filename):
         shutil.copyfile(

@@ -72,6 +72,11 @@ def setup_logging():
                     'level': 'INFO',
                     'propagate': True
                 },
+                'celery.task': {
+                    'handlers': ['stdout', 'monitoring_log_file', 'sentry'],
+                    'level': 'INFO',
+                    'propagate': True
+                },
                 'celery': {
                     'handlers': ['stdout', 'monitoring_log_file', 'sentry'],
                     'level': 'INFO',

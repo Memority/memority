@@ -1,271 +1,146 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
+import os
 
 import argparse
 import asyncio
-import getpass
-import json
-import os
-import pprint
+import collections
+from typing import List
 
-import aiohttp
-import requests
-from aiohttp import ClientConnectorError
+from cli import *
+from cli.utils import perform_checks
 
-first_run = True
+ParserArgument = collections.namedtuple('ParserArgument', ['name', 'help', 'default'])
 
 
-def url(path):
-    return f'http://127.0.0.1:{renter_app_port}{path}'
+def add_parser_with_func(root, name, func, help_):
+    parser = root.add_parser(name, help=help_)
+    parser.set_defaults(func=func)
+    return parser
 
 
-async def send(data_to_send: dict):
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.ws_connect(url('/')) as ws:
-                await ws.send_json(data_to_send)
-                async for msg in ws:
-                    data = json.loads(msg.data)
-                    status = data.get('status')
-                    if status == 'info':
-                        print(data.get('message'))
-                        continue
-                    elif status == 'success':
-                        if data.get('details') == 'uploaded':
-                            print('File successfully uploaded!')
-                            return
-                        elif data.get('details') == 'downloaded':
-                            print('File successfully downloaded!')
-                            return
-                        continue
-                    elif status == 'error':
-                        print('Error:')
-                        print(data.get('message'))
-                        return
-                    elif status == 'action_needed':
-                        if data.get('details') == 'ask_for_password':
-                            print('Unlock account first.')
-                            return
-                        elif data.get('details') == 'tokens_to_deposit':
-                            print(f'Enter the token amount for deposit.\n'
-                                  f'Price for 2 weeks for this file: '
-                                  f'{data.get("data").get("price_per_hour")*24*14:.18f}')
-                            result = input('>> ')
-
-                            await ws.send_json({'status': 'success', 'result': result})
-                            continue
-                        else:
-                            print(data)
-
-        except ClientConnectorError:
-            print('No response from the daemon')
+def add_parser_with_args(root, name, func, help_, args: List[ParserArgument]):
+    parser = add_parser_with_func(root, name, func, help_)
+    for arg in args:
+        if arg.default is not None:
+            parser.add_argument(arg.name, help=arg.help, const=arg.default, nargs='?')
+        else:
+            parser.add_argument(arg.name, help=arg.help)
 
 
-async def task_send(data):
-    futures = [send(data)]
-    await asyncio.wait(futures)
-
-
-async def unlock_account(args):
-    password = getpass.getpass('Password:')
-    r = requests.post(url('/unlock/'), json={"password": password})
-    if not r.status_code == 200:
-        print('Invalid password!')
-
-
-async def create_account(args):
-    # region Generate address
-    password1 = getpass.getpass('Set password for your wallet: ')
-    password2 = getpass.getpass('Confirm: ')
-    if password1 != password2:
-        print('Passwords don`t match!')
-        return
-    print('Generating address...')
-    r = requests.post(url('/user/create/'), json={"password": password1})
-    data = r.json()
-    if r.status_code == 201:
-        print(f'Done! Your address: {data.get("address")}')
-    else:
-        print(f'Generating address failed.\n'
-              f'{data.get("message")}')
-        return
-    # endregion
-
-    # region Request MMR
-    key = input("Paste your Alpha Tester Key here.\n"
-                "You can get it after registering on https://memority.io/alpha\n"
-                ">> ")
-    print('Please wait while we’ll send you MMR tokens for testing, it may take a few minutes.')
-
-    resp = requests.post(
-        url('/request_mmr/'),
-        json={
-            "key": key
-        }
+def create_account_sp(root):
+    account_sp = root.add_parser('account', help='Account actions')
+    account_sps = account_sp.add_subparsers()
+    add_parser_with_func(
+        account_sps, 'create', create_account, 'Create account'
     )
-    data = resp.json()
-    if data.get('status') == 'success':
-        print(f'Tokens received. Your balance: {data.get("balance")}')
-    else:
-        msg = data.get('message')
-        print(f'Requesting MMR failed.\n{msg}\nPlease ensure if the key was entered correctly.')
-        return
-    # endregion
-
-    # region Create account
-    role_n = input("I want to...\n"
-                   "1. Store my files\n"
-                   "2. Be a hoster\n"
-                   "3. Both\n"
-                   ">> ")
-    if not role_n.isdigit():
-        print(f'Invalid choice: {role_n}. Input must be digit.')
-        return
-
-    role = {
-        1: 'client',
-        2: 'host',
-        3: 'both'
-    }.get(int(role_n), None)
-
-    if not role:
-        print(f'Invalid choice: {role_n}')
-        return
-
-    print(f'Creating account for role "{role}"...\n'
-          f'This can take some time, as transaction is being written in blockchain.')
-
-    if role in ['client', 'both']:
-        print('Creating client account...')
-        resp = requests.post(
-            url('/user/create/'),
-            json={
-                "role": 'client'
-            }
-        )
-        if resp.status_code == 201:
-            print('Client account successfully created!')
-        else:
-            data = resp.json()
-            msg = data.get('message')
-            print(f'Account creation failed.\n{msg}')
-            return
-    if role in ['host', 'both']:
-        print('Creating hoster account...')
-        resp = requests.post(
-            url('/user/create/'),
-            json={
-                "role": 'host'
-            }
-        )
-        if resp.status_code == 201:
-            print('Hoster account successfully created!')
-        else:
-            data = resp.json()
-            msg = data.get('message')
-            print(f'Account creation failed.\n{msg}')
-            return
-    # endregion
+    add_parser_with_args(
+        account_sps, 'import', import_account, 'Import account',
+        [ParserArgument('file', 'File', None)]
+    )
+    add_parser_with_args(
+        account_sps, 'export', export_account, 'Export account',
+        [ParserArgument('destination', 'Destination file', None)]
+    )
+    add_parser_with_func(
+        account_sps, 'update_contract', update_client_contract, 'Update client contract'
+    )
 
 
-async def become_a_hoster(args):
-    role = 'host'
-
-    print(f'Creating account for role "{role}"')
-    r = requests.post(url('/user/create/'), json={"role": role})
-    if r.status_code == 201:
-        print('Account successfully created!')
-    else:
-        data = r.json()
-        print(f'Account creation failed.\n'
-              f'{data.get("message")}')
-
-
-async def get_address(args):
-    r = requests.get(url('/info/address/'))
-    data = r.json()
-    if data.get('status') == 'success':
-        print(data.get('data').get('address'))
-
-
-async def get_balance(args):
-    r = requests.get(url('/user/balance/'))
-    data = r.json()
-    if data.get('status') == 'success':
-        print(data.get('data').get('balance'))
-
-
-async def upload_file(args):
-    path = args.path
-    if not os.path.isabs(path):
-        path = os.path.join(os.getcwd(), path)
-    data = {
-        "command": "upload",
-        "kwargs": {
-            "path": path
-        }
-    }
-    return await task_send(data)
+def create_files_sp(root):
+    files_sp = root.add_parser('files', help='Files actions')
+    files_sps = files_sp.add_subparsers()
+    add_parser_with_func(
+        files_sps, 'list', list_files, 'List files'
+    )
+    add_parser_with_args(
+        files_sps, 'upload', upload_file, 'Upload file',
+        [ParserArgument('path', 'Path to a file', None)]
+    )
+    add_parser_with_args(
+        files_sps, 'download', download_file, 'Download file',
+        [ParserArgument('hash', 'Hash of a file', None),
+         ParserArgument('destination', 'Destination', os.getcwd())]
+    )
+    add_parser_with_args(
+        files_sps, 'info', get_file_info, 'Get file info',
+        [ParserArgument('hash', 'Hash of a file', None)]
+    )
+    add_parser_with_args(
+        files_sps, 'prolong_deposit', prolong_deposit, 'Prolong deposit for a file',
+        [ParserArgument('hash', 'Hash of a file', None),
+         ParserArgument('value', 'Deposit value (in MMR)', 0)]
+    )
 
 
-async def download_file(args):
-    data = {
-        "command": "download",
-        "kwargs": {
-            "hash": args.hash,
-            "destination": args.destination
-        }
-    }
-    return await task_send(data)
+def create_user_sp(root):
+    user_sp = root.add_parser('user', help='User info')
+    user_sps = user_sp.add_subparsers()
+    add_parser_with_func(
+        user_sps, 'address', get_address, 'Get address'
+    )
+    add_parser_with_func(
+        user_sps, 'role', get_role, 'Get role'
+    )
+    add_parser_with_func(
+        user_sps, 'transactions', get_transactions, 'Get transactions'
+    )
+    add_parser_with_func(
+        user_sps, 'balance', get_balance, 'Get balance'
+    )
 
 
-async def list_files(args):
-    r = requests.get(url('/files/'))
-    data = r.json()
-    pprint.pprint(data.get('data').get('files'))
+def create_host_sp(root):
+    host_sp = root.add_parser('host', help='Host info')
+    host_sps = host_sp.add_subparsers()
+    add_parser_with_func(
+        host_sps, 'status', get_host_status, 'Get host status'
+    )
+    add_parser_with_func(
+        host_sps, 'start', become_a_hoster, 'Become a hoster'
+    )
+    storage_sp = host_sps.add_parser('storage', help='Storage info and actions')
+    storage_sps = storage_sp.add_subparsers()
+    add_parser_with_args(
+        storage_sps, 'resize', resize_storage, 'Resize storage',
+        [ParserArgument('value', 'Value, GB', None)]
+    )
+    add_parser_with_args(
+        storage_sps, 'set_path', set_box_dir, 'Set storage directory',
+        [ParserArgument('path', 'New path to storage directory', None)]
+    )
+
+
+def create_miner_sp(root):
+    miner_sp = root.add_parser('miner', help='Miner info')
+    miner_sps = miner_sp.add_subparsers()
+    add_parser_with_func(
+        miner_sps, 'status', get_miner_status, 'Get miner status'
+    )
+    add_parser_with_func(
+        miner_sps, 'request', miner_request, 'Send request for adding to a miner list'
+    )
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Memority CLI')
-    parser.add_argument('--renter_app_port', help='Daemon port', type=int, default=9379)
-    subparsers = parser.add_subparsers()
+    parser.add_argument('--memority_core_port', help='Daemon port', type=int, default=9379)
+    root_sp = parser.add_subparsers()
 
-    parser_list = subparsers.add_parser('list_files', help='List files')
-    parser_list.set_defaults(func=list_files)
-
-    parser_list = subparsers.add_parser('unlock', help='Unlock')
-    parser_list.set_defaults(func=unlock_account)
-
-    parser_list = subparsers.add_parser('create_account', help='Create account')
-    parser_list.set_defaults(func=create_account)
-
-    parser_list = subparsers.add_parser('become_a_hoster', help='Become a hoster')
-    parser_list.set_defaults(func=become_a_hoster)
-
-    parser_list = subparsers.add_parser('get_address', help='Get address')
-    parser_list.set_defaults(func=get_address)
-
-    parser_list = subparsers.add_parser('get_balance', help='Get balance')
-    parser_list.set_defaults(func=get_balance)
-
-    parser_upload = subparsers.add_parser('upload', help='Upload file')
-    parser_upload.add_argument('path', help='Path to file')
-    parser_upload.set_defaults(func=upload_file)
-
-    parser_download = subparsers.add_parser('download', help='Download file')
-    parser_download.add_argument('hash', help='Hash of file')
-    parser_download.add_argument('destination', help='Destination')
-    parser_download.set_defaults(func=download_file)
+    create_account_sp(root_sp)
+    create_files_sp(root_sp)
+    create_user_sp(root_sp)
+    create_host_sp(root_sp)
+    create_miner_sp(root_sp)
 
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    global renter_app_port
-    renter_app_port = args.renter_app_port
 
     try:
         loop = asyncio.get_event_loop()
+        perform_checks(args.memority_core_port)
         loop.run_until_complete(args.func(args))
     except Exception as e:
         print(e)

@@ -1,5 +1,9 @@
 key_len: 32
 
+vendor_address: '0x4d03fc8f5147205c07be57b24b2df6f2e605edc0'
+
+min_balance_for_mining: 10000
+
 hosters_per_file: 10
 host_list_obsolescence_days: 1
 
@@ -8,9 +12,11 @@ hoster_app_port: 9378
 renter_app_host: 127.0.0.1
 renter_app_port: 9379
 
+mining_port: 30320
+
 w3_provider: 'ipc'
 w3_url: ''
 
 disk_space_for_hosting: 10
 
-version: '0.3.0-alpha-1'
+version: '0.4.0-alpha-1'

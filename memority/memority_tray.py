@@ -3,16 +3,19 @@ import sys
 
 import asyncio
 import os
+import re
 import socket
+from PyQt5 import uic
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from contextlib import redirect_stdout, redirect_stderr
-from memority_core import MemorityCore
 from quamash import QEventLoop
 
 from bugtracking import raven_client
+from memority_core import MemorityCore
 from settings import settings
+from ui_settings import ui_settings
 
 
 class R:
@@ -24,9 +27,10 @@ class R:
         if msg.strip():
             self.logger_widget.appendPlainText(msg.strip())
             self.logger_widget.moveCursor(QTextCursor.End)
+            self.logger_widget.repaint()
 
 
-class MainWindow(QMainWindow):
+class LoggerWindow(QMainWindow):
 
     def __init__(self, _memority_core, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,7 +71,24 @@ class MainWindow(QMainWindow):
         sys.exit(0)
 
 
-if __name__ == "__main__":
+def error(msg):
+    msg = msg.replace('\n', '<br/>')
+
+    for url in re.findall('(?:(?:https?|ftp)://)?[\w/\-?=%.]+\.[\w/\-?=%.]+', msg):
+        msg = msg.replace(
+            url,
+            f'<a href="{url}" style="font-weight: bold; color: #fff">{url}</a>'
+        )
+
+    msg = f'<html><body>{msg}</html></body>'
+
+    dialog: QDialog = uic.loadUi(ui_settings.ui_error_msg)
+    dialog.msg.setText(msg)
+    dialog.adjustSize()
+    dialog.exec_()
+
+
+def run():
     app = QApplication(sys.argv)
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -80,9 +101,7 @@ if __name__ == "__main__":
         del s
     except OSError as err:
         if err.errno == errno.EADDRINUSE:
-            QMessageBox().critical(
-                None,
-                'Error!',
+            error(
                 'Ports are already in use!\n'
                 'Seems like Memority Core is already running or another application uses them.'
             )
@@ -93,10 +112,33 @@ if __name__ == "__main__":
     asyncio.set_event_loop(loop)
     memority_core = MemorityCore(
         event_loop=loop,
-        _password=None,
         _run_geth=True
     )
-    main_window = MainWindow(memority_core)
+    password = settings.load_locals().get('password')
+    if password:
+        try:
+            memority_core.set_password(password)
+            return
+        except settings.InvalidPassword:
+            error('Invalid password in settings file!')
+    while True:
+        try:
+            password_dialog: QDialog = uic.loadUi(ui_settings.ui_enter_password)
+            password_dialog.password_input.setFocus()
+            if not password_dialog.exec_():
+                sys.exit(0)
+            password = password_dialog.password_input.text()
+            memority_core.set_password(password)
+            break
+        except settings.InvalidPassword:
+            error('Invalid password!')
+            continue
+
+    main_window = LoggerWindow(memority_core)
     with redirect_stdout(R(main_window.logger)):
         with redirect_stderr(R(main_window.logger)):
             memority_core.run()
+
+
+if __name__ == '__main__':
+    run()

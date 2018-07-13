@@ -1,10 +1,8 @@
 from aiohttp import web
-from functools import partial
 
-import smart_contracts
 from settings import settings
 from smart_contracts import token_contract, memo_db_contract, import_private_key_to_eth, client_contract
-from utils import ask_for_password, get_ip, check_if_white_ip
+from utils import get_ip, check_if_accessible
 
 
 class UserView(web.View):
@@ -51,17 +49,20 @@ class UserView(web.View):
 
     @staticmethod
     def get_role():
-        client, host, res = None, None, None
+        res = []
         if memo_db_contract.get_host_ip(settings.address):
-            host = True
+            res.append('host')
         if settings.client_contract_address:
-            client = True
-        if client and host:
-            res = 'both'
-        elif client:
-            res = 'client'
-        elif host:
-            res = 'host'
+            res.append('renter')
+        mining_status = {
+            'active': 'miner',
+            'pending': 'pending_miner',
+            'sent': 'pending_miner'
+        }.get(
+            settings.mining_status
+        )
+        if mining_status:
+            res.append(mining_status)
         return res
 
     async def generate_address(self):
@@ -71,7 +72,6 @@ class UserView(web.View):
             data = await self.request.json()
             password = data.get('password')
             settings.generate_keys(password)
-            smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, password)
             import_private_key_to_eth(password, settings.private_key)
             return None, 201
         else:
@@ -80,7 +80,7 @@ class UserView(web.View):
     async def create_account(self):
         data = await self.request.json()
         role = data.get('role')
-        if role == 'client':
+        if role == 'renter':
             return await self.create_client_account()
         elif role == 'host':
             return await self.create_host_account()
@@ -95,13 +95,14 @@ class UserView(web.View):
     @staticmethod
     async def create_host_account():
         ip = await get_ip()
-        ip = f'{ip}:{settings.hoster_app_port}'
-        ok = await check_if_white_ip(ip)
+        ok, err = check_if_accessible(ip, settings.hoster_app_port)
         if ok:
-            await memo_db_contract.add_or_update_host(ip=ip)
+            ip_with_port = f'{ip}:{settings.hoster_app_port}'
+            await memo_db_contract.add_or_update_host(ip=ip_with_port)
         else:
             return (
                 "Your computer is not accessible by IP.\n"
+                f"{err}\n"
                 "If you are connected via a router, configure port 9378 forwarding "
                 "(you can find out how to do this in the manual for your router) and try again.\n"
                 "If you can not do it yourself, contact your Internet Service Provider.",
@@ -112,7 +113,8 @@ class UserView(web.View):
     async def import_account(self):
         data = await self.request.json()
         filename = data.get('filename')
-        settings.import_account(filename)
+        password = data.get('password')
+        settings.import_account(filename, password)
         return None, 200
 
     async def export_account(self):

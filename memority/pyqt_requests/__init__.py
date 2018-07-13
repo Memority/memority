@@ -1,8 +1,7 @@
 # region GET requests
 from .check_client_contract_updates_request import CheckClientContractUpdatesRequest
-from .check_first_run import CheckFirstRunRequest
 from .get_box_dir import GetBoxDirRequest
-from .get_latest_version import GetLatestVersionRequest
+from .check_app_updates import CheckAppUpdatesRequest
 from .get_space_for_hosting import GetDiskSpaceForHostingRequest
 from .get_space_used import GetSpaceUsedRequest
 from .get_sync_status import GetSyncStatusRequest
@@ -24,6 +23,6 @@ from .generate_address import GenerateAddressRequest
 from .import_account import ImportAccountRequest
 from .prolong_deposit_for_file import ProlongDepositForFileRequest
 from .request_mmr import RequestMMRRequest
+from .send_miner_request import MinerStatusRequest
 from .set_disk_space_for_hosting import SetDiskSpaceForHostingRequest
-from .unlock_account import UnlockRequest
 # endregion

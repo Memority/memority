@@ -1,34 +1,35 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import sys
 
 import asyncio
 import contextlib
+import getpass
 import locale
+import logging
 import os
 import platform
 import subprocess
 import traceback
-from functools import partial
 from queue import Queue
 from shutil import copyfile
+from tempfile import NamedTemporaryFile
 from threading import Thread
 
-import smart_contracts
 from bugtracking import raven_client
 from hoster.server import create_hoster_app
-from hoster.tasks import create_celery_processes
 from logger import setup_logging
 from models import db_manager
 from renter.server import create_renter_app
-from settings import settings
-from smart_contracts.smart_contract_api import w3, import_private_key_to_eth, token_contract, client_contract, \
+from settings import settings, Settings
+from smart_contracts.smart_contract_api import token_contract, client_contract, \
     memo_db_contract
-from utils import ask_for_password
+from smart_contracts.smart_contract_api.utils import create_w3
+from tasks import create_celery_processes, check_miner_status, update_miner_list, update_enodes
+from utils import check_first_run
 
 locale.setlocale(locale.LC_ALL, '')
 
-
-SYNC_STARTED = False
+logger = logging.getLogger('memority')
 
 
 def process_line(line):
@@ -36,8 +37,7 @@ def process_line(line):
         line = line.decode('utf-8')
     if line:
         if 'Block synchronisation started' in line:
-            global SYNC_STARTED
-            SYNC_STARTED = True
+            settings.SYNC_STARTED = True
         print(line.strip())
 
 
@@ -52,6 +52,8 @@ class MemorityCore:
     hoster_app_handler = None
     hoster_server = None
     p = None
+    password = None
+    password_file = None
     q = None
     renter_app = None
     renter_app_handler = None
@@ -59,13 +61,16 @@ class MemorityCore:
     t = None
     celery_processes = []
 
-    def __init__(self, *, event_loop=None, _password=None, _run_geth=True) -> None:
+    def __init__(self, *, event_loop=None, _run_geth=True) -> None:
         if not event_loop:
             event_loop = asyncio.new_event_loop()
         self.event_loop = event_loop
-        self.password = _password
 
         self.run_geth = _run_geth
+
+    def set_password(self, password):
+        self.password = password
+        settings.unlock(password)
 
     def run(self):
         # noinspection PyBroadException
@@ -81,13 +86,8 @@ class MemorityCore:
             self.cleanup()
 
     def prepare(self):
+        settings.SYNC_STARTED = False
         db_manager.ensure_db_up_to_date()
-        if self.password:  # debug only
-            settings.unlock(self.password)
-            smart_contracts.smart_contract_api.ask_for_password = partial(ask_for_password, self.password)
-            if settings.address:
-                if settings.address.lower() not in [a.lower() for a in w3.eth.accounts]:
-                    import_private_key_to_eth(password=self.password)
 
         if self.run_geth:
             print('Starting geth...')
@@ -102,6 +102,13 @@ class MemorityCore:
 
         for p in self.celery_processes:
             p.start()
+
+        if settings.mining_status == 'active':
+            self.start_mining()
+
+        check_miner_status.apply_async(countdown=10)
+        update_miner_list.apply_async(countdown=10)
+        update_enodes.apply_async(countdown=10)
 
     @staticmethod
     def init_geth():
@@ -135,13 +142,27 @@ class MemorityCore:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+
+        args = [
+            settings.geth_executable,
+            '--datadir', settings.blockchain_dir,
+            '--port', '30320',
+            '--networkid', '232019',
+            '--identity', 'mmr_chain_v1',
+            '--nodiscover'
+        ]
+
+        if self.password:
+            self.password_file = NamedTemporaryFile(delete=False)  # tempfile.mkstemp?
+            self.password_file.write(bytes(self.password, encoding='utf-8'))
+            self.password_file.close()
+            args += [
+                '--unlock', settings.address,
+                '--password', self.password_file.name,
+            ]
+
         self.p = subprocess.Popen(
-            [settings.geth_executable,
-             '--datadir', settings.blockchain_dir,
-             '--port', '30320',
-             '--networkid', '232019',
-             '--identity', 'mmr_chain_v1',
-             '--nodiscover'],
+            args,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             bufsize=1,
@@ -162,7 +183,6 @@ class MemorityCore:
                 geth_ipc_path = geth_ipc_path.replace('"', '')
                 geth_ipc_path = geth_ipc_path.replace("'", '')
                 settings.w3_url = geth_ipc_path
-                smart_contracts.smart_contract_api.utils.w3 = smart_contracts.smart_contract_api.utils.create_w3()
                 token_contract.reload()
                 client_contract.reload()
                 memo_db_contract.reload()
@@ -210,6 +230,9 @@ class MemorityCore:
             asyncio.ensure_future(self.renter_app_handler.shutdown(60.0))
             asyncio.ensure_future(self.renter_app.cleanup())
         print('Servers closed.')
+        if self.password_file:
+            print('Password file...')
+            os.unlink(self.password_file.name)
         if self.p:
             print('Geth...')
             self.p.terminate()
@@ -223,23 +246,45 @@ class MemorityCore:
 
         print('Done.')
 
+    @staticmethod
+    def start_mining():
+        logger.info('Starting mining...')
+        w3 = create_w3()
+        w3.miner.start(1)
+        logger.info('Mining started.')
+
 
 ON_POSIX = 'posix' in sys.builtin_module_names
 
 platform_name = platform.system()
 
-if __name__ == '__main__':
+
+def run():
     loop = asyncio.get_event_loop()
 
-    password, run_geth = None, False
+    _password, run_geth = None, False
     if '--docker' in sys.argv:
-        password = next(sys.stdin).strip()  # dev
+        _password = next(sys.stdin).strip()  # dev
     if '--no-geth-subprocess' not in sys.argv:
         run_geth = True
 
+    if not _password:
+        _password = settings.load_locals().get('password')
+
+    if not _password and not check_first_run():
+        _password = getpass.getpass()
+
     memority_core = MemorityCore(
         event_loop=loop,
-        _password=password,
         _run_geth=run_geth
     )
-    memority_core.run()
+    try:
+        memority_core.set_password(_password)
+    except Settings.InvalidPassword:
+        print('Invalid password.')
+    else:
+        memority_core.run()
+
+
+if __name__ == '__main__':
+    run()
