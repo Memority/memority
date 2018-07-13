@@ -29,7 +29,6 @@ from utils import check_first_run
 
 locale.setlocale(locale.LC_ALL, '')
 
-SYNC_STARTED = False
 logger = logging.getLogger('memority')
 
 
@@ -38,8 +37,7 @@ def process_line(line):
         line = line.decode('utf-8')
     if line:
         if 'Block synchronisation started' in line:
-            global SYNC_STARTED
-            SYNC_STARTED = True
+            settings.SYNC_STARTED = True
         print(line.strip())
 
 
@@ -88,6 +86,7 @@ class MemorityCore:
             self.cleanup()
 
     def prepare(self):
+        settings.SYNC_STARTED = False
         db_manager.ensure_db_up_to_date()
 
         if self.run_geth:

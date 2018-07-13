@@ -32,7 +32,6 @@ def del_from_pool(func):
     return wrapper
 
 
-
 def parse_date_from_string(d_: str):
     return datetime.strptime(d_[:-4], '%Y-%m-%d %H:%M').date()
 
@@ -240,8 +239,8 @@ class MainWindow(QMainWindow):
     def check_app_updates(self):
         @del_from_pool
         @pyqtSlot()
-        def got_response(latest_version, download_url):
-            if latest_version > daemon_settings.version:
+        def got_response(update_available: bool, download_url):
+            if update_available:
                 self.notify(
                     f'<html><body>'
                     f'<p>New version is available!</p>'
@@ -249,7 +248,7 @@ class MainWindow(QMainWindow):
                     f'</html></body>'
                 )
 
-        r = GetLatestVersionRequest()
+        r = CheckAppUpdatesRequest()
         self.request_pool.append(r)
         r.finished.connect(partial(got_response, self.request_pool, r))
         r.send()

@@ -59,23 +59,3 @@ async def prolong_deposit(args):
         raise Exit('Value must be greater than 0')
 
     prolong_deposit_(args.hash, value, args.memority_core_port)
-
-    """
-    get value
-    f'/files/{file_hash}/deposit/',
-    {"value": value}
-    if data.get('status') == 'success':
-        self.finished.emit(
-            True, ''
-        )
-    else:
-        msg = data.get('message')
-        self.finished.emit(
-            False, f'Deposit creation failed.\n{msg}'
-        )
-    if ok:
-        self.refresh_files_tab()
-        self.notify('File deposit successfully updated.')
-    else:
-        self.error(result)
-    """

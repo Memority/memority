@@ -3,21 +3,22 @@ import asyncio
 import contextlib
 import logging
 import os
+import platform
 import shutil
 from aiohttp import web, ClientConnectorError
+from async_lru import alru_cache
 
 from bugtracking import raven_client
 from models import RenterFile, HosterFile
-from .utils import error_response
 from settings import settings
-from smart_contracts import client_contract, token_contract, memo_db_contract, import_private_key_to_eth, \
-    wait_for_transaction_completion
+from smart_contracts import client_contract, token_contract, memo_db_contract, wait_for_transaction_completion
 from smart_contracts.smart_contract_api.utils import create_w3
 from utils import check_first_run
+from .utils import error_response
 
 __all__ = ['list_files', 'view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'request_mmr',
            'change_box_dir', 'file_info', 'update_file_deposit', 'list_transactions', 'sync_status_handler',
-           'get_contract_updates']
+           'get_contract_updates', 'get_app_updates']
 
 logger = logging.getLogger('memority')
 
@@ -35,8 +36,7 @@ def _error_response(msg):
 
 
 async def sync_status_handler(request):
-    import memority_core
-    if not memority_core.SYNC_STARTED:
+    if not settings.SYNC_STARTED:
         data = {
             "syncing": True,
             "percent": -1
@@ -265,3 +265,32 @@ async def get_contract_updates(request):
             "result": res
         }
     })
+
+
+@alru_cache()
+async def _get_app_updates():
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
+        async with session.get(
+                'https://api.memority.io/api/app/version',
+                headers={
+                    "Accept": "application/json"
+                }
+        ) as resp:
+            data = await resp.json()
+            return {
+                "status": "success",
+                "data": {
+                    "update_available": data.get('latest') > settings.version,
+                    "download_url": data.get(
+                        {
+                            'Linux': 'download_linux',
+                            'Windows': 'download_windows',
+                            'Darwin': 'download_macos'
+                        }.get(platform.system())
+                    )
+                }
+            }
+
+
+async def get_app_updates(request):
+    return web.json_response(await _get_app_updates())

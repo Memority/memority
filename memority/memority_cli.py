@@ -7,7 +7,7 @@ import collections
 from typing import List
 
 from cli import *
-
+from cli.utils import perform_checks
 
 ParserArgument = collections.namedtuple('ParserArgument', ['name', 'help', 'default'])
 
@@ -137,6 +137,7 @@ def main():
 
     try:
         loop = asyncio.get_event_loop()
+        perform_checks(args.memority_core_port)
         loop.run_until_complete(args.func(args))
     except Exception as e:
         print(e)
