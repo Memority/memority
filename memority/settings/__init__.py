@@ -183,14 +183,14 @@ class Settings:
     @staticmethod
     def load_defaults():
         with open(_default_settings_path, 'r') as defaults_file:
-            default_s = yaml.safe_load(defaults_file)
+            default_s = yaml.load(defaults_file)
         return default_s
 
     @staticmethod
     def load_locals():
         if os.path.isfile(_local_settings_path):
             with open(_local_settings_path, 'r') as locals_file:
-                local_s = yaml.safe_load(locals_file)
+                local_s = yaml.load(locals_file)
         else:
             local_s = {}
         return local_s
