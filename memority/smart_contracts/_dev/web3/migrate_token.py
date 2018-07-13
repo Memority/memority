@@ -123,8 +123,11 @@ class Migrate(W3Base):
         self.import_deposits(clientFiles, holderContract, new_contract_instance)
         self.import_payouts(clientFileHosts, new_contract_instance)
 
+        # ### log
+        self.log('contract address: ' + self.new_migrated_address)
 
-migration_version = 1000
+
+migration_version = 1010
 previous_version = 1000
 contract_address = ''     # deploy new if empty
 

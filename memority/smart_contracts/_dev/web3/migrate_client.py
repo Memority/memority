@@ -71,8 +71,11 @@ class Migrate(W3Base):
         ### insert new data
         self.import_files(clientFiles, new_contract_instance)
 
+        # ### log
+        self.log('contract address: ' + self.new_migrated_address)
 
-migration_version = 1000
+
+migration_version = 1010
 previous_version = 1000
 contract_address = ''     # deploy new if empty
 

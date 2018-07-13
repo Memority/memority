@@ -27,6 +27,7 @@ class W3Base:
     contract_interface = ''
     contract_instance = ''
     contract_address = ''
+    new_migrated_address = ''
     w3 = ''
     version = ''
 
@@ -96,6 +97,10 @@ class W3Base:
         self.prepare_contract('Token')
         return format(self.w3.eth.getTransactionReceipt(tx)) + "\n\n" + format(self.w3.eth.getTransaction(tx))
 
+    def token_balance(self, address):
+        self.prepare_contract('Token')
+        return self.from_mmr_wei(self.contract_instance.balanceOf(address))
+
     def get_address_by_tx(self, tx):
         tx_receipt = self.w3.eth.getTransactionReceipt(tx)
         if tx_receipt and 'contractAddress' in tx_receipt:
@@ -112,6 +117,7 @@ class W3Base:
         tx_hash = contract.deploy(transaction={'from': self.cfg['token_owner'], 'gas': self.cfg['gas']}, args=args)
         self.log('tx hash: ' + tx_hash)
         address = self.get_address_by_tx(tx_hash)
+        self.new_migrated_address = address
         self.log('address: ' + address)
 
         return {
@@ -122,11 +128,18 @@ class W3Base:
 
     def make_bin_and_deploy(self, contract_name, contract_version=''):
         deploy_options = {
-            'MemoDB': [self.cfg['version_' + str(self.migrate_version)]['token_address']],
-            'Token': [1500000000, 1, 'Memority Token', 'MMR'],
-            'Client': [self.cfg['version_' + str(self.migrate_version)]['token_address']],
+            # 'MemoDB': [self.cfg['version_' + str(self.migrate_version)]['token_address']],
+            # 'Token': [1500000000, 1, 'Memority Token', 'MMR'],
+            # 'Client': [self.cfg['version_' + str(self.migrate_version)]['token_address']],
             'Utils': [],
         }
+
+        if contract_name == 'MemoDB':
+            deploy_options[contract_name] = [self.cfg['version_' + str(self.migrate_version)]['token_address']]
+        if contract_name == 'Token':
+            deploy_options[contract_name] = [1500000000, 1, 'Memority Token', 'MMR']
+        if contract_name == 'Client':
+            deploy_options[contract_name] = [self.cfg['version_' + str(self.migrate_version)]['token_address']]
 
         full_name = contract_name + ('.v' + str(contract_version) if contract_version else '')
         source = self.compile_source(full_name, contract_name)
@@ -194,6 +207,17 @@ class W3Base:
         self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
         result = self.w3.eth.sendTransaction({
             'to':  self.contract_address,
+            'from':  self.cfg['token_owner'],
+            'value':  self.w3.toWei(amount, 'ether'),
+            'gas': self.cfg['gas']
+        })
+        return format(result)
+
+    def refill_address(self, address, amount):
+        self.prepare_contract('Token')
+        self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
+        result = self.w3.eth.sendTransaction({
+            'to':  address,
             'from':  self.cfg['token_owner'],
             'value':  self.w3.toWei(amount, 'ether'),
             'gas': self.cfg['gas']
@@ -268,6 +292,17 @@ class W3Base:
         self.w3.manager.request_blocking("clique_propose", [address, status])
         result = self.w3.manager.request_blocking("clique_getSigners", [])
         return result
+
+    def get_last_block(self):
+        self.prepare_contract('Token')
+        result = self.w3.eth.blockNumber
+        return result
+
+    def get_block(self, id):
+        self.prepare_contract('Token')
+        block = self.w3.eth.getBlock(id)
+        result = self.w3.manager.request_blocking("clique_getSnapshotAtHash", [block['hash']])
+        return {**result, **block}
 
     def status(self):
         self.prepare_contract('Token')
