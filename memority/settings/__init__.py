@@ -11,8 +11,6 @@ import ecdsa
 import sha3
 import yaml
 
-from bugtracking import raven_client
-
 __all__ = ['settings', 'Settings']
 
 
@@ -205,6 +203,7 @@ class Settings:
                 **cls.load_locals()  # overwrite defaults if different
             }
         except:
+            from bugtracking import raven_client
             raven_client.captureException(extra={
                 "defaults": cls.load_defaults(),
                 "locals": cls.load_locals(),
