@@ -48,3 +48,4 @@ wrapt==1.10.11
 yarl==1.1.1
 sqlalchemy-migrate==0.11.0
 celery==4.1.1
+async-lru==1.0.1
