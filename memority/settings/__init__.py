@@ -1,3 +1,5 @@
+import time
+
 import contextlib
 import json
 import os
@@ -199,6 +201,9 @@ class Settings:
     def load(cls):
         defaults_ = cls.load_defaults()
         locals_ = cls.load_locals()
+        while locals_ is None:  # Race condition. ToDo: find a better solution
+            time.sleep(.25)
+            locals_ = cls.load_locals()
         return {
             **defaults_,
             **locals_  # overwrite defaults if different
