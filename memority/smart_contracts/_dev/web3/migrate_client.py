@@ -75,8 +75,8 @@ class Migrate(W3Base):
         self.log('contract address: ' + self.new_migrated_address)
 
 
-migration_version = 1010
-previous_version = 1000
+migration_version = 1020
+previous_version = 1010
 contract_address = ''     # deploy new if empty
 
 migration = Migrate(previous_version)

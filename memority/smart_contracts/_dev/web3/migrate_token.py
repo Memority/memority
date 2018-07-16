@@ -10,15 +10,28 @@ class Migrate(W3Base):
 
     migrate_version = 1000
 
+    def get_clients(self):
+        r = requests.get(url='https://api.memority.io/api/app/clients/get')
+        addrs = {}
+        for addr in r.json()['addresses']:
+            if float(addr['balance']) > 0:
+                addrs[addr['address']] = self.to_mmr_wei(addr['balance'])
+
+        return addrs
+
     def import_balance(self, holders_balances, contract_instance):
         for client in holders_balances:
             self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
 
-            result = contract_instance.importBalance(
-                client, holders_balances[client]['balance'],
-                transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
+            # self.log(str(client) + ' :: ' + str(holders_balances[client]['balance']) )
+            if float(holders_balances[client]['balance']) > 0:
+                result = contract_instance.importBalance(
+                    client, holders_balances[client]['balance'],
+                    transact={'from':  self.cfg['token_owner'], 'gas': self.cfg['gas']})
 
-            self.log('import balance ' + client + ' = ' + str(holders_balances[client]['balance']))
+                self.log('import balance ' + client + ' = ' + str(holders_balances[client]['balance']))
+            else:
+                self.log('skip 0 balance')
 
     def import_total(self, data, contract_instance):
         self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
@@ -30,10 +43,17 @@ class Migrate(W3Base):
     def import_deposits(self, client_files, holder_contract, contract_instance):
         for client in client_files:
             for file in client_files[client]:
-                client_address = holder_contract[client]
-                # change contract key to client address key
-                deposit = self.contract_instance.deposits(client_address, file)
-                print('deposit for ' + file + ' = ' + str(deposit))
+                if client in holder_contract:
+                    client_address = holder_contract[client]
+                    deposit = self.contract_instance.deposits(client_address, file)
+                    type = 'contract'
+                else:
+                    deposit = self.contract_instance.deposits(client, file)
+                    type = 'client'
+                # deposit_client = self.contract_instance.deposits(client, file)
+
+                print('deposit for ' + file + ' ('+type+') = ' + str(deposit))
+
                 self.w3.personal.unlockAccount(self.cfg['token_owner'], self.passwords['token_owner_password'])
                 result = contract_instance.importDeposits(
                     client, file, deposit,
@@ -97,6 +117,12 @@ class Migrate(W3Base):
                 }
                 x = x+1
 
+        # www_balances = self.get_clients()
+        # for addr in www_balances:
+        #     holdersBalances[addr] = {
+        #         'balance': www_balances[addr]
+        #     }
+
         for holder in holdersBalances:
             self.prepare_contract('MemoDB')
             client_address = self.contract_instance.clientContract(holder)
@@ -127,8 +153,8 @@ class Migrate(W3Base):
         self.log('contract address: ' + self.new_migrated_address)
 
 
-migration_version = 1010
-previous_version = 1000
+migration_version = 1020
+previous_version = 1010
 contract_address = ''     # deploy new if empty
 
 migration = Migrate(previous_version)

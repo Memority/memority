@@ -124,7 +124,7 @@ contract Token is owned, TokenERC20 {
     uint256 public minHoldersBalance = 100 * 10 ** 12;
     uint256 etherPerUser = 5000000000000000000;
     address public dbAddress;
-    uint256 public version = 1010;
+    uint256 public version = 1020;
 
     mapping (address => mapping (bytes32 => uint256)) public deposits;
     mapping (bytes32 => mapping (uint256 => uint256)) public depositPrice;
