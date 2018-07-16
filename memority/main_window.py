@@ -325,9 +325,11 @@ class MainWindow(QMainWindow):
                 self.notify('File successfully downloaded!')
                 self.refresh_files_tab()
             elif data.get('details') == 'client_contract_updated':
-                self.notify('Your data successfully transferred to new Smart Contract!')
-                self.ui.setEnabled(True)
-                self.refresh()
+                self.notify(
+                    'Your data successfully transferred to new Smart Contract!'
+                    'In order to work correctly with the new contract, the application needs to be restarted.'
+                )
+                self.shutdown()
         elif status == 'error':
             self.error(data.get('message'))
 

@@ -44,6 +44,11 @@ async def websocket_handler(request):
                         "status": "error",
                         "message": 'Invalid password.'
                     }
+                except Exception as err:
+                    resp = {
+                        "status": "error",
+                        "message": str(err)
+                    }
                 await ws.send_json(resp)
 
     return ws

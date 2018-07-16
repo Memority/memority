@@ -140,7 +140,8 @@ def main():
 
     try:
         loop = asyncio.get_event_loop()
-        perform_checks(args.memority_core_port)
+        if args.func.__name__ not in ['update_client_contract']:
+            perform_checks(args.memority_core_port)
         loop.run_until_complete(args.func(args))
     except Exception as e:
         print(e)
