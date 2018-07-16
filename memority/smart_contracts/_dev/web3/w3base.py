@@ -9,6 +9,7 @@ import os
 import sys
 import pickle
 import yaml
+import json
 
 from time import sleep
 from solc import compile_source
@@ -17,6 +18,7 @@ from web3.contract import ConciseContract
 import bitcoin as b
 import codecs
 import sha3
+from decimal import Decimal
 
 class W3Base:
 
@@ -150,11 +152,21 @@ class W3Base:
         return result
 
     def compile(self, name):
-        bin_name = name+'.v'+str(self.version)+'.bin' if self.version else name+'.bin'
+        if '.v' in name:
+            bin_name = name + '.bin'
+        else:
+            bin_name = name+'.v'+str(self.version)+'.bin' if self.version else name+'.bin'
+
         contract_bin_file = os.path.join(self.__location__, self.contract_path + 'bin/' + bin_name)
 
         if not os.path.exists(contract_bin_file):
             contract_bin_file = os.path.join(self.__location__, self.contract_path + 'bin/' + name+'.v'+str(self.migrate_version)+'.bin')
+
+        # if contract_bin_file != '/home/memority/smart_contracts/_dev/web3/../../contracts/bin/Token.v1000.bin' and name != 'MemoDB' and name != 'Client':
+        #     print(contract_bin_file)
+        #     print(name)
+        #     print(str(self.version))
+        #     sys.exit(1000)
 
         with open(contract_bin_file, 'rb') as f:
             self.contract_interface = pickle.load(f)
@@ -174,7 +186,8 @@ class W3Base:
         )
 
     def to_mmr_wei(self, amount):
-        return int(amount) * 10 ** self.cfg['token_decimals']
+        return int(Decimal(float(amount) * 10 ** self.cfg['token_decimals']))
+        # return int(amount) * 10 ** self.cfg['token_decimals']
 
     def from_mmr_wei(self, amount):
         return int(amount) / 10 ** self.cfg['token_decimals']
@@ -303,6 +316,36 @@ class W3Base:
         block = self.w3.eth.getBlock(id)
         result = self.w3.manager.request_blocking("clique_getSnapshotAtHash", [block['hash']])
         return {**result, **block}
+
+    def get_transactions(self, address):
+        self.prepare_contract('MemoDB')
+        count = self.contract_instance.transactionsCount(address)
+        self.log('Total transactions: ' + str(count))
+        transactions = []
+        for i in range(count):
+            transaction_id = self.contract_instance.transactionsId(address, i)
+            transaction = self.contract_instance.transactions(transaction_id)
+            transactions.append(transaction)
+
+        return json.dumps(transactions)
+
+    def get_deposits(self, address, hash):
+        self.prepare_contract('Token')
+        result = self.contract_instance.deposits(address, hash)
+
+        return result
+
+    def get_client_files(self, address=''):
+        self.prepare_contract('Client', address)
+        result = self.contract_instance.getFiles()
+
+        return result
+
+    def get_client_contract(self, address):
+        self.prepare_contract('MemoDB')
+        result = self.contract_instance.clientContract(address)
+
+        return result
 
     def status(self):
         self.prepare_contract('Token')

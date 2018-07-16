@@ -4,7 +4,7 @@ import sys
 
 from w3base import W3Base
 
-version_to_use = 1010
+version_to_use = 1020
 
 ether = W3Base(version_to_use)
 
@@ -28,7 +28,7 @@ elif str(sys.argv[1]) == 'refill_address':
     print(result)
 
 elif str(sys.argv[1]) == 'set_token_db':
-    result = ether.set_token_db('0x639f6D513e0020a46e0551E31dc242b6bf7a207A')
+    result = ether.set_token_db('0x822DA535db237A07BBB37f3Ff7303b2Acc6550C7')
     print(result)
 
 elif str(sys.argv[1]) == 'set_db_token_address':
@@ -71,4 +71,26 @@ elif str(sys.argv[1]) == 'get_block':
 elif str(sys.argv[1]) == 'get_last_block':
     result = ether.get_last_block()
     print(result)
+
+elif str(sys.argv[1]) == 'get_transactions':
+    result = ether.get_transactions(str(sys.argv[2]))
+    print(result)
+
+elif str(sys.argv[1]) == 'get_deposits':
+    result = ether.get_deposits(str(sys.argv[2]), str(sys.argv[3]))
+    print(result)
+
+elif str(sys.argv[1]) == 'get_client_contract':
+    result = ether.get_client_contract(str(sys.argv[2]))
+    print(result)
+
+elif str(sys.argv[1]) == 'get_files':
+    address = ''
+    if len(sys.argv) == 3:
+        address = str(sys.argv[2])
+        print('addr: ' +address)
+
+    result = ether.get_client_files(address)
+    print(result)
+
 
