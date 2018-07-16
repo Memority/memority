@@ -263,7 +263,7 @@ async def perform_monitoring_for_file(data):
     :return:  info message [str]
     """
 
-    file = HosterFile.objects.get(id=data.get('file_id'))
+    file = HosterFile.objects.get(hash=data.get('file_hash'))
 
     logger.info(f'Started monitoring for file | file: {file.hash}')
     deposit = await file.check_deposit()

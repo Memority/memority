@@ -12,7 +12,7 @@ async def request_payment_for_file(data):
 
     :return:  info message [str]
     """
-    file = HosterFile.objects.get(id=data.get('file_id'))
+    file = HosterFile.objects.get(hash=data.get('file_hash'))
     logger.info(
         f'Requesting payment for file '
         f'| file: {file.hash}'

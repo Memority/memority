@@ -41,12 +41,12 @@ def run_in_loop(func):
 
 @app.task
 @run_in_loop
-async def request_payment_for_file(file_id):
+async def request_payment_for_file(file_hash):
     async with aiohttp.ClientSession() as session:
         async with session.post(
                 f'http://{settings.daemon_address}/tasks/request_payment_for_file/',
                 json={
-                    "file_id": file_id
+                    "file_hash": file_hash
                 }
         ) as response:
             data = await response.json()
@@ -70,12 +70,12 @@ async def check_ip():
 
 @app.task
 @run_in_loop
-async def perform_monitoring_for_file(file_id):
+async def perform_monitoring_for_file(file_hash):
     async with aiohttp.ClientSession() as session:
         async with session.post(
                 f'http://{settings.daemon_address}/tasks/perform_monitoring_for_file/',
                 json={
-                    "file_id": file_id
+                    "file_hash": file_hash
                 }
         ) as response:
             data = await response.json()
@@ -160,7 +160,7 @@ async def check_enode():
 @app.task
 def request_payment_for_all_files():
     for file in HosterFile.objects.all():
-        request_payment_for_file.delay(file.id)
+        request_payment_for_file.delay(file.hash)
 
 
 @app.task
@@ -171,7 +171,7 @@ def schedule_monitoring():
                 # 48 = minutes in 8 hours / number of hosters
                 minutes=int(file.my_monitoring_number * 48 + random.randint(0, 48))
             ),
-            kwargs={"file_id": file.id}
+            kwargs={"file_hash": file.hash}
         )
 
 

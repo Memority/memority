@@ -15,9 +15,9 @@ async def list_files(args):
         print('No files.')
         return
 
-    row = "{:<33}{sep}{:<33}{sep}{:<15}{sep}{:<15}{sep}{:<21}{sep}{:<21}"
+    row = "{:<33}{sep}{:<33}{sep}{:<15}{sep}{:<17}{sep}{:<21}{sep}{:<21}"
     print(row.format('Hash', 'Name', 'Size', 'Status', 'Uploaded on', 'Deposit ends on on', sep='| '))
-    print(row.format('-' * 33, '-' * 33, '-' * 15, '-' * 15, '-' * 21, '-' * 21, sep='+-'))
+    print(row.format('-' * 33, '-' * 33, '-' * 15, '-' * 17, '-' * 21, '-' * 21, sep='+-'))
     for file in files:
         print(
             row.format(
