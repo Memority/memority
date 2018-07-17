@@ -7,36 +7,20 @@ from .perform_monitoring_for_file import perform_monitoring_for_file
 from .request_payment_for_file import request_payment_for_file
 from .update_enodes import update_enodes
 from .update_miner_list import update_miner_list
+from ..utils import process_request
 
 
 async def task(request: web.Request):
-    task_name = request.match_info.get('task')
-    handler = {
-        "check_enode": check_enode,
-        "check_ip": check_ip,
-        "check_miner_status": check_miner_status,
-        "perform_monitoring_for_file": perform_monitoring_for_file,
-        "request_payment_for_file": request_payment_for_file,
-        "update_enodes": update_enodes,
-        "update_miner_list": update_miner_list
-    }.get(
-        task_name
+    return await process_request(
+        request,
+        'task',
+        {
+            "check_enode": check_enode,
+            "check_ip": check_ip,
+            "check_miner_status": check_miner_status,
+            "perform_monitoring_for_file": perform_monitoring_for_file,
+            "request_payment_for_file": request_payment_for_file,
+            "update_enodes": update_enodes,
+            "update_miner_list": update_miner_list
+        }
     )
-
-    if handler:
-        data = await request.json()
-        return web.json_response(
-            {
-                "status": "success",
-                "data": {
-                    "result": await handler(data)
-                }
-            },
-        )
-    else:
-        return web.json_response(
-            {
-                "status": "error",
-                "message": "unknown task"
-            }
-        )

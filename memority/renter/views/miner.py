@@ -1,7 +1,7 @@
 import logging
 from aiohttp import web
 
-from renter.views.utils import send_miner_request, send_add_enode_request
+from memority_api_requests import send_miner_request, send_add_enode_request
 from settings import settings
 from smart_contracts import memo_db_contract, token_contract
 from smart_contracts.smart_contract_api.utils import create_w3

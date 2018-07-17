@@ -6,13 +6,13 @@ from smart_contracts import token_contract
 logger = logging.getLogger('monitoring')
 
 
-async def request_payment_for_file(data):
+async def request_payment_for_file(file_hash):
     """
     Request payment for file
 
     :return:  info message [str]
     """
-    file = HosterFile.objects.get(hash=data.get('file_hash'))
+    file = HosterFile.objects.get(hash=file_hash)
     logger.info(
         f'Requesting payment for file '
         f'| file: {file.hash}'

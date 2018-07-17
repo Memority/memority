@@ -11,7 +11,7 @@ async def export_account(args):
     )
     data = r.json()
     if data.get('status') == 'success':
-        print(f'Successfully imported to {filename}')
+        print(f'Successfully exported to {filename}')
     else:
         msg = data.get('message')
         raise Exit(f'Exporting account failed.\n{msg}')

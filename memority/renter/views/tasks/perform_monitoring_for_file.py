@@ -256,14 +256,14 @@ async def check_file_proofs(file):
                     )
 
 
-async def perform_monitoring_for_file(data):
+async def perform_monitoring_for_file(file_hash):
     """
     Perform monitoring for file
 
     :return:  info message [str]
     """
 
-    file = HosterFile.objects.get(hash=data.get('file_hash'))
+    file = HosterFile.objects.get(hash=file_hash)
 
     logger.info(f'Started monitoring for file | file: {file.hash}')
     deposit = await file.check_deposit()

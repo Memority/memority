@@ -1,13 +1,13 @@
 import logging
 
-from renter.views.utils import send_miner_request, send_add_enode_request
+from memority_api_requests import send_miner_request, send_add_enode_request
 from settings import settings
 from smart_contracts import create_w3
 
 logger = logging.getLogger('monitoring')
 
 
-async def check_miner_status(_):
+async def check_miner_status():
     """
     Check status of miner request;
     if active and voted, starts mining.

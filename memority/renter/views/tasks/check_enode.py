@@ -1,12 +1,12 @@
 import logging
 
-from renter.views.utils import send_get_enodes_request, send_add_enode_request
+from memority_api_requests import send_get_enodes_request, send_add_enode_request
 from smart_contracts import get_enode
 
 logger = logging.getLogger('monitoring')
 
 
-async def check_enode(_):
+async def check_enode():
     """
     Check if the enode address is up-to-date and update if not.
 

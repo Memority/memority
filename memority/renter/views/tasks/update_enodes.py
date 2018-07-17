@@ -2,14 +2,14 @@ import json
 import logging
 import os
 
-from renter.views.utils import send_get_enodes_request
+from memority_api_requests import send_get_enodes_request
 from settings import settings
 from smart_contracts import create_w3
 
 logger = logging.getLogger('monitoring')
 
 
-async def update_enodes(_):
+async def update_enodes():
     """
     Sync static nodes with server
 

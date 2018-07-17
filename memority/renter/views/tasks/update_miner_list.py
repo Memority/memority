@@ -1,12 +1,12 @@
 import logging
 
-from renter.views.utils import send_get_miners_request
+from memority_api_requests import send_get_miners_request
 from smart_contracts import unlock_account, create_w3
 
 logger = logging.getLogger('monitoring')
 
 
-async def update_miner_list(_):
+async def update_miner_list():
     """
     Update miner list and vote for/off
 

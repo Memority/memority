@@ -7,7 +7,7 @@ from utils import get_ip, check_if_accessible
 logger = logging.getLogger('monitoring')
 
 
-async def check_ip(_):
+async def check_ip():
     """
     Check if IP is equal to IP in contract and update if not
     :return:  info message [str]
