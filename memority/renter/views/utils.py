@@ -4,6 +4,10 @@ from aiohttp import web
 logger = logging.getLogger('memority')
 
 
+class Exit(Exception):
+    pass
+
+
 def error_response(msg, code=200):
     return web.json_response(
         {
@@ -14,8 +18,9 @@ def error_response(msg, code=200):
     )
 
 
-async def process_request(request: web.Request, attr: str, handlers: dict):
-    handler_name = request.match_info.get(attr)
+async def process_request(request: web.Request, handlers: dict, arg: str = 'arg'):
+    handler_name = request.match_info.get(arg)
+
     handler = handlers.get(
         handler_name
     )

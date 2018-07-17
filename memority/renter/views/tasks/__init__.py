@@ -13,7 +13,6 @@ from ..utils import process_request
 async def task(request: web.Request):
     return await process_request(
         request,
-        'task',
         {
             "check_enode": check_enode,
             "check_ip": check_ip,

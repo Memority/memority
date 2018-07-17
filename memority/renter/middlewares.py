@@ -3,7 +3,7 @@ from aiohttp import web
 
 from bugtracking import raven_client
 from settings import settings
-
+from .views.utils import Exit
 
 __all__ = ['error_middleware', 'allowed_hosts_middleware']
 
@@ -29,6 +29,11 @@ async def error_middleware(request, handler):
             "status": "error",
             "message": 'invalid_password'
         }, status=403)
+    except Exit as err:
+        return web.json_response({
+            "status": "error",
+            "message": str(err)
+        }, status=400)
     except Exception as ex:
         traceback.print_exc()
         raven_client.captureException()

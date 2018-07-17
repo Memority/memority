@@ -3,33 +3,17 @@ from aiohttp import web
 
 from memority_api_requests import send_miner_request, send_add_enode_request
 from settings import settings
-from smart_contracts import memo_db_contract, token_contract
+from smart_contracts import token_contract
 from smart_contracts.smart_contract_api.utils import create_w3
-from utils import get_ip, check_if_accessible
-from .utils import error_response
+from utils import check_if_accessible
+from .get_ip import get_miner_ip
+from ..utils import Exit
 
 logger = logging.getLogger('memority')
 
 
 class MinerError(Exception):
     pass
-
-
-def _error_response(msg):
-    return web.json_response({
-        "status": "error",
-        "message": msg
-    })
-
-
-async def get_miner_ip():
-    ip_from_contract = memo_db_contract.get_host_ip(settings.address)
-    if ip_from_contract:
-        ip = ip_from_contract.split(':')[0]
-    else:
-        ip = await get_ip()
-
-    return ip
 
 
 def check_balance():
@@ -84,7 +68,7 @@ def start_mining():
     logger.info('Mining started.')
 
 
-async def miner_request(request):
+async def miner_request():
     try:
         check_balance()
 
@@ -107,36 +91,4 @@ async def miner_request(request):
 
     except MinerError as err:
         logger.warning(str(err))
-        return _error_response(str(err))
-
-
-class MinerView(web.View):
-    async def get(self):
-        if settings.mining_status != 'active':
-            return error_response('Not a miner.')
-
-        check_if_signer()
-
-        attr = self.request.match_info.get('attr')
-        handler = getattr(self, f'get_{attr}')
-        if handler:
-            return web.json_response({
-                "status": "success",
-                "data": {
-                    "result": await handler()
-                }
-            })
-        else:
-            return error_response(f'Unknown attribute: {attr}')
-
-    @staticmethod
-    async def get_ip():
-        return await get_miner_ip()
-
-    @staticmethod
-    async def get_rewards():
-        return sum([
-            tx['value']
-            for tx in memo_db_contract.get_transactions()
-            if tx['comment'] == 'miner_reward'
-        ])
+        raise Exit(str(err))

@@ -9,7 +9,6 @@ from ..utils import process_request
 async def files(request: web.Request):
     return await process_request(
         request,
-        'action',
         {
             "list": list_files,
             "info": file_info,

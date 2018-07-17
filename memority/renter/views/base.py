@@ -9,6 +9,7 @@ from models import HosterFile
 from settings import settings
 from smart_contracts import token_contract, memo_db_contract, wait_for_transaction_completion
 from utils import file_size_human_readable
+from .utils import Exit
 
 __all__ = ['view_config', 'upload_to_hoster', 'request_mmr']
 
@@ -41,7 +42,7 @@ async def upload_to_hoster(hoster, data, file, _logger=None):  # ToDo: mv to hos
 
                 resp_data: dict = await resp1.json()
                 if resp_data.get('status') != 'success':
-                    raise Exception(
+                    raise Exit(
                         f'Uploading metadata failed: {resp_data.get("message")}'
                     )
 
@@ -51,7 +52,7 @@ async def upload_to_hoster(hoster, data, file, _logger=None):  # ToDo: mv to hos
                     data=file.get_filelike()) as resp2:
                 if not resp2.status == 200:
                     import json
-                    raise Exception(json.dumps({
+                    raise Exit(json.dumps({
                         "status": resp2.status,
                         "response": await resp2.text(),
                         "ip": ip,

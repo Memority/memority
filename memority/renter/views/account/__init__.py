@@ -8,7 +8,6 @@ from ..utils import process_request
 async def account(request: web.Request):
     return await process_request(
         request,
-        'action',
         {
             "import": import_account,
             "export": export_account,

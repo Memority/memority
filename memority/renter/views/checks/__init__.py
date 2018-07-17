@@ -9,7 +9,6 @@ from ..utils import process_request
 async def check(request: web.Request):
     return await process_request(
         request,
-        'check',
         {
             "app_updates": get_app_updates,
             "contract_updates": get_contract_updates,

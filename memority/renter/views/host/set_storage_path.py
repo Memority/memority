@@ -2,11 +2,12 @@ import os
 import shutil
 
 from settings import settings
+from ..utils import Exit
 
 
 async def set_storage_path(path):
     if not os.path.isdir(path):
-        raise Exception(f"Not a directory: {path}")
+        raise Exit(f"Not a directory: {path}")
     if path == os.path.normpath(settings.boxes_dir):
         return 'ok'
     from_dir = settings.boxes_dir

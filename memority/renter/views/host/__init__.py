@@ -11,7 +11,6 @@ from ..utils import process_request
 async def host(request: web.Request):
     return await process_request(
         request,
-        'attr',
         {
             "ip": lambda: memo_db_contract.get_host_ip(settings.address),
             "storage": lambda: {
@@ -30,7 +29,6 @@ async def host(request: web.Request):
 async def storage(request: web.Request):
     return await process_request(
         request,
-        'action',
         {
             "resize": resize_storage,
             "set_path": set_storage_path
