@@ -7,11 +7,12 @@ class GetSyncStatusRequest(AbstractGetRequest):
     finished = pyqtSignal(bool, int)
 
     def __init__(self):
-        super().__init__('/sync_status/')
+        super().__init__('/checks/sync_status/')
 
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
+            result = data.get('data').get('result')
             self.finished.emit(
-                data.get('data').get('syncing'),
-                data.get('data').get('percent')
+                result.get('syncing'),
+                result.get('percent')
             )

@@ -57,8 +57,9 @@ class Settings:
 
     def __setattr__(self, name: str, value) -> None:
         data = self.load()
-        data[name] = value
-        self.encrypt_secrets(data)
+        if data.get(name) != value:
+            data[name] = value
+            self.encrypt_secrets(data)
 
     def __getattr__(self, item):
         if item in [

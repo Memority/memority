@@ -1,0 +1,65 @@
+# API reference
+By default, Memority listen on: 
+- port `9379` on `127.0.0.1` for communicating with GUI, CLI and third-party developer apps.
+- port `9378` on `0.0.0.0` for communicating with renters and other hosts
+- port `30320` for `geth` node
+
+## Standard response format:
+```json
+{
+  "status": "{success|error|info}",
+  "data": {...},  // if success
+  "message": "str"  // error message or info message, according to status
+}
+```
+
+## Checks
+Before communicating with Memority Core, you must perform some checks.
+
+### Blockchain synchronization status
+
+#### Request:
+`GET /checks/sync_status/`
+#### Response:
+```json
+{
+  "status": "success",
+  "data": {
+    "result": {
+      "syncing": {true|false},
+      "percent": int  // -1 if sync hasn't started yet
+    }
+  }
+}
+```
+
+### App update availability
+
+#### Request:
+`GET /checks/app_updates/`
+#### Response:
+```json
+{
+  "status": "success",
+  "data": {
+    "result": {
+      "update_available": {true|false},
+      "download_url": "str: url for latest app version for current platform"
+    }
+  }
+}
+```
+
+### Smart contract update availability
+
+#### Request:
+`GET /checks/contract_updates/`
+#### Response:
+```json
+{
+  "status": "success",
+  "data": {
+    "result": {true|false}
+  }
+}
+```

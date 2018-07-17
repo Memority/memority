@@ -4,3 +4,5 @@ The system automatically keeps 10 file copies in independent storages all over t
 Files are encrypted with a private key that only their owner has.
 Nobody can see the data without first decrypting it with this key.
 [https://memority.io](https://memority.io)
+
+[API reference](docs/API/API_reference.md)
