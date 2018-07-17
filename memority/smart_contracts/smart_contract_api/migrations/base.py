@@ -2,7 +2,7 @@ from settings import settings
 from smart_contracts import ClientContract, client_contract, unlock_account, wait_for_transaction_completion
 
 
-class Migration0to1000:
+class BaseMigration:
     def __init__(self) -> None:
         self.old_contract = client_contract.contract
         self.new_contract = ClientContract()
