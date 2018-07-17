@@ -12,7 +12,6 @@ def get_url(path, port):
 def get_data_by_url(url, port):
     r = requests.get(get_url(url, port))
     data = r.json()
-    print(data)
     if data.get('status') == 'error':
         raise Exit(f"Error: {data.get('message')}")
     return data.get('data')
