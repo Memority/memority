@@ -8,8 +8,11 @@ class ProlongDepositForFileRequest(AbstractPostRequest):
 
     def __init__(self, file_hash, value):
         super().__init__(
-            f'/files/{file_hash}/deposit/',
-            {"value": value}
+            f'/files/prolong_deposit/',
+            {
+                "value": value,
+                "file_hash": file_hash
+            }
         )
 
     def process_response_data(self, data: dict):

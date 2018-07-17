@@ -1,20 +1,20 @@
 from PyQt5.QtCore import pyqtSignal
 
-from .base import AbstractGetRequest
+from .base import AbstractPostRequest
 
 
-class GetUserFilesRequest(AbstractGetRequest):
+class GetUserFilesRequest(AbstractPostRequest):
     finished = pyqtSignal(bool, str, list)
 
     def __init__(self):
-        super().__init__('/files/')
+        super().__init__('/files/list/', {})
 
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
             self.finished.emit(
                 True,
                 '',
-                data.get('data').get('files')
+                data.get('data')
             )
         else:
             self.finished.emit(

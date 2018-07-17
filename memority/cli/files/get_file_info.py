@@ -5,8 +5,11 @@ from ..utils import get_url
 
 
 async def get_file_info(args):
-    r = requests.get(
-        get_url(f'/files/{args.hash}/', port=args.memority_core_port)
+    r = requests.post(
+        get_url('/files/info/', port=args.memority_core_port),
+        json={
+            "file_hash": args.hash
+        }
     )
     data = r.json()
     if data.get('status') == 'error':

@@ -9,8 +9,8 @@ def get_url(path, port):
     return f'http://127.0.0.1:{port}{path}'
 
 
-def get_data_by_url(url, port):
-    r = requests.get(get_url(url, port))
+def post(url, port):
+    r = requests.post(get_url(url, port), json={})
     data = r.json()
     if data.get('status') == 'error':
         raise Exit(f"Error: {data.get('message')}")
@@ -18,7 +18,7 @@ def get_data_by_url(url, port):
 
 
 def check_sync_status(port):
-    data = get_data_by_url('/checks/sync_status/', port).get('result')
+    data = post('/checks/sync_status/', port).get('result')
     syncing = data.get('syncing')
     percent = data.get('percent')
     if syncing:
@@ -27,7 +27,7 @@ def check_sync_status(port):
 
 
 def check_app_updates(port):
-    data = get_data_by_url('/checks/app_updates/', port)
+    data = post('/checks/app_updates/', port)
     update_available = data.get('result').get('update_available')
     download_url = data.get('download_url')
     if update_available:
@@ -38,7 +38,7 @@ def check_app_updates(port):
 
 
 def check_contract_updates(port):
-    update_available = get_data_by_url('/checks/contract_updates/', port).get('result')
+    update_available = post('/checks/contract_updates/', port).get('result')
     if update_available:
         raise Exit(
             'Smart Contract needs update.\n'

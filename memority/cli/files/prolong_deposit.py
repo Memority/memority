@@ -6,8 +6,11 @@ from ..utils import Exit, get_url
 
 
 def get_file_metadata(file_hash, port):
-    r = requests.get(
-        get_url(f'/files/{file_hash}/', port=port)
+    r = requests.post(
+        get_url('/files/info/', port=port),
+        json={
+            "file_hash": file_hash
+        }
     )
     data = r.json()
     if data.get('status') == 'error':
@@ -33,8 +36,11 @@ def prolong_deposit_(file_hash, value, port):
     print(f'Adding {value:.18f} MMR to deposit | file: {file_hash}.\n'
           f'Please wait...')
     r = requests.post(
-        get_url(f'/files/{file_hash}/deposit/', port=port),
-        json={"value": value}
+        get_url('/files/prolong_deposit/', port=port),
+        json={
+            "file_hash": file_hash,
+            "value": value
+        }
     )
     data = r.json()
     if data.get('status') == 'success':

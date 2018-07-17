@@ -6,11 +6,11 @@ from ..utils import get_url
 
 
 async def list_files(args):
-    r = requests.get(
-        get_url('/files/', port=args.memority_core_port)
+    r = requests.post(
+        get_url('/files/list/', port=args.memority_core_port), json={}
     )
     data = r.json()
-    files: typing.List[typing.Dict] = data.get('data').get('files')
+    files: typing.List[typing.Dict] = data.get('data')
     if not files:
         print('No files.')
         return

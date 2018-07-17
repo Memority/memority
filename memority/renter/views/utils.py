@@ -1,4 +1,7 @@
+import logging
 from aiohttp import web
+
+logger = logging.getLogger('memority')
 
 
 def error_response(msg, code=200):
@@ -18,14 +21,13 @@ async def process_request(request: web.Request, attr: str, handlers: dict):
     )
 
     if handler:
+        logger.info(attr)
         kwargs = await request.json() if request.method == 'POST' else {}
         return web.json_response(
             {
                 "status": "success",
-                "data": {
-                    "result": await handler(**kwargs)
-                }
-            },
+                "data": await handler(**kwargs)
+            }
         )
     else:
         return web.json_response(
@@ -34,4 +36,3 @@ async def process_request(request: web.Request, attr: str, handlers: dict):
                 "message": f"unknown {attr}: {handler_name}"
             }
         )
-

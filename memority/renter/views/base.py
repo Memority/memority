@@ -1,20 +1,18 @@
 import aiohttp
 import asyncio
-import contextlib
 import logging
 import os
 import shutil
 from aiohttp import web, ClientConnectorError
 
 from bugtracking import raven_client
-from models import RenterFile, HosterFile
+from models import HosterFile
 from settings import settings
-from smart_contracts import client_contract, token_contract, memo_db_contract, wait_for_transaction_completion
-from utils import check_first_run
+from smart_contracts import token_contract, memo_db_contract, wait_for_transaction_completion
 from .utils import error_response
 
-__all__ = ['list_files', 'view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'request_mmr',
-           'change_box_dir', 'file_info', 'update_file_deposit', 'list_transactions']
+__all__ = ['view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'request_mmr',
+           'change_box_dir', 'list_transactions']
 
 logger = logging.getLogger('memority')
 
@@ -76,91 +74,33 @@ async def upload_to_hoster(hoster, data, file, _logger=None):  # ToDo: mv to hos
         return hoster, False
 
 
-async def list_files(request):
-    if check_first_run():
-        return web.json_response({
-            "status": "success",
-            "details": "file_list",
-            "data": {
-                "files": []
-            }
-        })
-    RenterFile.refresh_from_contract()
-    logger.info('List files')
-    await asyncio.sleep(0)  # for await list_files
-    return web.json_response({
-        "status": "success",
-        "details": "file_list",
-        "data": {
-            "files": await RenterFile.list()
-        }
-    })
-
-
-async def file_info(request):
-    file_hash = request.match_info.get('file_hash')
-    file = RenterFile.objects.get(hash=file_hash)
-    return web.json_response({
-        "status": "success",
-        "data": await file.to_json()
-    })
-
-
-async def update_file_deposit(request: web.Request):
-    file_hash = request.match_info.get('file_hash')
-    data = await request.json()
-    value = data.get('value')
-    before = await token_contract.get_deposit(file_hash=file_hash)
-    await client_contract.make_deposit(value=value, file_hash=file_hash)
-    if not await token_contract.get_deposit(file_hash=file_hash) > before:
-        return _error_response('Failed deposit updating.')
-    return web.json_response({
-        "status": "success",
-    })
-
-
 async def view_config(request: web.Request, *args, **kwargs):
     name = request.match_info.get('name')
-    if name:
-        if name in ['private_key', 'encryption_key']:
-            return web.json_response({"status": "error", "details": "forbidden"})
-        if name == 'host_ip':
-            res = memo_db_contract.get_host_ip(settings.address)
-        elif name == 'space_used':
-            res = HosterFile.get_total_size()
-            if res < 1024:
-                res = f'{res} B'
-            elif res < 1024 ** 2:
-                res = f'{res / 1024:.2f} KB'
-            elif res < 1024 ** 3:
-                res = f'{res / 1024 ** 2:.2f} MB'
-            else:
-                res = f'{res / 1024 ** 3:.2f} GB'
+    if name in ['private_key', 'encryption_key']:
+        return web.json_response({"status": "error", "details": "forbidden"})
+    if name == 'host_ip':
+        res = memo_db_contract.get_host_ip(settings.address)
+    elif name == 'space_used':
+        res = HosterFile.get_total_size()
+        if res < 1024:
+            res = f'{res} B'
+        elif res < 1024 ** 2:
+            res = f'{res / 1024:.2f} KB'
+        elif res < 1024 ** 3:
+            res = f'{res / 1024 ** 2:.2f} MB'
         else:
-            res = settings.__getattr__(name)
-        if res:
-            return web.json_response({
-                "status": "success",
-                "data": {
-                    name: res
-                }
-            })
-        else:
-            return web.json_response({"status": "error", "details": "not_found"})
-
-    logger.info('View config')
-    config = vars(settings)
-    with contextlib.suppress(KeyError):
-        config['data'].pop('private_key')
-    with contextlib.suppress(KeyError):
-        config['data'].pop('encryption_key')
-    return web.json_response({
-        "status": "success",
-        "details": "config",
-        "data": {
-            "config": config
-        }
-    })
+            res = f'{res / 1024 ** 3:.2f} GB'
+    else:
+        res = settings.__getattr__(name)
+    if res:
+        return web.json_response({
+            "status": "success",
+            "data": {
+                name: res
+            }
+        })
+    else:
+        return web.json_response({"status": "error", "details": "not_found"})
 
 
 async def request_mmr(request):
