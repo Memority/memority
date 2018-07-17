@@ -4,7 +4,7 @@ from ..utils import get_url
 
 
 async def get_transactions(args):
-    r = requests.get(get_url('/transactions/', port=args.memority_core_port))
+    r = requests.post(get_url('/user/transactions/', port=args.memority_core_port), json={})
     data = r.json()
     if data.get('status') != 'success':
         print(f'Error: {data.get("message")}')

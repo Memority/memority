@@ -12,7 +12,7 @@ from smart_contracts import token_contract, memo_db_contract, wait_for_transacti
 from .utils import error_response
 
 __all__ = ['view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'request_mmr',
-           'change_box_dir', 'list_transactions']
+           'change_box_dir']
 
 logger = logging.getLogger('memority')
 
@@ -154,9 +154,3 @@ async def change_box_dir(request: web.Request):
     settings.boxes_dir = box_dir
     return web.json_response({"status": "success"})
 
-
-async def list_transactions(request):
-    return web.json_response({
-        "status": "success",
-        "data": memo_db_contract.get_transactions()
-    })

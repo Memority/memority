@@ -21,7 +21,7 @@ async def process_request(request: web.Request, attr: str, handlers: dict):
     )
 
     if handler:
-        logger.info(attr)
+        logger.info(handler_name)
         kwargs = await request.json() if request.method == 'POST' else {}
         return web.json_response(
             {

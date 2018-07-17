@@ -1,16 +1,16 @@
 from PyQt5.QtCore import pyqtSignal
 
-from .base import AbstractGetRequest
+from .base import AbstractPostRequest
 
 
-class GetUserBalanceRequest(AbstractGetRequest):
+class GetUserBalanceRequest(AbstractPostRequest):
     finished = pyqtSignal(float)
 
     def __init__(self):
-        super().__init__('/user/balance/')
+        super().__init__('/user/balance/', {})
 
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
             self.finished.emit(
-                data.get('data').get('balance') or 0
+                data.get('data')
             )

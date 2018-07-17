@@ -41,28 +41,6 @@ class UserView(web.View):
         else:
             return web.json_response({"status": "error"})
 
-    @staticmethod
-    def get_balance():
-        return token_contract.get_mmr_balance() if settings.address else None
-
-    @staticmethod
-    def get_role():
-        res = []
-        if memo_db_contract.get_host_ip(settings.address):
-            res.append('host')
-        if settings.client_contract_address:
-            res.append('renter')
-        mining_status = {
-            'active': 'miner',
-            'pending': 'pending_miner',
-            'sent': 'pending_miner'
-        }.get(
-            settings.mining_status
-        )
-        if mining_status:
-            res.append(mining_status)
-        return res
-
     async def generate_address(self):
         data = await self.request.json()
         password = data.get('password')

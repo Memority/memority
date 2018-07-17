@@ -10,7 +10,6 @@ def create_renter_app():
     app.add_routes([
         web.get('/info/{name}/', view_config),
         web.get('/ping/', lambda _: web.json_response({"status": "success"}, status=200)),
-        web.get('/transactions/', list_transactions),
         web.get('/ws/', websocket_handler),
 
         web.post('/account/{action}/', account),
@@ -21,10 +20,10 @@ def create_renter_app():
         web.post('/miner_request/', miner_request),
         web.post('/request_mmr/', request_mmr),
         web.post('/tasks/{task}/', task),
+        web.post('/user/{attr}/', user),
 
         web.view('/host/{attr}/', HostView),
         web.view('/miner/{attr}/', MinerView),
-        web.view('/user/{attr}/', UserView),
     ])
 
     return app
