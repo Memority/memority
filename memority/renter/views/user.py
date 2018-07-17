@@ -24,8 +24,6 @@ class UserView(web.View):
         handler = {
             "generate_address": self.generate_address,
             "create": self.create_account,
-            "import": self.import_account,
-            "export": self.export_account
         }.get(attr, None)
 
         if handler:
@@ -110,15 +108,3 @@ class UserView(web.View):
             )
         return None, 201
 
-    async def import_account(self):
-        data = await self.request.json()
-        filename = data.get('filename')
-        password = data.get('password')
-        settings.import_account(filename, password)
-        return None, 200
-
-    async def export_account(self):
-        data = await self.request.json()
-        filename = data.get('filename')
-        settings.export_account(filename)
-        return None, 200

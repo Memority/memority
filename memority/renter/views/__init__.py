@@ -1,3 +1,4 @@
+from .account import account
 from .base import *
 from .checks import check
 from .host import HostView

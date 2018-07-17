@@ -6,7 +6,7 @@ from ..utils import get_url, Exit
 async def export_account(args):
     filename = args.destination
     r = requests.post(
-        get_url('/user/export/', port=args.memority_core_port),
+        get_url('/account/export/', port=args.memority_core_port),
         json={"filename": filename}
     )
     data = r.json()

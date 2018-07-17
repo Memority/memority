@@ -8,7 +8,7 @@ class ExportAccountRequest(AbstractPostRequest):
 
     def __init__(self, filename):
         super().__init__(
-            '/user/export/',
+            '/account/export/',
             {"filename": filename}
         )
 

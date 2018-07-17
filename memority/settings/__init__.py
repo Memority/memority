@@ -282,6 +282,7 @@ class Settings:
         return os.path.join(_base_dir, 'smart_contracts', 'contracts.json')
 
     def import_account(self, filename, password):
+        # ToDo: check if file exists and is a valid account
         # region Backup current account
         if os.path.isfile(self.local_settings_secrets_path):
             local_settings_backup_path = f'{self.local_settings_secrets_path}.bak'

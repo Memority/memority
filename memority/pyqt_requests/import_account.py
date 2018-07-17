@@ -8,7 +8,7 @@ class ImportAccountRequest(AbstractPostRequest):
 
     def __init__(self, filename, password):
         super().__init__(
-            '/user/import/',
+            '/account/import/',
             {
                 "filename": filename,
                 "password": password

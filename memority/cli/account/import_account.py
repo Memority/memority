@@ -8,7 +8,7 @@ async def import_account(args):
     filename = args.file
     password = getpass.getpass()
     r = requests.post(
-        get_url('/user/import/', port=args.memority_core_port),
+        get_url('/account/import/', port=args.memority_core_port),
         json={
             "filename": filename,
             "password": password

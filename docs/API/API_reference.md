@@ -63,3 +63,51 @@ Before communicating with Memority Core, you must perform some checks.
   }
 }
 ```
+
+## Account
+
+### Create
+### Import
+
+#### Request:
+`POST /account/import/`
+#### POST data:
+```
+{
+  "filename": "path to a file with account to import",
+  "password": "password to account being imported"
+}
+```
+#### Response:
+```
+{
+  "status": "{success|error}",
+  "data": {  // if success
+    "result": "ok"
+  },
+  "message": "str"  // if error
+}
+```
+
+### Export
+
+#### Request:
+`POST /account/export/`
+#### POST data:
+```
+{
+  "filename": "path where to save exported account",
+}
+```
+#### Response:
+```
+{
+  "status": "{success|error}",
+  "data": {  // if success
+    "result": "ok"
+  },
+  "message": "str"  // if error
+}
+```
+
+### Update smart contract to new version

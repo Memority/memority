@@ -8,6 +8,7 @@ def create_renter_app():
     app = web.Application(middlewares=[allowed_hosts_middleware, error_middleware])
 
     app.add_routes([
+        web.get('/checks/{check}/', check),
         web.get('/files/', list_files),
         web.get('/files/{file_hash}/', file_info),
         web.get('/info/', view_config),
@@ -16,8 +17,8 @@ def create_renter_app():
         web.get('/transactions/', list_transactions),
         web.get('/ws/', websocket_handler),
 
+        web.post('/account/{action}/', account),
         web.post('/change_box_dir/', change_box_dir),
-        web.get('/checks/{check}/', check),
         web.post('/disk_space/', set_disk_space_for_hosting),
         web.post('/files/{file_hash}/deposit/', update_file_deposit),
         web.post('/miner_request/', miner_request),
