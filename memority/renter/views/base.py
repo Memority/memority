@@ -1,18 +1,16 @@
 import aiohttp
 import asyncio
 import logging
-import os
-import shutil
 from aiohttp import web, ClientConnectorError
 
+import memority_api_requests
 from bugtracking import raven_client
 from models import HosterFile
 from settings import settings
 from smart_contracts import token_contract, memo_db_contract, wait_for_transaction_completion
-from .utils import error_response
+from utils import file_size_human_readable
 
-__all__ = ['view_config', 'set_disk_space_for_hosting', 'upload_to_hoster', 'request_mmr',
-           'change_box_dir']
+__all__ = ['view_config', 'upload_to_hoster', 'request_mmr']
 
 logger = logging.getLogger('memority')
 
@@ -81,15 +79,7 @@ async def view_config(request: web.Request, *args, **kwargs):
     if name == 'host_ip':
         res = memo_db_contract.get_host_ip(settings.address)
     elif name == 'space_used':
-        res = HosterFile.get_total_size()
-        if res < 1024:
-            res = f'{res} B'
-        elif res < 1024 ** 2:
-            res = f'{res / 1024:.2f} KB'
-        elif res < 1024 ** 3:
-            res = f'{res / 1024 ** 2:.2f} MB'
-        else:
-            res = f'{res / 1024 ** 3:.2f} GB'
+        res = file_size_human_readable(HosterFile.get_total_size())
     else:
         res = settings.__getattr__(name)
     if res:
@@ -106,51 +96,16 @@ async def view_config(request: web.Request, *args, **kwargs):
 async def request_mmr(request):
     data = await request.json()
     key = data.get('key')
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-        async with session.post(
-                'https://api.memority.io/api/app/new',
-                json={
-                    "code": key,
-                    "address": settings.address,
-                    "version": token_contract.current_version
-                },
-                headers={
-                    "Accept": "application/json"
-                }
-        ) as resp:
-            data = await resp.json()
-            if data.get('status') == 'success':
-                tx = data.get('result').strip()
-                await wait_for_transaction_completion(tx)
-                return web.json_response(
-                    {
-                        "status": "success",
-                        "balance": token_contract.get_mmr_balance()
-                    }
-                )
-            else:
-                return web.json_response(_error_response(data.get('error')))
+    resp_data = await memority_api_requests.request_mmr(key)
 
-
-async def set_disk_space_for_hosting(request: web.Request):
-    data = await request.json()
-    disk_space = data.get('disk_space')
-    # ToDo: check if not lower than space used
-    settings.disk_space_for_hosting = float(disk_space)
-    return web.json_response({"status": "success"})
-
-
-async def change_box_dir(request: web.Request):
-    data = await request.json()
-    box_dir = os.path.normpath(data.get('box_dir'))
-    if not os.path.isdir(box_dir):
-        return error_response(f"Not a directory: {box_dir}")
-    if box_dir == os.path.normpath(settings.boxes_dir):
-        return web.json_response({"status": "success"})
-    from_dir = settings.boxes_dir
-    for filename in os.listdir(from_dir):
-        shutil.move(os.path.join(from_dir, filename), os.path.join(box_dir, filename))
-    os.rmdir(from_dir)
-    settings.boxes_dir = box_dir
-    return web.json_response({"status": "success"})
-
+    if resp_data.get('status') == 'success':
+        tx = resp_data.get('result').strip()
+        await wait_for_transaction_completion(tx)
+        return web.json_response(
+            {
+                "status": "success",
+                "balance": token_contract.get_mmr_balance()
+            }
+        )
+    else:
+        return web.json_response(_error_response(data.get('error')))

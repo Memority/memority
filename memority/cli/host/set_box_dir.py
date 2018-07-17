@@ -10,8 +10,8 @@ async def set_box_dir(args):
     if not os.path.isabs(path):
         path = os.path.abspath(path)
     r = requests.post(
-        get_url('/change_box_dir/', port=args.memority_core_port),
-        json={"box_dir": path}
+        get_url('/host/storage/set_path/', port=args.memority_core_port),
+        json={"path": path}
     )
     data = r.json()
     if data.get('status') == 'success':

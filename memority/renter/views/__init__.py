@@ -2,7 +2,7 @@ from .account import account
 from .base import *
 from .checks import check
 from .files import files
-from .host import HostView
+from .host import host, storage
 from .miner import miner_request, MinerView
 from .tasks import task
 from .user import user

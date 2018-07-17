@@ -5,7 +5,7 @@ from ..utils import get_url, Exit
 
 async def resize_storage(args):
     r = requests.post(
-        get_url('/disk_space/', port=args.memority_core_port),
+        get_url('/host/storage/resize/', port=args.memority_core_port),
         json={"disk_space": float(args.value)}
     )
     data = r.json()

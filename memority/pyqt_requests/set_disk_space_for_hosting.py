@@ -8,7 +8,7 @@ class SetDiskSpaceForHostingRequest(AbstractPostRequest):
 
     def __init__(self, disk_space):
         super().__init__(
-            '/disk_space/',
+            '/host/storage/resize/',
             {"disk_space": disk_space}
         )
 

@@ -13,16 +13,15 @@ def create_renter_app():
         web.get('/ws/', websocket_handler),
 
         web.post('/account/{action}/', account),
-        web.post('/change_box_dir/', change_box_dir),
         web.post('/checks/{check}/', check),
-        web.post('/disk_space/', set_disk_space_for_hosting),
         web.post('/files/{action}/', files),
         web.post('/miner_request/', miner_request),
         web.post('/request_mmr/', request_mmr),
         web.post('/tasks/{task}/', task),
         web.post('/user/{attr}/', user),
+        web.post('/host/storage/{action}/', storage),
+        web.post('/host/{attr}/', host),
 
-        web.view('/host/{attr}/', HostView),
         web.view('/miner/{attr}/', MinerView),
     ])
 

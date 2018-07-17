@@ -18,7 +18,7 @@ def post(url, port):
 
 
 def check_sync_status(port):
-    data = post('/checks/sync_status/', port).get('result')
+    data = post('/checks/sync_status/', port)
     syncing = data.get('syncing')
     percent = data.get('percent')
     if syncing:
@@ -28,7 +28,7 @@ def check_sync_status(port):
 
 def check_app_updates(port):
     data = post('/checks/app_updates/', port)
-    update_available = data.get('result').get('update_available')
+    update_available = data.get('update_available')
     download_url = data.get('download_url')
     if update_available:
         raise Exit(
@@ -38,7 +38,7 @@ def check_app_updates(port):
 
 
 def check_contract_updates(port):
-    update_available = post('/checks/contract_updates/', port).get('result')
+    update_available = post('/checks/contract_updates/', port)
     if update_available:
         raise Exit(
             'Smart Contract needs update.\n'

@@ -6,10 +6,10 @@ from .base import AbstractPostRequest
 class ChangeBoxDirRequest(AbstractPostRequest):
     finished = pyqtSignal(bool, str)
 
-    def __init__(self, box_dir):
+    def __init__(self, path):
         super().__init__(
-            '/change_box_dir/',
-            {"box_dir": box_dir}
+            '/host/storage/set_path/',
+            {"path": path}
         )
 
     def process_response_data(self, data: dict):
