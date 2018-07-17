@@ -5,7 +5,7 @@ By default, Memority listen on:
 - port `30320` for `geth` node
 
 ## Standard response format:
-```json
+```
 {
   "status": "{success|error|info}",
   "data": {...},  // if success
@@ -21,7 +21,7 @@ Before communicating with Memority Core, you must perform some checks.
 #### Request:
 `GET /checks/sync_status/`
 #### Response:
-```json
+```
 {
   "status": "success",
   "data": {
@@ -38,7 +38,7 @@ Before communicating with Memority Core, you must perform some checks.
 #### Request:
 `GET /checks/app_updates/`
 #### Response:
-```json
+```
 {
   "status": "success",
   "data": {
@@ -55,7 +55,7 @@ Before communicating with Memority Core, you must perform some checks.
 #### Request:
 `GET /checks/contract_updates/`
 #### Response:
-```json
+```
 {
   "status": "success",
   "data": {
