@@ -14,7 +14,6 @@ class AbstractRequestMeta(type(QObject), ABCMeta):
 
 class AbstractGetRequest(QObject, ABC, metaclass=AbstractRequestMeta):
 
-    # noinspection PyArgumentList, PyUnresolvedReferences
     def __init__(self, rel_url: str):
         # print(f'init {self.__class__.__name__}')
         QObject.__init__(self, parent=None)
@@ -46,7 +45,6 @@ class AbstractGetRequest(QObject, ABC, metaclass=AbstractRequestMeta):
 
 class AbstractPostRequest(QObject, ABC, metaclass=AbstractRequestMeta):
 
-    # noinspection PyArgumentList, PyUnresolvedReferences
     def __init__(self, rel_url: str, post_data: dict):
         print(f'init {self.__class__.__name__}')
         super().__init__(parent=None)

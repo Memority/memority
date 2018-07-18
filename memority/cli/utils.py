@@ -1,4 +1,7 @@
+import time
+
 import requests
+from tqdm import tqdm
 
 
 class Exit(Exception):
@@ -22,8 +25,20 @@ def check_sync_status(port):
     syncing = data.get('syncing')
     percent = data.get('percent')
     if syncing:
-        raise Exit(f"Please wait for the blockchain to sync. "
-                   f"Current percentage: {'initialization' if percent == -1 else str(percent)+'%'}.")
+        print('Please wait for the blockchain to sync.')
+        with tqdm(total=100) as progressbar:
+            while True:
+                if percent == -1:
+                    percent = 0
+                progressbar.update(int(percent) - progressbar.n)
+                time.sleep(.5)
+                data = post('/checks/sync_status/', port)
+                syncing = data.get('syncing')
+                percent = data.get('percent')
+                if not syncing:
+                    progressbar.update(100 - progressbar.n)
+                    progressbar.close()
+                    break
 
 
 def check_app_updates(port):

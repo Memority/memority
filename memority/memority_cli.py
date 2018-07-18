@@ -33,6 +33,12 @@ def create_account_sp(root):
     add_parser_with_func(
         account_sps, 'create', create_account, 'Create account'
     )
+    add_parser_with_func(
+        account_sps, 'generate_address', generate_address, 'Generate address'
+    )
+    add_parser_with_func(
+        account_sps, 'request_mmr', request_mmr, 'Request MMR for alpha testing'
+    )
     add_parser_with_args(
         account_sps, 'import', import_account, 'Import account',
         [ParserArgument('file', 'File', None)]

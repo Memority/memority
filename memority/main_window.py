@@ -36,7 +36,6 @@ def parse_date_from_string(d_: str):
     return datetime.strptime(d_[:-4], '%Y-%m-%d %H:%M').date()
 
 
-# noinspection PyArgumentList
 class MainWindow(QMainWindow):
     memority_core = None
     daemon_started = pyqtSignal()
@@ -127,7 +126,6 @@ class MainWindow(QMainWindow):
         self.ui.upload_file_btn.clicked.connect(self.upload_file)
         self.ui.bulk_prolong_deposit_btn.clicked.connect(self.prolong_deposit_for_all_files)
 
-    # noinspection PyUnresolvedReferences
     def setup_tray_icon(self):
         tray_icon = QSystemTrayIcon(self)
         tray_icon.setIcon(QIcon(os.path.join(daemon_settings.base_dir, 'icon.ico')))
@@ -146,7 +144,6 @@ class MainWindow(QMainWindow):
         tray_icon.setContextMenu(tray_menu)
         return tray_icon
 
-    # noinspection PyUnresolvedReferences
     def connect_signals(self):
         self.ws_client.error.connect(self.ws_error)
         self.ws_client.textMessageReceived.connect(self.ws_on_msg_received)
@@ -566,29 +563,13 @@ class MainWindow(QMainWindow):
             r.send()
 
         def _create_account():
-            create_account_dialog: QDialog = uic.loadUi(ui_settings.ui_create_account)
-            if not create_account_dialog.exec_():
-                return
-            role = {
-                0: 'renter',
-                1: 'host',
-                2: 'both'
-            }.get(create_account_dialog.role_input.currentIndex())
-
-            self.log(f'Creating account for role "{role}"...\n'
-                     f'This can take some time, as transaction is being written in blockchain.')
-            if role in ['renter', 'both']:
-                self.log('Creating client account. When finished, the "My Files" tab appears.')
-                r = CreateAccountRequest(role='renter')
-                self.request_pool.append(r)
-                r.finished.connect(partial(got_create_client_result, self.request_pool, r))
-                r.send()
-            if role in ['host', 'both']:
-                self.log('Creating hoster account. When finished, the "Hosting statistics" tab appears.')
-                r = CreateAccountRequest(role='host')
-                self.request_pool.append(r)
-                r.finished.connect(partial(got_create_host_result, self.request_pool, r))
-                r.send()
+            self.log(f'Creating renter account...\n'
+                     f'This can take some time, as transaction is being written in blockchain.\n'
+                     f'When finished, the "My Files" tab appears.')
+            r = CreateRenterAccountRequest()
+            self.request_pool.append(r)
+            r.finished.connect(partial(got_create_client_result, self.request_pool, r))
+            r.send()
 
         @del_from_pool
         @pyqtSlot()
@@ -616,16 +597,7 @@ class MainWindow(QMainWindow):
         @pyqtSlot()
         def got_create_client_result(ok: bool, result: str):
             if ok:
-                self.log('Client account successfully created!')
-                self.refresh()
-            else:
-                self.error(result)
-
-        @del_from_pool
-        @pyqtSlot()
-        def got_create_host_result(ok: bool, result: str):
-            if ok:
-                self.log('Hoster account successfully created!')
+                self.notify('Renter account successfully created!')
                 self.refresh()
             else:
                 self.error(result)
@@ -716,7 +688,7 @@ class MainWindow(QMainWindow):
                  'This can take some time, as transaction is being written in blockchain.\n'
                  'When finished, the "Hosting statistics" tab appears.')
 
-        r = CreateAccountRequest(role='host')
+        r = CreateHosterAccountRequest()
         self.request_pool.append(r)
         r.finished.connect(partial(got_create_host_result, self.request_pool, r))
         r.send()
@@ -806,11 +778,9 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def prolong_deposit(self, _hash):
-        # noinspection PyUnresolvedReferences
         @del_from_pool
         @pyqtSlot()
         def got_file_metadata(file_metadata: dict):
-            # noinspection PyTypeChecker,PyCallByClass
             @pyqtSlot(float)
             def upd_date(value: float):
                 if value < price_per_hour * 24 * 14:
@@ -969,14 +939,12 @@ class MainWindow(QMainWindow):
         r.finished.connect(partial(got_file_list, self.request_pool, r))
         r.send()
 
-    # noinspection PyUnresolvedReferences
     def choose_tokens_for_deposit(self, size, price_per_hour):
         dialog: QDialog = uic.loadUi(ui_settings.ui_create_deposit_for_file)
         dialog.calendarWidget: QCalendarWidget
         dialog.deposit_size_input: QDoubleSpinBox
         dialog.calendarWidget.setMinimumDate((datetime.now() + timedelta(weeks=2)).date())
 
-        # noinspection PyTypeChecker,PyCallByClass
         @pyqtSlot(float)
         def upd_date(value: float):
             if value < price_per_hour * 24 * 14:

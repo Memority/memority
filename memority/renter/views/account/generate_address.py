@@ -9,4 +9,4 @@ async def generate_address(password):
 
     settings.generate_keys(password)
     import_private_key_to_eth(password, settings.private_key)
-    return 'ok'
+    return settings.address

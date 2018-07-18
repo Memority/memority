@@ -3,13 +3,13 @@ from PyQt5.QtCore import pyqtSignal
 from .base import AbstractPostRequest
 
 
-class CreateAccountRequest(AbstractPostRequest):
+class CreateHosterAccountRequest(AbstractPostRequest):
     finished = pyqtSignal(bool, str)
 
-    def __init__(self, role):
+    def __init__(self):
         super().__init__(
-            '/account/create/',
-            {"role": role}
+            '/host/start/',
+            {}
         )
 
     def process_response_data(self, data: dict):
@@ -20,5 +20,5 @@ class CreateAccountRequest(AbstractPostRequest):
         else:
             msg = data.get('message')
             self.finished.emit(
-                False, f'Account creation failed.\n{msg}'
+                False, f'Adding to host list failed.\n{msg}'
             )

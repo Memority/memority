@@ -17,7 +17,8 @@ from .ping import PingRequest
 
 # region POST requests
 from .change_box_dir import ChangeBoxDirRequest
-from .create_account import CreateAccountRequest
+from .create_renter_account import CreateRenterAccountRequest
+from .create_hoster_account import CreateHosterAccountRequest
 from .export_account import ExportAccountRequest
 from .generate_address import GenerateAddressRequest
 from .import_account import ImportAccountRequest

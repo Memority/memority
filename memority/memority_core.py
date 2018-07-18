@@ -75,7 +75,6 @@ class MemorityCore:
         settings.unlock(password)
 
     def run(self):
-        # noinspection PyBroadException
         try:
             self.prepare()
             self.event_loop.run_forever()

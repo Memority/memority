@@ -7,7 +7,6 @@ __all__ = ['error_middleware']
 
 @web.middleware
 async def error_middleware(request, handler):
-    # noinspection PyBroadException
     try:
         response = await handler(request)
         return response

@@ -39,7 +39,7 @@ class FileUploader:
             await self.create_deposit()
             self.file.status = RenterFile.DEPOSIT_CREATED
             self.file.save()
-            await self.notify_user(f'Uploading file to {len(self.hosters)} hosters')
+            await self.notify_user(f'Uploading file to {len(self.hosters)} hosters...')
             await self.upload_to_hosters()
             # ToDo: check if uploaded to hosters
             self.file.status = RenterFile.UPLOADED
@@ -115,7 +115,6 @@ class FileUploader:
             "file_hash": self.file.hash,
             "hosts": [hoster.address for hoster in self.hosters]
         }
-        # noinspection PyBroadException
         try:
             await self.notify_user(
                 f'Sending file metadata to contract '
