@@ -10,7 +10,7 @@ async def list_files(args):
         get_url('/files/list/', port=args.memority_core_port), json={}
     )
     data = r.json()
-    files: typing.List[typing.Dict] = data.get('data')
+    files: typing.List[typing.Dict] = data.get('result')
     if not files:
         print('No files.')
         return

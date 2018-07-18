@@ -8,14 +8,14 @@ class GenerateAddressRequest(AbstractPostRequest):
 
     def __init__(self, password):
         super().__init__(
-            '/user/generate_address/',
+            '/account/generate_address/',
             {"password": password}
         )
 
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
             self.finished.emit(
-                True, data.get('address')
+                True, data.get('result')
             )
         else:
             msg = data.get('message')

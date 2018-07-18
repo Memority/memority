@@ -8,7 +8,7 @@ class CreateAccountRequest(AbstractPostRequest):
 
     def __init__(self, role):
         super().__init__(
-            '/user/create/',
+            '/account/create/',
             {"role": role}
         )
 

@@ -9,7 +9,7 @@ def get_data_by_url(url, port):
     data = r.json()
     if data.get('status') == 'error':
         raise Exit(f"Error: {data.get('message')}")
-    return data.get('data')
+    return data.get('result')
 
 
 def get_hoster_ip(port):

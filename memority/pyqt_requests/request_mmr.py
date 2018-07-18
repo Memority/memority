@@ -8,14 +8,14 @@ class RequestMMRRequest(AbstractPostRequest):
 
     def __init__(self, key):
         super().__init__(
-            '/request_mmr/',
+            '/account/request_mmr/',
             {"key": key}
         )
 
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
             self.finished.emit(
-                True, str(data.get('balance'))
+                True, str(data.get('result'))
             )
         else:
             msg = data.get('message')

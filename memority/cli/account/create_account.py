@@ -10,10 +10,10 @@ def generate_address(args):
     if password1 != password2:
         raise Exit('Passwords don`t match!')
     print('Generating address...')
-    r = requests.post(get_url('/user/generate_address/', port=args.memority_core_port), json={"password": password1})
+    r = requests.post(get_url('/account/generate_address/', port=args.memority_core_port), json={"password": password1})
     data = r.json()
     if data.get('status') == 'success':
-        print(f'Done! Your address: {data.get("address")}')
+        print(f'Done! Your address: {data.get("result")}')
     else:
         raise Exit(f'Generating address failed.\n'
                    f'{data.get("message")}')
@@ -26,14 +26,14 @@ def request_mmr(args):
     print('Please wait while we’ll send you MMR tokens for testing, it may take a few minutes.')
 
     resp = requests.post(
-        get_url('/request_mmr/', port=args.memority_core_port),
+        get_url('/account/request_mmr/', port=args.memority_core_port),
         json={
             "key": key
         }
     )
     data = resp.json()
     if data.get('status') == 'success':
-        print(f'Tokens received. Your balance: {data.get("balance")}')
+        print(f'Tokens received. Your balance: {data.get("result")}')
     else:
         msg = data.get('message')
         raise Exit(f'Requesting MMR failed.\n{msg}\nPlease ensure if the key was entered correctly.')
@@ -63,7 +63,7 @@ def create_account_(args):
     if role in ['renter', 'both']:
         print('Creating renter account...')
         resp = requests.post(
-            get_url('/user/create/', port=args.memority_core_port),
+            get_url('/account/create/', port=args.memority_core_port),
             json={
                 "role": 'renter'
             }
@@ -77,7 +77,7 @@ def create_account_(args):
     if role in ['host', 'both']:
         print('Creating hoster account...')
         resp = requests.post(
-            get_url('/user/create/', port=args.memority_core_port),
+            get_url('/account/create/', port=args.memority_core_port),
             json={
                 "role": 'host'
             }

@@ -316,7 +316,7 @@ class MainWindow(QMainWindow):
             self.log(data.get('message'))
         elif status == 'action_needed':
             if data.get('details') == 'tokens_to_deposit':
-                self.choose_tokens_for_deposit(**data.get('data', {}))
+                self.choose_tokens_for_deposit(**data.get('result', {}))
         elif status == 'success':
             if data.get('details') == 'uploaded':
                 self.notify('File successfully uploaded!')

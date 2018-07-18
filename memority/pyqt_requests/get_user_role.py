@@ -12,5 +12,5 @@ class GetUserRoleRequest(AbstractPostRequest):
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
             self.finished.emit(
-                data.get('data') or []
+                data.get('result') or []
             )

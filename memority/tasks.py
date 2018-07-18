@@ -51,7 +51,7 @@ async def request_payment_for_file(file_hash):
         ) as response:
             data = await response.json()
             if data.get('status') == 'success':
-                logger.info(f'request_payment_for_file result: {data.get("data")}')
+                logger.info(f'request_payment_for_file result: {data.get("result")}')
             else:
                 logger.warning(f'request_payment_for_file result: {data.get("message")}')
 
@@ -63,7 +63,7 @@ async def check_ip():
         async with session.post(f'http://{settings.daemon_address}/tasks/check_ip/', json={}) as response:
             data = await response.json()
             if data.get('status') == 'success':
-                logger.info(f'check_ip result: {data.get("data")}')
+                logger.info(f'check_ip result: {data.get("result")}')
             else:
                 logger.warning(f'check_ip result: {data.get("message")}')
 
@@ -80,7 +80,7 @@ async def perform_monitoring_for_file(file_hash):
         ) as response:
             data = await response.json()
             if data.get('status') == 'success':
-                logger.info(f'perform_monitoring_for_file result: {data.get("data")}')
+                logger.info(f'perform_monitoring_for_file result: {data.get("result")}')
             else:
                 logger.warning(f'perform_monitoring_for_file result: {data.get("message")}')
 
@@ -101,7 +101,7 @@ async def check_miner_status():
         ) as response:
             data = await response.json()
             if data.get('status') == 'success':
-                logger.info(f'check_miner_status result: {data.get("data")}')
+                logger.info(f'check_miner_status result: {data.get("result")}')
             else:
                 logger.warning(f'check_miner_status result: {data.get("message")}')
 
@@ -116,7 +116,7 @@ async def update_enodes():
         ) as response:
             data = await response.json()
             if data.get('status') == 'success':
-                logger.info(f'update_enodes result: {data.get("data")}')
+                logger.info(f'update_enodes result: {data.get("result")}')
             else:
                 logger.warning(f'update_enodes result: {data.get("message")}')
 
@@ -134,7 +134,7 @@ async def update_miner_list():
         ) as response:
             data = await response.json()
             if data.get('status') == 'success':
-                logger.info(f'update_miner_list result: {data.get("data")}')
+                logger.info(f'update_miner_list result: {data.get("result")}')
             else:
                 logger.warning(f'update_miner_list result: {data.get("message")}')
 
@@ -152,7 +152,7 @@ async def check_enode():
         ) as response:
             data = await response.json()
             if data.get('status') == 'success':
-                logger.info(f'check_enode result: {data.get("data")}')
+                logger.info(f'check_enode result: {data.get("result")}')
             else:
                 logger.warning(f'check_enode result: {data.get("message")}')
 

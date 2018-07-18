@@ -16,7 +16,7 @@ async def get_file_info(args):
         print(f'Error: {data.get("message")}')
         return
 
-    file_data = data.get('data')
+    file_data = data.get('result')
 
     def print_(k, v):
         print(f"{k+':':<20} {v}")

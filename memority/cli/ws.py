@@ -36,7 +36,7 @@ async def handle_action(data, ws):
     elif data.get('details') == 'tokens_to_deposit':
         print(f'Enter the token amount for deposit.\n'
               f'Price for 2 weeks for this file: '
-              f'{data.get("data").get("price_per_hour")*24*14:.18f}')
+              f'{data.get("result").get("price_per_hour")*24*14:.18f}')
 
         result = input('>> ')
 

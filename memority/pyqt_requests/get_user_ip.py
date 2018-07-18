@@ -12,5 +12,5 @@ class GetUserIPRequest(AbstractGetRequest):
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
             self.finished.emit(
-                data.get('data').get('host_ip')
+                data.get('result').get('host_ip')
             )

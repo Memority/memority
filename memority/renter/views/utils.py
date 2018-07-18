@@ -31,7 +31,7 @@ async def process_request(request: web.Request, handlers: dict, arg: str = 'arg'
         return web.json_response(
             {
                 "status": "success",
-                "data": await handler(**kwargs)
+                "result": await handler(**kwargs)
             }
         )
     else:

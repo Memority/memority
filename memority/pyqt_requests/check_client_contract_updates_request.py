@@ -7,8 +7,8 @@ class CheckClientContractUpdatesRequest(AbstractPostRequest):
     finished = pyqtSignal(bool)
 
     def __init__(self):
-        super().__init__('/contract_updates/', {})
+        super().__init__('/checks/contract_updates/', {})
 
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
-            self.finished.emit(data.get('data'))
+            self.finished.emit(data.get('result'))

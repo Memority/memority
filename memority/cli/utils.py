@@ -14,7 +14,7 @@ def post(url, port):
     data = r.json()
     if data.get('status') == 'error':
         raise Exit(f"Error: {data.get('message')}")
-    return data.get('data')
+    return data.get('result')
 
 
 def check_sync_status(port):

@@ -18,7 +18,6 @@ def create_renter_app():
         web.post('/host/storage/{arg}/', storage),
         web.post('/host/{arg}/', host),
         web.post('/miner/{arg}/', miner),
-        web.post('/request_mmr/', request_mmr),
         web.post('/tasks/{arg}/', task),
         web.post('/user/{arg}/', user),
     ])

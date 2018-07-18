@@ -15,7 +15,7 @@ def get_file_metadata(file_hash, port):
     data = r.json()
     if data.get('status') == 'error':
         raise Exit(f'Error: {data.get("message")}')
-    return data.get('data')
+    return data.get('result')
 
 
 def ask_user_for_deposit_value(file_metadata):

@@ -27,7 +27,7 @@ class FileDownloader:
             return {
                 "status": "success",
                 "details": "downloaded",
-                "data": {
+                "result": {
                     "file": {
                         "name": os.path.join(self.destination, self.file.name)
                     }

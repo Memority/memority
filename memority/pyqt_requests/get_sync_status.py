@@ -11,7 +11,7 @@ class GetSyncStatusRequest(AbstractPostRequest):
 
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
-            result = data.get('data')
+            result = data.get('result')
             self.finished.emit(
                 result.get('syncing'),
                 result.get('percent')

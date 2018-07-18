@@ -14,7 +14,7 @@ class GetUserFilesRequest(AbstractPostRequest):
             self.finished.emit(
                 True,
                 '',
-                data.get('data')
+                data.get('result')
             )
         else:
             self.finished.emit(

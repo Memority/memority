@@ -52,7 +52,7 @@ class FileUploader:
             return {
                 "status": "success",
                 "details": "uploaded",
-                "data": {
+                "result": {
                     "file": await self.file.to_json()
                 }
             }
@@ -200,7 +200,7 @@ class FileUploader:
         await self._websocket.send_json({
             "status": "action_needed",
             "details": 'tokens_to_deposit',
-            "data": {
+            "result": {
                 "size": self.file.size,
                 "price_per_hour": token_contract.wmmr_to_mmr(
                     token_contract.tokens_per_byte_hour * self.file.size * 10

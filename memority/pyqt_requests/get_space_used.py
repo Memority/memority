@@ -12,5 +12,5 @@ class GetSpaceUsedRequest(AbstractGetRequest):
     def process_response_data(self, data: dict):
         if data.get('status') == 'success':
             self.finished.emit(
-                data.get('data').get('space_used')
+                data.get('result').get('space_used')
             )

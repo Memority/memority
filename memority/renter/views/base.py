@@ -3,15 +3,14 @@ import asyncio
 import logging
 from aiohttp import web, ClientConnectorError
 
-import memority_api_requests
 from bugtracking import raven_client
 from models import HosterFile
 from settings import settings
-from smart_contracts import token_contract, memo_db_contract, wait_for_transaction_completion
+from smart_contracts import memo_db_contract
 from utils import file_size_human_readable
 from .utils import Exit
 
-__all__ = ['view_config', 'upload_to_hoster', 'request_mmr']
+__all__ = ['view_config', 'upload_to_hoster']
 
 logger = logging.getLogger('memority')
 
@@ -86,27 +85,9 @@ async def view_config(request: web.Request, *args, **kwargs):
     if res:
         return web.json_response({
             "status": "success",
-            "data": {
+            "result": {
                 name: res
             }
         })
     else:
         return web.json_response({"status": "error", "details": "not_found"})
-
-
-async def request_mmr(request):
-    data = await request.json()
-    key = data.get('key')
-    resp_data = await memority_api_requests.request_mmr(key)
-
-    if resp_data.get('status') == 'success':
-        tx = resp_data.get('result').strip()
-        await wait_for_transaction_completion(tx)
-        return web.json_response(
-            {
-                "status": "success",
-                "balance": token_contract.get_mmr_balance()
-            }
-        )
-    else:
-        return web.json_response(_error_response(data.get('error')))

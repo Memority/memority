@@ -9,7 +9,7 @@ async def get_transactions(args):
     if data.get('status') != 'success':
         print(f'Error: {data.get("message")}')
         return
-    transactions = data.get('data')
+    transactions = data.get('result')
     row = "{:<43}{sep}{:<43}{sep}{:<25}{sep}{:<20}{sep}{:<32}"
     print(row.format('From', 'To', 'Value, MMR', 'Date', 'Comment', sep='| '))
     print(row.format('-' * 43, '-' * 43, '-' * 25, '-' * 20, '-' * 32, sep='+-'))
