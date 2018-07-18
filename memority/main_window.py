@@ -877,10 +877,8 @@ class MainWindow(QMainWindow):
         r.finished.connect(partial(got_file_metadata, self.request_pool, r))
         r.send()
 
-    # noinspection PyUnresolvedReferences,PyReferencedBeforeAssignment
     @pyqtSlot()
     def prolong_deposit_for_all_files(self):
-        # noinspection PyUnresolvedReferences
         @del_from_pool
         @pyqtSlot()
         def got_file_list(ok: bool, error: str, files: list):
@@ -952,7 +950,7 @@ class MainWindow(QMainWindow):
                 self.log(f'Adding {sum([d[1] for d in deposits]):.18f} MMR to deposits')
                 for d in deposits:
                     self.log(f'Adding {d[1]:.18f} MMR to deposit | file: {d[0]}. Please wait...')
-                    r = ProlongDepositForFileRequest(file_hash=_hash, value=input_value)
+                    r = ProlongDepositForFileRequest(file_hash=d[0], value=d[1])
                     self.request_pool.append(r)
                     r.finished.connect(partial(got_prolong_deposit_resp, self.request_pool, r))
                     r.send()
