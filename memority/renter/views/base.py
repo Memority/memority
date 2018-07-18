@@ -48,7 +48,8 @@ async def upload_to_hoster(hoster, data, file, _logger=None):  # ToDo: mv to hos
             _logger.info(f'Uploading file body to hoster... | file: {file.hash} | hoster ip: {ip}')
             async with session.put(
                     f'http://{ip}/files/{file.hash}/',
-                    data=file.get_filelike()) as resp2:
+                    data=file.get_filelike(),
+                    timeout=None) as resp2:
                 if not resp2.status == 200:
                     import json
                     raise Exit(json.dumps({

@@ -256,7 +256,8 @@ class FileUploader:
                 )
                 async with session.put(
                         f'http://{hoster.ip}/files/{self.file.hash}/',
-                        data=self.file.get_filelike()
+                        data=self.file.get_filelike(),
+                        timeout=None
                 ) as resp2:
                     resp_data: dict = await resp2.json()
                     if resp_data.get('status') != 'success':
