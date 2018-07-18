@@ -284,6 +284,7 @@ class Settings:
     def import_account(self, filename, password):
         # ToDo: check if file exists and is a valid account
         # region Backup current account
+        local_settings_backup_path = ''
         if os.path.isfile(self.local_settings_secrets_path):
             local_settings_backup_path = f'{self.local_settings_secrets_path}.bak'
             if os.path.isfile(local_settings_backup_path):
@@ -305,8 +306,22 @@ class Settings:
             os.path.join(self.local_settings_secrets_path)
         )
         # endregion
-        self.unlock(password)
-        from smart_contracts import import_private_key_to_eth
+        try:
+            self.unlock(password)
+        except settings.Locked:
+            # region Revert from backup
+            if os.path.isfile(local_settings_backup_path):
+                shutil.copyfile(
+                    os.path.join(local_settings_backup_path),
+                    os.path.join(self.local_settings_secrets_path)
+                )
+            # endregion
+            raise
+
+        from smart_contracts import memo_db_contract, ClientContract, import_private_key_to_eth
+        settings.client_contract_address = memo_db_contract.get_client_contract_address(settings.address)
+        settings.client_contract_version = ClientContract(settings.client_contract_address).current_version
+
         import_private_key_to_eth(password, self.private_key)
 
     def export_account(self, filename):
