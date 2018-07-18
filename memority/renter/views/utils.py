@@ -38,6 +38,6 @@ async def process_request(request: web.Request, handlers: dict, arg: str = 'arg'
         return web.json_response(
             {
                 "status": "error",
-                "message": f"unknown {attr}: {handler_name}"
+                "message": f"unknown argument: {handler_name}"
             }
         )

@@ -10,4 +10,4 @@ async def get_miner_ip():
     else:
         ip = await get_ip()
 
-    return ip
+    return f'{ip}:{settings.mining_port}'

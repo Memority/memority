@@ -4,7 +4,7 @@ from ..utils import get_url, Exit
 
 
 def get_data_by_url(url, port):
-    r = requests.get(get_url(url, port))
+    r = requests.post(get_url(url, port), json={})
     data = r.json()
     if data.get('status') == 'error':
         raise Exit(f"Error: {data.get('message')}")

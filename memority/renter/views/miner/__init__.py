@@ -10,8 +10,8 @@ async def miner(request: web.Request):
     return await process_request(
         request,
         {
-            "get_ip": get_miner_ip,
-            "get_rewards": get_rewards,
+            "ip": get_miner_ip,
+            "rewards": get_rewards,
             "request": send_miner_request
         }
     )
