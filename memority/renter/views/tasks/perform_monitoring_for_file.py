@@ -50,7 +50,8 @@ async def ensure_has_deposit(file):
         if file.no_deposit_counter >= 3 * 7:  # 3x monitoring per day, 1 week
             logger.info(f'Deleting file (no deposit) | file: {file.hash}')
             file.delete()
-        raise MonitoringError(f'Deleting file (no deposit) | file: {file.hash}')
+            raise MonitoringError(f'Deleting file (no deposit) | file: {file.hash}')
+        raise MonitoringError(f'No deposit for file! | file: {file.hash}')
     else:
         logger.info(f'Deposit OK | file: {file.hash}')
         file.update_status(HosterFile.ACTIVE)
