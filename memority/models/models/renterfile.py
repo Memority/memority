@@ -174,6 +174,7 @@ class RenterFile(Base, ManagedMixin):
             ).decode('utf-8')
         except DecryptionError:
             name = self.name
+        del res['signature']
         res['name'] = name
         res['size'] = client_contract.get_file_size(self.hash)
         res['price_per_hour'] = token_contract.wmmr_to_mmr(token_contract.tokens_per_byte_hour * res['size'] * 10)

@@ -12,6 +12,6 @@ async def miner(request: web.Request):
         {
             "ip": get_miner_ip,
             "rewards": get_rewards,
-            "request": send_miner_request
+            "request": miner_request
         }
     )

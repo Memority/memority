@@ -1,3 +1,4 @@
+import json
 import traceback
 from aiohttp import web
 
@@ -29,6 +30,11 @@ async def error_middleware(request, handler):
             "message": 'invalid_password'
         }, status=403)
     except Exit as err:
+        return web.json_response({
+            "status": "error",
+            "message": str(err)
+        }, status=400)
+    except json.JSONDecodeError as err:
         return web.json_response({
             "status": "error",
             "message": str(err)

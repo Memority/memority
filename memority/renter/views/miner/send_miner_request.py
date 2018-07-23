@@ -82,12 +82,7 @@ async def miner_request():
             await add_enode()
             start_mining()
 
-        return web.json_response(
-            {
-                "status": "success",
-                "request_status": request_status
-            }
-        )
+        return request_status
 
     except MinerError as err:
         logger.warning(str(err))
