@@ -54,6 +54,8 @@ class HosterFile(Base, ManagedMixin):
     @property
     def client_contract(self):
         client_contract_address = memo_db_contract.get_client_contract_address(owner=self.client_address)
+        if not client_contract_address:
+            raise Exception(f'No client contract for address {self.client_address}')
         return ClientContract(address=client_contract_address)
 
     @classmethod

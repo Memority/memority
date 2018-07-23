@@ -17,15 +17,3 @@ def ensure_latest_contract_version(func):
         return func(_contract, *args, **kwargs)
 
     return wrapper
-
-
-def refresh_contract_on_attribute_error(func):
-    @wraps(func)
-    def wrapper(_contract: Contract, *args, **kwargs):
-        try:
-            return func(_contract, *args, **kwargs)
-        except AttributeError:
-            _contract.reload()
-            return func(_contract, *args, **kwargs)
-
-    return wrapper
