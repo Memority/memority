@@ -3,7 +3,7 @@ from web3.exceptions import BadFunctionCallOutput
 
 from settings import settings
 from .base import Contract
-from .decorators import ensure_latest_contract_version
+from .decorators import ensure_latest_contract_version, refresh_contract_on_attribute_error
 from .exceptions import ContractNeedsUpdate
 from .utils import *
 
@@ -144,6 +144,7 @@ class ClientContract(Contract):
         except BadFunctionCallOutput:
             return 0
 
+    @refresh_contract_on_attribute_error
     def get_file_hosts(self, file_hash):
         logger.info(f'Get file hosts from Client contract | file: {file_hash}')
         try:

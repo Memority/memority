@@ -1,8 +1,11 @@
+from functools import wraps
+
 from .base import Contract
 from .exceptions import ContractNeedsUpdate
 
 
 def ensure_latest_contract_version(func):
+    @wraps(func)
     def wrapper(_contract: Contract, *args, **kwargs):
         if _contract.need_update:
             raise ContractNeedsUpdate(
@@ -12,5 +15,17 @@ def ensure_latest_contract_version(func):
                 f'| update to: {_contract.highest_version} '
             )
         return func(_contract, *args, **kwargs)
+
+    return wrapper
+
+
+def refresh_contract_on_attribute_error(func):
+    @wraps(func)
+    def wrapper(_contract: Contract, *args, **kwargs):
+        try:
+            return func(_contract, *args, **kwargs)
+        except AttributeError:
+            _contract.reload()
+            return func(_contract, *args, **kwargs)
 
     return wrapper
