@@ -184,19 +184,18 @@ class HosterFile(Base, ManagedMixin):
     def contract_file_hosts(self):
         return self.client_contract.get_file_hosts(self.hash)
 
-    @classmethod
-    def refresh_from_contract(cls):
-        for file in cls.objects.all():
-            file: HosterFile
-            file_hosts_db = file.file_hosts
-            contract_file_hosts = file.contract_file_hosts
-            # region Delete from db file hosts, removed from contract.
-            for hfm2m in [h for h in file_hosts_db if h.host.address not in contract_file_hosts]:
-                hfm2m.delete()
-            # endregion
-            file.add_hosts(
-                contract_file_hosts
-            )
+    # @classmethod
+    def refresh_from_contract(self):
+        # for file in cls.objects.all():
+        file_hosts_db = self.file_hosts
+        contract_file_hosts = self.contract_file_hosts
+        # region Delete from db file hosts, removed from contract.
+        for hfm2m in [h for h in file_hosts_db if h.host.address not in contract_file_hosts]:
+            hfm2m.delete()
+        # endregion
+        self.add_hosts(
+            contract_file_hosts
+        )
 
     def update_no_deposit_counter(self):
         self.no_deposit_counter += 1
