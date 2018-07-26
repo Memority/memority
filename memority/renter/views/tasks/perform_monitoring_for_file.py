@@ -253,7 +253,8 @@ async def check_file_proofs(file):
                         f'| file: {file.hash} '
                         f'| offline host: {file_host.host.address} '
                         f'| host offline counter: {file_host.offline_counter} '
-                        f'| approved: {offline_counter}'
+                        f'| approved: {offline_counter}',
+                        extra={'sample_rate': 0.2}
                     )
 
 

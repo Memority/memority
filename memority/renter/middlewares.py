@@ -41,7 +41,10 @@ async def error_middleware(request, handler):
         }, status=400)
     except Exception as ex:
         traceback.print_exc()
-        raven_client.captureException()
+        sample_rate = 1.0
+        if 'No client contract for address' in str(ex):
+            sample_rate = .2
+        raven_client.captureException(sample_rate=sample_rate)
         return web.json_response({
             "status": "error",
             "message": f'{ex.__class__.__name__}: {ex}'
