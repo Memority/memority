@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="wallet_balance">
+    <file>wallet_balance.png</file>
+  </qresource>
+</RCC>
