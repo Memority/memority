@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="ch_dir">
+    <file>change_directory.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="hoster">
+    <file>hoster.png</file>
+  </qresource>
+</RCC>

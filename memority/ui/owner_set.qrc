@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="owner_set">
+    <file>owner_set.png</file>
+  </qresource>
+</RCC>

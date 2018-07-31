@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="search">
+    <file>search.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="angle">
+    <file>angle_grey.png</file>
+  </qresource>
+</RCC>

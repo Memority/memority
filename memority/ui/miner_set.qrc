@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="miner_set">
+    <file>miner_set.png</file>
+  </qresource>
+</RCC>
