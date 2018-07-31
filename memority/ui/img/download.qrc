@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="download">
+    <file>download.png</file>
+  </qresource>
+</RCC>

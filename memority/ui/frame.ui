@@ -421,6 +421,9 @@ background-repeat: no-repeat;</string>
          <property name="spacing">
           <number>20</number>
          </property>
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
          <property name="topMargin">
           <number>20</number>
          </property>
