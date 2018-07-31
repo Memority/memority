@@ -189,7 +189,7 @@ background-color: rgba(255,255,255, 0);
 background-image: url(:/key_main/key.png);
 background-position: left 10px;
 background-repeat: no-repeat;
-padding: 18px 15px 10px 55px;
+padding: 18px 15px 0px 55px;
 font-size: 18px;</string>
          </property>
         </widget>
