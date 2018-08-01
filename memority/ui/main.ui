@@ -16,7 +16,9 @@
   <property name="styleSheet">
    <string notr="true">background: #fff;</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2"/>
+  </widget>
  </widget>
  <resources/>
  <connections/>
