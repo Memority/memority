@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="ip_port">
+    <file>ip_port.png</file>
+  </qresource>
+</RCC>

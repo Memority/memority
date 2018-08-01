@@ -166,7 +166,7 @@ border: none;</string>
        <widget class="QGroupBox" name="profile">
         <property name="minimumSize">
          <size>
-          <width>190</width>
+          <width>405</width>
           <height>0</height>
          </size>
         </property>
@@ -185,7 +185,7 @@ background-size: cover;</string>
           <rect>
            <x>70</x>
            <y>20</y>
-           <width>91</width>
+           <width>331</width>
            <height>16</height>
           </rect>
          </property>
@@ -193,32 +193,7 @@ background-size: cover;</string>
           <string notr="true">background: none;</string>
          </property>
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt; color:#797979;&quot;&gt;t23746tdf68c...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_3">
-         <property name="geometry">
-          <rect>
-           <x>70</x>
-           <y>40</y>
-           <width>71</width>
-           <height>20</height>
-          </rect>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">background: none;
-background-image: url(:/angle/angle_grey.png);
-background-position: right;
-background-repeat: no-repeat;</string>
-         </property>
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt; color:#9f9f9f;&quot;&gt;Settings&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt; color:#797979;&quot;&gt;t23746tdf68ct23746tdf68ct23746tdf68ct23746tdf6&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </widget>
@@ -313,7 +288,7 @@ background: #9e9e9e;
 border: none;
 text-align: left;
 padding-left:65px;
-background-image: url(:/w_1/1_w.png);
+background-image: url(:/1_w/1_w.png);
 background-position: center left;
 background-repeat: no-repeat;</string>
              </property>
@@ -477,11 +452,11 @@ p, li { white-space: pre-wrap; }
  </widget>
  <resources>
   <include location="logo_grey.qrc"/>
-  <include location="1_w.qrc"/>
-  <include location="2_g.qrc"/>
-  <include location="5_g.qrc"/>
-  <include location="4_g.qrc"/>
-  <include location="3_g.qrc"/>
+  <include location="w_1.qrc"/>
+  <include location="g_2.qrc"/>
+  <include location="g_5.qrc"/>
+  <include location="g_4.qrc"/>
+  <include location="g_3.qrc"/>
   <include location="i.qrc"/>
   <include location="angle.qrc"/>
   <include location="profile.qrc"/>

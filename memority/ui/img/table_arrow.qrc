@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="table_arrow">
+    <file>table_arrow.png</file>
+  </qresource>
+</RCC>

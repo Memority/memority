@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="arrow_next">
+    <file>arrow_next.png</file>
+  </qresource>
+</RCC>

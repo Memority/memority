@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="summary">
+    <file>summary.png</file>
+  </qresource>
+</RCC>
