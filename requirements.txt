@@ -23,7 +23,7 @@ eth-hash==0.1.2
 eth-keys==0.1.0b4
 eth-tester==0.1.0b11
 eth-utils==0.8.1
-eventlet==0.23.0
+eventlet==0.31.0
 greenlet==0.4.13
 idna-ssl==1.0.1
 idna==2.6
